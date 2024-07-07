@@ -39,6 +39,13 @@ Dynamic bookmark groups mainly acquire bookmark items by executing queries.
 1. Global Update: Click the update button on the top bar to update all bookmark groups
 2. Right-click Menu: Click the right-click menu of the dynamic group to re-execute the query in the current group and obtain the latest bookmark items
 
+## Bookmark Items
+
+* Click an item to navigate to the corresponding block
+* Hover over the block icon to preview the block's content
+* More features are available in the right-click menu~
+
+
 ## Plugin Settings
 
 * Replace Built-in Bookmarks: If enabled, the plugin will automatically block the default SiYuan bookmarks at startup and override the bookmark shortcuts (default is Alt + 3)
