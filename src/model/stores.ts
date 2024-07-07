@@ -21,10 +21,12 @@ interface IConfig {
     hideClosed: boolean;
     hideDeleted: boolean;
     viewMode: 'bookmark' | 'card';
+    replaceDefault: boolean;
 }
 
 export const [configs, setConfigs] = createStore<IConfig>({
     hideClosed: true,
     hideDeleted: true,
-    viewMode: 'bookmark'
+    viewMode: 'bookmark',
+    replaceDefault: true
 });

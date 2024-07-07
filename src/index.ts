@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-07-07 18:22:17
+ * @LastEditTime : 2024-07-07 18:54:03
  * @Description  : 
  */
 import {
@@ -12,14 +12,14 @@ import {
 import "@/index.scss";
 
 import { render } from "solid-js/web";
-import type FMiscPlugin from "@/index";
 import { getModel, rmModel, BookmarkDataModel } from "./model";
+import { configs } from "./model";
 import Bookmark from "./components/bookmark";
 import { updateStyleDom, removeStyleDom } from "@/utils/style";
 
 let model: BookmarkDataModel;
 
-const initBookmark = async (ele: HTMLElement, plugin: FMiscPlugin) => {
+const initBookmark = async (ele: HTMLElement, plugin: PluginBookmarkPlus) => {
     await model.load();
     await model.updateAll();
     ele.classList.add('fn__flex-column');
@@ -27,6 +27,11 @@ const initBookmark = async (ele: HTMLElement, plugin: FMiscPlugin) => {
         plugin: plugin,
         model: model
     }), ele);
+
+    console.log(configs.replaceDefault, '替换书签');
+    if (configs.replaceDefault) {
+        plugin.replaceDefaultBookmark();
+    }
 };
 
 const destroyBookmark = () => {
@@ -55,12 +60,6 @@ export default class PluginBookmarkPlus extends Plugin {
         // await model.load();
         // await model.updateItems();
 
-        updateStyleDom('hide-bookmark', `
-        .dock span[data-type="bookmark"] {
-            display: none;
-        }
-        `);
-
         this.addDock({
             type: '::dock',
             config: {
@@ -80,6 +79,15 @@ export default class PluginBookmarkPlus extends Plugin {
                 this.data.initBookmark(this.element, this.data.plugin);
             }
         });
+
+    }
+
+    replaceDefaultBookmark() {
+        updateStyleDom('hide-bookmark', `
+        .dock span[data-type="bookmark"] {
+            display: none;
+        }
+        `);
         bookmarkKeymap.custom = '';
         console.log('bookmarkKeymap', bookmarkKeymap);
         this.addCommand({
@@ -91,14 +99,12 @@ export default class PluginBookmarkPlus extends Plugin {
                 ele?.click();
             }
         });
-
     }
 
     onunload(): void {
         destroyBookmark();
-
         bookmarkKeymap.custom = bookmarkKeymap.default;
-        this.commands = this.commands.filter((command) => command.langKey !== 'F-Misc::Bookmark');
+        // this.commands = this.commands.filter((command) => command.langKey !== 'F-Misc::Bookmark');
     }
 
 }

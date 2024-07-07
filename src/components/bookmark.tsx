@@ -64,6 +64,7 @@ const BookmarkComponent: Component<Props> = (props) => {
             title: "书签设置",
             ele: container,
             width: '600px',
+            height: '700px',
             callback: () => {
                 props.model.save();
             }

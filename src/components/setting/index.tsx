@@ -10,6 +10,19 @@ const App = () => {
             padding: '10px 20px'
         }}>
             <SettingItemWrap
+                title="替换内置书签"
+                description="如果启用，则屏蔽默认书签，并且绑定书签快捷键(默认为 Alt+3);<br/>重启后生效"
+            >
+                <InputItem
+                    type="checkbox"
+                    key="replaceDefault"
+                    value={configs['replaceDefault']}
+                    changed={(v) => {
+                        setConfigs('replaceDefault', v);
+                    }}
+                />
+            </SettingItemWrap>
+            <SettingItemWrap
                 title="展示模式"
                 description="选择书签栏展示的样式"
             >
