@@ -1,8 +1,8 @@
 {
-  "name": "plugin-sample-vite-solidjs",
-  "version": "0.3.5",
+  "name": "sy-bookmark-plus",
+  "version": "1.0.0",
   "type": "module",
-  "description": "This is a sample plugin based on vite and solidjs for Siyuan (https://b3log.org/siyuan)",
+  "description": "A more powerful bookmark",
   "repository": "",
   "homepage": "",
   "author": "frostime",

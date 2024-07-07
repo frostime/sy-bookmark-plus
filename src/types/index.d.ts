@@ -1,12 +1,43 @@
 /*
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
- * @Date         : 2023-08-15 10:28:10
+ * @Date         : 2024-03-19 14:07:28
  * @FilePath     : /src/types/index.d.ts
- * @LastEditTime : 2024-06-08 20:50:53
- * @Description  : Frequently used data structures in SiYuan
+ * @LastEditTime : 2024-06-12 22:16:03
+ * @Description  : 
  */
 
+interface IDockyBlock {
+    name: string;
+    position: 'RightTop' | 'RightBottom' | 'LeftTop' | 'LeftBottom';
+    id: string;
+    icon?: string;
+    hotkey?: string;
+}
+
+type ThemeMode = "light" | "dark";
+interface ITheme {
+    name: string;
+    modes: ThemeMode[];
+    repoHash: string;
+    repoURL: string;
+}
+
+type TKeyText = {
+    key: string;
+    text: string;
+}
+
+interface KV {
+    key: string;
+    value: any;
+}
+
+interface ChangeEvent {
+    group: string;
+    key: string;
+    value: any;
+}
 
 type DocumentId = string;
 type BlockId = string;
@@ -31,25 +62,7 @@ type NotebookConf = {
     dailyNoteTemplatePath: string;
 }
 
-type BlockType = 
-    | 'd'
-    | 'p'
-    | 'query_embed'
-    | 'l'
-    | 'i'
-    | 'h'
-    | 'iframe'
-    | 'tb'
-    | 'b'
-    | 's'
-    | 'c'
-    | 'widget'
-    | 't'
-    | 'html'
-    | 'm'
-    | 'av'
-    | 'audio';
-
+type BlockType = "c" | "d" | "s" | "h" | "t" | "i" | "p" | "f" | "audio" | "video" | "other";
 
 type BlockSubType = "d1" | "d2" | "s1" | "s2" | "s3" | "t1" | "t2" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "table" | "task" | "toggle" | "latex" | "quote" | "html" | "code" | "footnote" | "cite" | "collection" | "bookmark" | "attachment" | "comment" | "mindmap" | "spreadsheet" | "calendar" | "image" | "audio" | "video" | "other";
 
@@ -89,7 +102,7 @@ type doOperation = {
     retData: null;
 }
 
-interface Window {
+declare interface Window {
     siyuan: {
         config: any;
         notebooks: any;
@@ -103,4 +116,20 @@ interface Window {
         emojis: any;
     };
     Lute: any;
+}
+
+interface IPluginProtyleSlash {
+    filter: string[],
+    html: string,
+    id: string,
+    callback(protyle: Protyle): void,
+};
+
+interface ISiyuanEventPaste {
+    protyle: IProtyle,
+    resolve: <T>(value: T | PromiseLike<T>) => void,
+    textHTML: string,
+    textPlain: string,
+    siyuanHTML: string,
+    files: FileList | DataTransferItemList;
 }

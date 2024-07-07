@@ -1,8 +1,8 @@
 {
-  "name": "plugin-sample-vite-solidjs",
+  "name": "sy-bookmark-plus",
   "author": "frostime",
-  "url": "https://github.com/frostime/plugin-sample-vite-solidjs",
-  "version": "0.3.5",
+  "url": "https://github.com/frostime/sy-bookmark-plus",
+  "version": "1.0.0",
   "minAppVersion": "3.0.12",
   "backends": [
     "windows",
@@ -19,12 +19,12 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "Plugin sample with vite and solidjs",
-    "zh_CN": "插件样例 vite + solidjs 版"
+    "en_US": "Bookmark+",
+    "zh_CN": "书签+"
   },
   "description": {
-    "en_US": "SiYuan plugin sample with vite and solidjs",
-    "zh_CN": "使用 vite 和 solidjs 开发的思源插件样例"
+    "en_US": "A more powerful bookmark",
+    "zh_CN": "一个更加强大的书签功能"
   },
   "readme": {
     "en_US": "README.md",
@@ -36,6 +36,6 @@
     ]
   },
   "keywords": [
-    "plugin", "sample", "插件样例", "solidjs"
+    "plugin", "书签", "Bookmark"
   ]
 }

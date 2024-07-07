@@ -1,26 +1,11 @@
-#helloPanel {
-    border: 1px rgb(189, 119, 119) dashed;
-}
-
-.plugin-sample {
-    &__custom-tab {
-        background-color: var(--b3-theme-background);
-        height: 100%;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    &__custom-dock {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    &__time {
-        background: var(--b3-card-info-background);
-        border-radius: 4px;
-        padding: 2px 8px;
-    }
-}
+/*
+ * Copyright (c) 2024 by frostime. All Rights Reserved.
+ * @Author       : frostime
+ * @Date         : 2024-06-14 20:33:11
+ * @FilePath     : /src/func/bookmarks/components/index.scss
+ * @LastEditTime : 2024-07-04 17:24:42
+ * @Description  : Bookmark 插件的相关样式
+ */
+ @forward './style/core.scss';
+ @forward './style/card-view.scss';
+ 
