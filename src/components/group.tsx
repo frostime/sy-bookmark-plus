@@ -2,7 +2,8 @@ import { Component, createEffect, createMemo, createSignal, Match, useContext } 
 import { For, Switch } from "solid-js";
 import { Menu, Constants, confirm, showMessage } from "siyuan";
 import Item from "./item";
-import { inputDialogSync } from "@/libs/dialog";
+// import { inputDialogSync } from "@/libs/dialog";
+import inputDialog from '@/libs/components/input-dialog';
 import { groups, setGroups, configs, itemInfo } from "../model";
 import { ClassName } from "../libs/dom";
 import { getBlockByID } from "@/api";
@@ -168,14 +169,17 @@ const Group: Component<Props> = (props) => {
             label: i18n_.rename,
             icon: "iconEdit",
             click: async () => {
-                const title = await inputDialogSync({
+                inputDialog({
                     title: i18n_.rename,
                     defaultText: props.group.name,
-                    width: "300px",
+                    width: "500px",
+                    type: 'textline',
+                    confirm: (title: string) => {
+                        if (title) {
+                            model.renameGroup(props.group.id, title.trim());
+                        }
+                    }
                 });
-                if (title) {
-                    model.renameGroup(props.group.id, title.trim());
-                }
             },
         });
         if (isDynamicGroup()) {
@@ -183,15 +187,18 @@ const Group: Component<Props> = (props) => {
                 label: i18n_.edit,
                 icon: "iconEdit",
                 click: async () => {
-                    const ruleinput = await inputDialogSync({
+                    inputDialog({
                         title: i18n_.edit + `@${i18n.ruletype[props.group.rule.type]}`,
                         defaultText: props.group.rule.input,
-                        width: "500px",
-                        height: "300px"
+                        width: "650px",
+                        height: "300px",
+                        type: 'textarea',
+                        confirm: (ruleinput: string) => {
+                            if (ruleinput) {
+                                model.updateGroupRule(props.group.id, ruleinput);
+                            }
+                        }
                     });
-                    if (ruleinput) {
-                        model.updateGroupRule(props.group.id, ruleinput);
-                    }
                 },
             });
         }
