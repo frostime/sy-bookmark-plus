@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-07-07 18:54:03
+ * @LastEditTime : 2024-07-07 18:59:18
  * @Description  : 
  */
 import {
@@ -16,6 +16,7 @@ import { getModel, rmModel, BookmarkDataModel } from "./model";
 import { configs } from "./model";
 import Bookmark from "./components/bookmark";
 import { updateStyleDom, removeStyleDom } from "@/utils/style";
+import { Svg } from "@/utils/const";
 
 let model: BookmarkDataModel;
 
@@ -54,6 +55,9 @@ export default class PluginBookmarkPlus extends Plugin {
     }
 
     async onload() {
+        let svgs = Object.values(Svg);
+        this.addIcons(svgs.join(''));
+
         model = getModel(this);
 
         //疑似首先 await load 会导致 addDock 无法正常执行

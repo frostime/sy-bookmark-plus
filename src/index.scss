@@ -2,10 +2,19 @@
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
  * @Date         : 2024-06-14 20:33:11
- * @FilePath     : /src/func/bookmarks/components/index.scss
- * @LastEditTime : 2024-07-04 17:24:42
+ * @FilePath     : /src/index.scss
+ * @LastEditTime : 2024-07-07 19:02:24
  * @Description  : Bookmark 插件的相关样式
  */
  @forward './style/core.scss';
  @forward './style/card-view.scss';
- 
+
+/* Rotate by 90 degrees */
+svg.rotate-90 {
+    transform: rotate(90deg);
+}
+
+/* Rotate by 180 degrees */
+svg.rotate-180 {
+    transform: rotate(180deg);
+}
