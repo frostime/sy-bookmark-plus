@@ -148,42 +148,44 @@ const Item: Component<IProps> = (props) => {
             ]
         })
         menu.addSeparator();
-        const groups = shownGroups().filter((g) => g.id !== props.group && g.type !== 'dynamic').map((g) => {
-            return {
-                label: g.name,
-                click: () => {
-                    model.transferItem(props.group, g.id, item());
-                },
-            };
-        });
-        menu.addItem({
-            label: "移动到其他分组",
-            icon: "iconFolder",
-            type: 'submenu',
-            submenu: groups
-        });
-        menu.addItem({
-            label: '移动',
-            icon: 'iconMove',
-            type: 'submenu',
-            submenu: [
-                {
-                    label: "置顶",
-                    icon: "iconTop",
+        if (!inDynamicGroup()) {
+            const groups = shownGroups().filter((g) => g.id !== props.group && g.type !== 'dynamic').map((g) => {
+                return {
+                    label: g.name,
                     click: () => {
-                        model.reorderItem(props.group, item(), 'top');
+                        model.transferItem(props.group, g.id, item());
+                    },
+                };
+            });
+            menu.addItem({
+                label: "移动到其他分组",
+                icon: "iconFolder",
+                type: 'submenu',
+                submenu: groups
+            });
+            menu.addItem({
+                label: '移动',
+                icon: 'iconMove',
+                type: 'submenu',
+                submenu: [
+                    {
+                        label: "置顶",
+                        icon: "iconTop",
+                        click: () => {
+                            model.reorderItem(props.group, item(), 'top');
+                        }
+                    },
+                    {
+                        label: "置底",
+                        icon: "iconTop",
+                        iconClass: "rotate-180",
+                        click: () => {
+                            model.reorderItem(props.group, item(), 'bottom');
+                        }
                     }
-                },
-                {
-                    label: "置底",
-                    icon: "iconTop",
-                    iconClass: "rotate-180",
-                    click: () => {
-                        model.reorderItem(props.group, item(), 'bottom');
-                    }
-                }
-            ]
-        });
+                ]
+            });
+        }
         menu.addItem({
             label: "删除书签",
             icon: "iconTrashcan",
@@ -233,15 +235,15 @@ const Item: Component<IProps> = (props) => {
 
     const BindDragEvent = {
         draggable: true,
-        onDragStart: onDragStart ,
-        onDragEnd: onDragEnd ,
+        onDragStart: onDragStart,
+        onDragEnd: onDragEnd,
     }
 
     return (
         <li
             class={`b3-list-item b3-list-item--hide-action custom-bookmark-item ${dragovered()}`}
             style={`${opacityStyle()} ${props.itemCore?.style ?? ''}`}
-            {...(inDynamicGroup() ? {draggable: false} : BindDragEvent)}
+            {...(inDynamicGroup() ? { draggable: false } : BindDragEvent)}
             data-node-id={item().id}
             data-ref-text=""
             data-def-id=""

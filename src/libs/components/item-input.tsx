@@ -3,6 +3,7 @@ import { createSignal } from "solid-js";
 interface IProps extends ISettingItemCore {
     changed: (v?: any) => void;
     nofnSize?: boolean;
+    flex1?: boolean;
 }
 
 export default function InputItem(props: IProps) {
@@ -36,7 +37,7 @@ export default function InputItem(props: IProps) {
             return (
                 <input
                     class="b3-text-field fn__flex-center"
-                    classList={{ fn__size200: fn_size }}
+                    classList={{ fn__size200: fn_size, 'fn__flex-1': props.flex1 }}
                     id={props.key}
                     placeholder={props.placeholder}
                     value={value()}

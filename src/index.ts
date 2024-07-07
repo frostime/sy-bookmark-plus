@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-07-07 18:05:52
+ * @LastEditTime : 2024-07-07 18:22:17
  * @Description  : 
  */
 import {
@@ -62,7 +62,7 @@ export default class PluginBookmarkPlus extends Plugin {
         `);
 
         this.addDock({
-            type: '::dock::' + 'Bookmark',
+            type: '::dock',
             config: {
                 position: 'RightBottom',
                 size: {
@@ -70,7 +70,7 @@ export default class PluginBookmarkPlus extends Plugin {
                     height: 200,
                 },
                 icon: 'iconBookmark',
-                title: 'F-Bookmark'
+                title: 'Bookmark+'
             },
             data: {
                 plugin: this,
@@ -87,7 +87,7 @@ export default class PluginBookmarkPlus extends Plugin {
             langText: 'F-misc 书签',
             hotkey: bookmarkKeymap.default,
             callback: () => {
-                const ele = document.querySelector('span[data-type="sy-f-misc::dock::Bookmark"]') as HTMLElement;
+                const ele = document.querySelector(`span[data-type="${this.name}::dock"]`) as HTMLElement;
                 ele?.click();
             }
         });

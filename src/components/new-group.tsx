@@ -32,7 +32,7 @@ const NewGroup = (props: IPrpos) => {
             case 'attr':
                 return {
                     desc: "请输入要查找的属性",
-                    direction: "column",
+                    direction: "row",
                     input: "textinput"
                 }
 
@@ -123,6 +123,8 @@ const NewGroup = (props: IPrpos) => {
                         changed={(v) => {
                             props.setRule({ input: v });
                         }}
+                        // nofnSize={true}
+                        flex1={ruleType() === 'attr' ? true : false}
                     />
                 </ItemWrap>
             </Show>

@@ -32,7 +32,9 @@ const SettingItemWrap: Component<SettingItemWrapProps> = (props) => {
                         }}>{props.title}</span>
                         <div class="b3-label__text" innerHTML={props.description}></div>
                         <div class="fn__hr"></div>
-                        {props?.children}
+                        <div style="display: flex;">
+                            {props?.children}
+                        </div>
                     </div>
                 </div>
             ) : (
