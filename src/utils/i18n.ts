@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-07-07 18:57:06
  * @FilePath     : /src/utils/i18n.ts
- * @LastEditTime : 2024-07-07 19:41:12
+ * @LastEditTime : 2024-07-07 21:24:01
  * @Description  : 
  */
 import type I18n from '@/../dev/i18n/zh_CN.json';
@@ -12,7 +12,7 @@ export let i18n: typeof I18n = {} as any;
 
 export const setI18n = (_i18n_: any) => {
     i18n = new Proxy(_i18n_, {
-        set: (target, prop, value) => {
+        set: (..._) => {
             console.warn("Attempt to modify read-only i18n object");
             return true;
         }
