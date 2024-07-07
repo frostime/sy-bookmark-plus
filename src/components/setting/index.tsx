@@ -1,17 +1,21 @@
 import SettingItemWrap from "@/libs/components/item-wrap";
 import InputItem from "@/libs/components/item-input";
 import GroupList from './group-list';
-import { configs, setConfigs } from "../../model";
+import { configs, setConfigs } from "@/model";
+
+import { i18n } from "@/utils/i18n";
 
 const App = () => {
+    const i18n_ = i18n.setting;
+
     return (
         <div class="config__tab-container fn__flex-1" style={{
             'font-size': '1.2rem',
             padding: '10px 20px'
         }}>
             <SettingItemWrap
-                title="替换内置书签"
-                description="如果启用，则屏蔽默认书签，并且绑定书签快捷键(默认为 Alt+3);<br/>重启后生效"
+                title={i18n_.replaceDefault.title}
+                description={i18n_.replaceDefault.description}
             >
                 <InputItem
                     type="checkbox"
@@ -23,8 +27,8 @@ const App = () => {
                 />
             </SettingItemWrap>
             <SettingItemWrap
-                title="展示模式"
-                description="选择书签栏展示的样式"
+                title={i18n_.viewMode.title}
+                description={i18n_.viewMode.description}
             >
                 <InputItem
                     type='select'
@@ -34,14 +38,14 @@ const App = () => {
                         setConfigs('viewMode', v);
                     }}
                     options={{
-                        'bookmark': '书签样式',
-                        'card': '卡片样式'
+                        'bookmark': i18n.viewMode.bookmark,
+                        'card': i18n.viewMode.card
                     }}
                 />
             </SettingItemWrap>
             <SettingItemWrap
-                title="隐藏关闭项目"
-                description="开启后，隐藏那些来自被关闭的笔记本中的项目"
+                title={i18n_.hideClosed.title}
+                description={i18n_.hideClosed.description}
             >
                 <InputItem
                     type='checkbox'
@@ -53,8 +57,8 @@ const App = () => {
                 />
             </SettingItemWrap>
             <SettingItemWrap
-                title="隐藏无效项目"
-                description="开启后，隐藏那些被删除的项目"
+                title={i18n_.hideDeleted.title}
+                description={i18n_.hideDeleted.description}
             >
                 <InputItem
                     type='checkbox'
@@ -66,8 +70,8 @@ const App = () => {
                 />
             </SettingItemWrap>
             <SettingItemWrap
-                title="书签组"
-                description="设置书签组"
+                title={i18n_.grouplist.title}
+                description={i18n_.grouplist.description}
                 direction="row"
             >
                 <GroupList/>

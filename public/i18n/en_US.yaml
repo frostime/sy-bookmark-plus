@@ -1,18 +1,98 @@
 ---
-addTopBarIcon: Add a top bar icon by plugin
-cancel: Cancel
-save: Save
-byeMenu: Bye, Menu!
-helloPlugin: Hello, Plugin!
-byePlugin: Bye, Plugin!
-showDialog: Show dialog
-removedData: Data deleted
-confirmRemove: Confirm to delete the data in ${name}?
-insertEmoji: Insert Emoji
-removeSpace: Remove Space
-getTab: Print out all opened custom tabs in the debugger
-name: SiYuan
-hello:
-  makesure: Before using this template, please read the <a href="https://github.com/siyuan-note/plugin-sample">offical sample</a>, make sure that you've known about the pipeline for plugin developing.
-hintTitle: About
-hintDesc: "<a href='https://github.com/siyuan-note/plugin-sample-vite-svelte'>plugin-sample-vite-svelte</a><br>@frostime<br>@88250<br>@zxkmm"
+msg:
+  ruleFailed: 'Failed to correctly parse the configuration rule: {0}'
+  ruleInvalid: 'The format of the group rule input is incorrect: {0}'
+  itemHasInGroup: The item is already in the target group
+  itemNotFoundInGroup: The item was not found in the source group
+  groupNameEmpty: The name of the bookmark group cannot be empty!
+itemErr:
+  closed: 'The notebook "{0}" is already closed'
+  deleted: 'Content block not found, it may have been deleted! Old block content: {0}'
+setting:
+  replaceDefault:
+    title: Replace Built-in Bookmarks
+    description: If enabled, the default bookmarks will be blocked, and bookmark shortcut keys (default is Alt+3) will be bound;<br/>Takes effect after restart
+  viewMode:
+    title: Display Mode
+    description: Select the style of the bookmark bar display
+  hideClosed:
+    title: Hide Closed Items
+    description: When enabled, hide items from closed notebooks
+  hideDeleted:
+    title: Hide Invalid Items
+    description: When enabled, hide items that have been deleted
+  grouplist:
+    title: Bookmark Groups
+    description: Set up bookmark groups
+viewMode:
+  bookmark: Bookmark Style
+  card: Card Style
+bookmark:
+  new: Create New Bookmark Group
+  delete:
+    title: Delete the bookmark group {0}[{1}]?
+    desc: ⚠️ Cannot be recovered after deletion! Are you sure you want to delete?
+  cache: Cache Current Bookmarks
+  logo:
+    name: Bookmark
+    setting: Settings
+    add: Add Bookmark Group
+    refresh: Refresh
+    expand: Expand Ctrl+↓
+    collapse: Collapse Ctrl+↑
+    min: Minimize Ctrl+W
+group:
+  msgexist: 'Cannot add: Block with ID [{0}] already exists in the bookmark group'
+  msg404: 'Cannot add: Block with ID [{0}] not found'
+  refresh: Refresh
+  copyref: Copy as Reference List
+  copylink: Copy as Link List
+  msgcopy: Copy Successful
+  docflow: Document Flow
+  rename: Rename Bookmark Group
+  edit: Edit Rule Value
+  delete: Delete Bookmark Group
+  move: Move
+  top: Move to Top
+  up: Move Up
+  down: Move Down
+  bottom: Move to Bottom
+  fromclipboard: Insert Block from Clipboard
+  msgparse: Unable to parse block from [{0}]
+  currentdoc: Add Current Document Block
+  msgdelconfirm:
+    - Delete bookmark item {0}?
+    - ⚠️ Cannot be recovered after deletion! Are you sure you want to delete?
+item:
+  copyref: Copy as Reference
+  copylink: Copy as Link
+  msgcopy: Copy Successful
+  style: Style
+  transfer: Move to Other Group
+  move: Move
+  top: Move to Top
+  bottom: Move to Bottom
+  del: Delete Bookmark
+newgroup:
+  name:
+    - Bookmark Group Name
+    - Please enter the name of the new bookmark group
+  type:
+    - Bookmark Group Type
+    - Select Bookmark Group Type
+  rtype:
+    - Rule Type
+    - Select Dynamic Rule Type
+  rinput: Rule Value
+  desc:
+    sql: Please enter the SQL query below
+    backlinks: Please enter the block ID of the backlink
+    attr: Please enter the attribute to search for; You can fill in [attribute name], or [attribute name][= or like][attribute value]
+bookmarktype:
+  normal: 'Normal Bookmark'
+  dynamic: 'Dynamic Bookmark'
+  composed: 'Composite Bookmark'
+ruletype:
+  sql: SQL
+  backlinks: Backlinks
+  attr: Block Attributes

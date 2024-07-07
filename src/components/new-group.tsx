@@ -3,6 +3,8 @@ import { createMemo, createSignal, Show } from "solid-js";
 import ItemWrap from "@/libs/components/item-wrap";
 import InputItem from "@/libs/components/item-input";
 
+import { i18n } from "@/utils/i18n";
+
 interface IPrpos {
     setGroup: (arg: { name?: string, type?: TBookmarkGroupType }) => void;
     setRule: (arg: { type?: string, input?: '' }) => void;
@@ -10,6 +12,8 @@ interface IPrpos {
 
 const NewGroup = (props: IPrpos) => {
     // let grouptype = 'normal';
+    const i18n_ = i18n.newgroup;
+
     let [groupType, setGroupType] = createSignal("normal");
     let [ruleType, setRuleType] = createSignal("sql");
 
@@ -17,21 +21,21 @@ const NewGroup = (props: IPrpos) => {
         switch (ruleType()) {
             case 'SQL':
                 return {
-                    desc: "请在下方输入 SQL 查询",
+                    desc: i18n_.desc.sql,
                     direction: "row",
                     input: "textarea"
                 }
 
             case 'backlinks':
                 return {
-                    desc: "请输入反链的块 ID",
+                    desc: i18n_.desc.backlinks,
                     direction: "column",
                     input: "textinput"
                 }
 
             case 'attr':
                 return {
-                    desc: "请输入要查找的属性",
+                    desc: i18n_.desc.attr,
                     direction: "row",
                     input: "textinput"
                 }
@@ -40,7 +44,7 @@ const NewGroup = (props: IPrpos) => {
                 break;
         }
         return {
-            desc: "请在下方输入 SQL 查询",
+            desc: i18n_.desc.sql,
             direction: "row",
             input: "textarea"
         };
@@ -55,8 +59,8 @@ const NewGroup = (props: IPrpos) => {
             }}
         >
             <ItemWrap
-                title="书签组名称"
-                description="请输入新建书签组名称"
+                title={i18n_.name[0]}
+                description={i18n_.name[1]}
             >
                 <InputItem
                     key="name"
@@ -68,17 +72,17 @@ const NewGroup = (props: IPrpos) => {
                 />
             </ItemWrap>
             <ItemWrap
-                title="书签组类型"
-                description="选择书签组类型"
+                title={i18n_.type[0]}
+                description={i18n_.type[1]}
             >
                 <InputItem
                     key="type"
                     value={groupType()}
                     type="select"
                     options={{
-                        normal: '普通书签',
-                        dynamic: '动态书签',
-                        // composed: '复合书签'
+                        normal: i18n.bookmarktype.normal,
+                        dynamic: i18n.bookmarktype.dynamic,
+                        // composed: i18n.bookmarktype.composed
                     }}
                     changed={(v) => {
                         props.setGroup({ type: v });
@@ -91,17 +95,17 @@ const NewGroup = (props: IPrpos) => {
             </ItemWrap>
             <Show when={groupType() !== 'normal'}>
                 <ItemWrap
-                    title="规则类型"
-                    description="选择动态规则类型"
+                    title={i18n_.rtype[0]}
+                    description={i18n_.rtype[1]}
                 >
                     <InputItem
                         key="ruleType"
                         value={ruleType()}
                         type="select"
                         options={{
-                            sql: 'SQL',
-                            backlinks: '反向链接',
-                            attr: '块属性'
+                            sql: i18n.ruletype.sql,
+                            backlinks: i18n.ruletype.backlinks,
+                            attr: i18n.ruletype.attr,
                         }}
                         changed={(v) => {
                             props.setRule({ type: v });
@@ -110,7 +114,7 @@ const NewGroup = (props: IPrpos) => {
                     />
                 </ItemWrap>
                 <ItemWrap
-                    title="规则取值"
+                    title={i18n_.rinput}
                     description={aboutRule().desc}
                     //@ts-ignore
                     direction={aboutRule().direction}

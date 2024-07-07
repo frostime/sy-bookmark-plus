@@ -9,6 +9,8 @@ import { batch } from "solid-js";
 
 import { debounce } from '@/utils';
 
+import { i18n, renderI18n } from "@/utils/i18n";
+
 import {
     itemInfo,
     setItemInfo,
@@ -132,11 +134,11 @@ export class BookmarkDataModel {
         if (!group.rule) return;
         let rule = getRule(group.rule);
         if (!rule) {
-            showMessage(`未能正确解析配置规则: ${group.name}`);
+            showMessage(renderI18n(i18n.msg.ruleFailed, group.name));
             return;
         }
         if (!rule.validateInput()) {
-            showMessage(`分组规则输入格式有误: ${group.name}`);
+            showMessage(renderI18n(i18n.msg.ruleInvalid, group.name));
             return;
         }
         let blocks: Block[] = await rule.fetch();
@@ -205,7 +207,7 @@ export class BookmarkDataModel {
     }
 
     async updateItems() {
-        console.debug('更新所有 Bookmark items');
+        console.debug('Update all Bookmark items');
         //1. 获取所有的 block 的最新内容
         let items = Object.values(itemInfo);
         let ids = items.map(item => item.id);
@@ -256,10 +258,13 @@ export class BookmarkDataModel {
                     err: ''
                 }
                 if (notebookMap?.[item.box]?.closed === true) {
-                    obj.title = `笔记本「${notebookMap[item.box].name}」已经关闭`;
+                    // obj.title = `笔记本「${notebookMap[item.box].name}」已经关闭`;
+                    obj.title = renderI18n(i18n.itemErr.closed, notebookMap[item.box].name);
                     obj.err = 'BoxClosed';
                 } else {
-                    obj.title = `无法找到内容块，可能已经被删除！旧块内容：${JSON.stringify(item)}`;
+                    // obj.title = `无法找到内容块，可能已经被删除！旧块内容：${JSON.stringify(item)}`;
+                    obj.title = renderI18n(i18n.itemErr.deleted, JSON.stringify(item));
+
                     obj.err = 'BlockDeleted';
                 }
                 batch(() => {
@@ -407,12 +412,12 @@ export class BookmarkDataModel {
             return false;
         }
         if (to.items.some(itmin => itmin.id === item.id)) {
-            showMessage('该项已经在目标分组中', 4000, 'error');
+            showMessage(i18n.msg.itemHasInGroup, 4000, 'error');
             return false;
         }
         let fromitem = from.items.find(itmin => itmin.id === item.id);
         if (!fromitem) {
-            showMessage('源分组中没有该项', 4000, 'error');
+            showMessage(i18n.msg.itemNotFoundInGroup, 4000, 'error');
             return false;
         }
 
@@ -465,7 +470,7 @@ export class BookmarkDataModel {
 
         //check if exists in target group
         if (srcGroup !== targetGroup && target.items.some(itmin => itmin.id === srcItem)) {
-            showMessage('该项已经在目标分组中', 4000, 'error');
+            showMessage(i18n.msg.itemHasInGroup, 4000, 'error');
             return false;
         }
 

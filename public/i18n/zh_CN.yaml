@@ -1,21 +1,98 @@
 ---
-addTopBarIcon: 使用插件添加一个顶栏按钮
-cancel: 取消
-save: 保存
-byeMenu: 再见，菜单！
-helloPlugin: 你好，插件！
-byePlugin: 再见，插件！
-showDialog: 弹出一个对话框
-removedData: 数据已删除
-confirmRemove: 确认删除 ${name} 中的数据？
-insertEmoji: 插入表情
-removeSpace: 移除空格
-getTab: 在日志中打印出已打开的所有自定义页签
-name: 思源
-hello:
-  makesure: 使用这个模板之前，请阅读<a href="https://github.com/siyuan-note/plugin-sample">官方教程</a>,
-    确保自己已经理解了插件的基本开发流程。
-hintTitle: 关于
-hintDesc: "<a href='https://github.com/siyuan-note/plugin-sample-vite-svelte'>\U0001F517
-  plugin-sample-vite-svelte</a><br>\U0001F4BB @frostime<br>\U0001F4BB @88250<br>\U0001F4BB
-  @zxkmm"
+msg:
+  ruleFailed: '未能正确解析配置规则: {0}'
+  ruleInvalid: '分组规则输入格式有误: {0}'
+  itemHasInGroup: 该项已经在目标分组中
+  itemNotFoundInGroup: 源分组中没有找到该项
+  groupNameEmpty: 书签组的名称不能为空!
+itemErr:
+  closed: '笔记本「{0}」已经关闭'
+  deleted: '无法找到内容块，可能已经被删除！旧块内容：{0}'
+setting:
+  replaceDefault:
+    title: 替换内置书签
+    description: 如果启用，则屏蔽默认书签，并且绑定书签快捷键(默认为 Alt+3);<br/>重启后生效
+  viewMode:
+    title: 展示模式
+    description: 选择书签栏展示的样式
+  hideClosed:
+    title: 隐藏关闭项目
+    description: 开启后，隐藏那些来自被关闭的笔记本中的项目
+  hideDeleted:
+    title: 隐藏无效项目
+    description: 开启后，隐藏那些被删除的项目
+  grouplist:
+    title: 书签组
+    description: 设置书签组
+viewMode:
+  bookmark: 书签样式
+  card: 卡片样式
+bookmark:
+  new: 新建书签组
+  delete:
+    title: 是否删除书签组{0}[{1}]?
+    desc: ⚠️ 删除后无法恢复！确定删除吗？
+  cache: 缓存当前书签
+  logo:
+    name: 书签
+    setting: 设置
+    add: 添加书签组
+    refresh: 刷新
+    expand: 展开 Ctrl+↓
+    collapse: 折叠 Ctrl+↑
+    min: 最小化 Ctrl+W
+group:
+  msgexist: '无法添加: 书签组中已存在 ID 为 [{0}] 的块'
+  msg404: '无法添加: 未找到 ID 为 [{0}] 的块'
+  refresh: 刷新
+  copyref: 复制为引用列表
+  copylink: 复制为链接列表
+  msgcopy: 复制成功
+  docflow: 文档流
+  rename: 重命名书签组
+  edit: 更改规则值
+  delete: 删除书签组
+  move: 移动
+  top: 置顶
+  up: 上移
+  down: 下移
+  bottom: 置底
+  fromclipboard: 从剪贴板中插入块
+  msgparse: 无法从[{0}]中解析到块
+  currentdoc: 添加当前文档块
+  msgdelconfirm:
+    - 是否删除书签项目{0}?
+    - ⚠️ 删除后无法恢复！确定删除吗？
+item:
+  copyref: 复制为引用
+  copylink: 复制为链接
+  msgcopy: 复制为引用
+  style: 样式
+  transfer: 移动到其他分组
+  move: 移动
+  top: 置顶
+  bottom: 置底
+  del: 删除书签
+newgroup:
+  name:
+    - 书签组名称
+    - 请输入新建书签组名称
+  type:
+    - 书签组类型
+    - 选择书签组类型
+  rtype:
+    - 规则类型
+    - 选择动态规则类型
+  rinput: 规则取值
+  desc:
+    sql: 请在下方输入 SQL 查询
+    backlinks: 请输入反链的块 ID
+    attr: 请输入要查找的属性; 可以填写 [属性名], 或者 [属性名][= 或 like][属性值]
+bookmarktype:
+  normal: '普通书签'
+  dynamic: '动态书签'
+  composed: '复合书签'
+ruletype:
+  sql: SQL
+  backlinks: 反向链接
+  attr: 块属性

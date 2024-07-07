@@ -6,6 +6,8 @@ import { itemInfo, setGroups, groupMap } from "../model";
 
 import { BookmarkContext, itemMoving, setItemMoving } from "./context";
 
+import { i18n } from "@/utils/i18n";
+
 interface IProps {
     group: TBookmarkGroupId;
     itemCore: IItemCore;
@@ -39,6 +41,8 @@ const setStyleBtn = (key: string, label: string): HTMLElement => {
 
 const Item: Component<IProps> = (props) => {
     const item = () => itemInfo[props.itemCore.id];
+
+    const i18n_ = i18n.item;
 
     const [NodeType, setNodeType] = createSignal<string>("");
     const [Icon, setIcon] = createSignal<string>("");
@@ -88,59 +92,59 @@ const Item: Component<IProps> = (props) => {
         e.stopPropagation();
         const menu = new Menu();
         menu.addItem({
-            label: "复制为引用",
+            label: i18n_.copyref,
             icon: "iconRef",
             click: () => {
                 navigator.clipboard
                     .writeText(`((${item().id} '${item().title.replaceAll('\n', '')}'))`)
                     .then(() => {
-                        showMessage("复制成功");
+                        showMessage(i18n_.msgcopy);
                     });
             },
         });
         menu.addItem({
-            label: "复制为链接",
+            label: i18n_.copylink,
             icon: "iconSiYuan",
             click: () => {
                 navigator.clipboard
                     .writeText(`[${item().title.replaceAll('\n', '')}](siyuan://blocks/${item().id})`)
                     .then(() => {
-                        showMessage("复制成功");
+                        showMessage(i18n_.msgcopy);
                     });
             },
         });
         menu.addSeparator();
         menu.addItem({
-            label: '样式',
+            label: i18n_.style,
             icon: 'iconTheme',
             type: 'submenu',
             submenu: [
                 {
-                    element: setStyleBtn('info', '信息'),
+                    element: setStyleBtn('info', window.siyuan.languages.infoStyle),
                     click: () => {
                         setStyle('color: var(--b3-card-info-color);background-color: var(--b3-card-info-background);')
                     }
                 },
                 {
-                    element: setStyleBtn('success', '成功'),
+                    element: setStyleBtn('success', window.siyuan.languages.successStyle),
                     click: () => {
                         setStyle('color: var(--b3-card-success-color);background-color: var(--b3-card-success-background);')
                     }
                 },
                 {
-                    element: setStyleBtn('warning', '警告'),
+                    element: setStyleBtn('warning', window.siyuan.languages.warningStyle),
                     click: () => {
                         setStyle('color: var(--b3-card-warning-color);background-color: var(--b3-card-warning-background);')
                     }
                 },
                 {
-                    element: setStyleBtn('error', '错误'),
+                    element: setStyleBtn('error', window.siyuan.languages.errorStyle),
                     click: () => {
                         setStyle('color: var(--b3-card-error-color);background-color: var(--b3-card-error-background);')
                     }
                 },
                 {
-                    element: setStyleBtn('clear', '清除'),
+                    element: setStyleBtn('clear', window.siyuan.languages.clearFontStyle),
                     click: () => {
                         setStyle('')
                     }
@@ -158,25 +162,25 @@ const Item: Component<IProps> = (props) => {
                 };
             });
             menu.addItem({
-                label: "移动到其他分组",
+                label: i18n_.transfer,
                 icon: "iconFolder",
                 type: 'submenu',
                 submenu: groups
             });
             menu.addItem({
-                label: '移动',
+                label: i18n_.move,
                 icon: 'iconMove',
                 type: 'submenu',
                 submenu: [
                     {
-                        label: "置顶",
+                        label: i18n_.top,
                         icon: "iconTop",
                         click: () => {
                             model.reorderItem(props.group, item(), 'top');
                         }
                     },
                     {
-                        label: "置底",
+                        label: i18n_.bottom,
                         icon: "iconTop",
                         iconClass: "rotate-180",
                         click: () => {
@@ -187,7 +191,7 @@ const Item: Component<IProps> = (props) => {
             });
         }
         menu.addItem({
-            label: "删除书签",
+            label: i18n_.del,
             icon: "iconTrashcan",
             click: () => {
                 props.deleteItem(item());

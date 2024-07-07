@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-07-07 18:59:18
+ * @LastEditTime : 2024-07-07 19:11:12
  * @Description  : 
  */
 import {
@@ -18,6 +18,8 @@ import Bookmark from "./components/bookmark";
 import { updateStyleDom, removeStyleDom } from "@/utils/style";
 import { Svg } from "@/utils/const";
 
+import { setI18n } from "@/utils/i18n";
+
 let model: BookmarkDataModel;
 
 const initBookmark = async (ele: HTMLElement, plugin: PluginBookmarkPlus) => {
@@ -29,7 +31,6 @@ const initBookmark = async (ele: HTMLElement, plugin: PluginBookmarkPlus) => {
         model: model
     }), ele);
 
-    console.log(configs.replaceDefault, '替换书签');
     if (configs.replaceDefault) {
         plugin.replaceDefaultBookmark();
     }
@@ -55,6 +56,8 @@ export default class PluginBookmarkPlus extends Plugin {
     }
 
     async onload() {
+        setI18n(this.i18n);
+
         let svgs = Object.values(Svg);
         this.addIcons(svgs.join(''));
 
@@ -96,7 +99,7 @@ export default class PluginBookmarkPlus extends Plugin {
         console.log('bookmarkKeymap', bookmarkKeymap);
         this.addCommand({
             langKey: 'F-Misc::Bookmark',
-            langText: 'F-misc 书签',
+            langText: 'F-misc Bookmark',
             hotkey: bookmarkKeymap.default,
             callback: () => {
                 const ele = document.querySelector(`span[data-type="${this.name}::dock"]`) as HTMLElement;

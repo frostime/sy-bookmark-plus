@@ -10,6 +10,8 @@ import { BookmarkContext } from "./context";
 import Setting from './setting';
 import NewGroup from "./new-group";
 
+import { i18n, renderI18n } from "@/utils/i18n";
+
 interface Props {
     plugin: Plugin;
     model: BookmarkDataModel;
@@ -35,7 +37,7 @@ const createNewGroup = (confirmCb: (data: any) => void) => {
         }
     }), container);
     confirmDialog({
-        title: "新建书签组",
+        title: i18n.bookmark.new,
         content: container,
         width: '600px',
         confirm: () => {
@@ -45,6 +47,8 @@ const createNewGroup = (confirmCb: (data: any) => void) => {
 }
 
 const BookmarkComponent: Component<Props> = (props) => {
+
+    const I18N = i18n.bookmark;
 
     const [fnRotate, setFnRotate] = createSignal("");
 
@@ -61,7 +65,7 @@ const BookmarkComponent: Component<Props> = (props) => {
         container.classList.add("fn__flex-1", "fn__flex");
         render(() => Setting(), container);
         simpleDialog({
-            title: "书签设置",
+            title: "Setting",
             ele: container,
             width: '600px',
             height: '700px',
@@ -76,7 +80,7 @@ const BookmarkComponent: Component<Props> = (props) => {
             console.log(result);
             let { group, rule } = result;
             if (group.name === "") {
-                showMessage("书签组的名称不能为空!", 3000, 'error');
+                showMessage(i18n.msg.groupNameEmpty, 3000, 'error');
                 return;
             }
             props.model.newGroup(group.name, group.type, rule);
@@ -94,8 +98,10 @@ const BookmarkComponent: Component<Props> = (props) => {
 
     const groupDelete = (detail: IBookmarkGroup) => {
         confirm(
-            `是否删除书签组${detail.name}[${detail.id}]?`,
-            "⚠️ 删除后无法恢复！确定删除吗？",
+            // `是否删除书签组${detail.name}[${detail.id}]?`,
+            renderI18n(i18n.bookmark.delete.title, detail.name, detail.id),
+            i18n.bookmark.delete.desc,
+            // "⚠️ 删除后无法恢复！确定删除吗？",
             () => {
                 props.model.delGroup(detail.id)
             }
@@ -125,14 +131,14 @@ const BookmarkComponent: Component<Props> = (props) => {
     const bookmarkContextMenu = (e: MouseEvent) => {
         const menu = new Menu();
         menu.addItem({
-            label: "缓存当前书签",
+            label: i18n.bookmark.cache,
             icon: "iconDownload",
             click: () => {
                 const time = new Date();
                 const timeStr = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()} ${time.getHours()}_${time.getMinutes()}_${time.getSeconds()}`;
                 const name = `Cache/bookmarks-${timeStr}.json`;
                 props.model.save(name);
-                showMessage(`缓存成功: ${name}`);
+                showMessage(`${name}`);
             },
         });
         menu.open({
@@ -151,13 +157,13 @@ const BookmarkComponent: Component<Props> = (props) => {
                     <svg class="block__logoicon">
                         <use href="#iconBookmark"></use>
                     </svg>
-                    书签
+                    {I18N.logo.name}
                 </div>
                 <span class="fn__flex-1"></span>
                 <span
                     data-type="setting"
                     class="block__icon ariaLabel"
-                    aria-label="设置"
+                    aria-label={I18N.logo.setting}
                     onClick={openSetting}
                 >
                     <svg class="">
@@ -168,7 +174,7 @@ const BookmarkComponent: Component<Props> = (props) => {
                 <span
                     data-type="add"
                     class="block__icon ariaLabel"
-                    aria-label="添加书签组"
+                    aria-label={I18N.logo.add}
                     onClick={groupAdd}
                 >
                     <svg class="">
@@ -179,7 +185,7 @@ const BookmarkComponent: Component<Props> = (props) => {
                 <span
                     data-type="refresh"
                     class="block__icon ariaLabel"
-                    aria-label="刷新"
+                    aria-label={I18N.logo.refresh}
                     onClick={bookmarkRefresh}
                 >
                     <svg class={fnRotate()}>
@@ -190,7 +196,7 @@ const BookmarkComponent: Component<Props> = (props) => {
                 <span
                     data-type="expand"
                     class="block__icon ariaLabel"
-                    aria-label="展开 Ctrl+↓"
+                    aria-label={I18N.logo.expand}
                     onClick={() => {
                         setDoAction('AllExpand');
                     }}
@@ -203,7 +209,7 @@ const BookmarkComponent: Component<Props> = (props) => {
                 <span
                     data-type="collapse"
                     class="block__icon ariaLabel"
-                    aria-label="折叠 Ctrl+↑"
+                    aria-label={I18N.logo.collapse}
                     onClick={() => {
                         setDoAction('AllCollapse');
                     }}
@@ -216,7 +222,7 @@ const BookmarkComponent: Component<Props> = (props) => {
                 <span
                     data-type="min"
                     class="block__icon ariaLabel"
-                    aria-label="最小化 Ctrl+W"
+                    aria-label={I18N.logo.min}
                 >
                     <svg>
                         <use href="#iconMin"></use>

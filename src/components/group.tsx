@@ -9,6 +9,8 @@ import { getBlockByID } from "@/api";
 
 import { BookmarkContext, itemMoving, setItemMoving, groupDrop, setGroupDrop } from "./context";
 
+import { i18n, renderI18n } from "@/utils/i18n";
+
 
 interface Props {
     group: IBookmarkGroup;
@@ -20,6 +22,8 @@ const Group: Component<Props> = (props) => {
     const { model, doAction } = useContext(BookmarkContext);
 
     const isDynamicGroup = () => props.group.type === 'dynamic';
+
+    const i18n_ = i18n.group;
 
     let shownItems = createMemo(() => {
         let index = groups.findIndex((g) => g.id === props.group.id);
@@ -73,7 +77,7 @@ const Group: Component<Props> = (props) => {
     const addItemByBlockId = async (blockId: string) => {
         if (model.hasItem(blockId, props.group.id)) {
             showMessage(
-                `无法添加: 书签组中已存在 ID 为 [${blockId}] 的块`,
+                renderI18n(i18n_.msgexist, blockId),
                 5000,
                 "error"
             );
@@ -82,7 +86,7 @@ const Group: Component<Props> = (props) => {
         const block = await getBlockByID(blockId);
         if (!block) {
             showMessage(
-                `无法添加: 未找到 ID 为 [${blockId}] 的块`,
+                renderI18n(i18n_.msg404, blockId),
                 5000,
                 "error"
             );
@@ -104,7 +108,7 @@ const Group: Component<Props> = (props) => {
         const menu = new Menu();
         if (props.group.type === 'dynamic') {
             menu.addItem({
-                label: '刷新',
+                label: i18n_.refresh,
                 icon: 'iconRefresh',
                 click: () => {
                     model.updateDynamicGroup(props.group);
@@ -113,7 +117,7 @@ const Group: Component<Props> = (props) => {
             menu.addSeparator();
         }
         menu.addItem({
-            label: "复制为引用列表",
+            label: i18n_.copyref,
             icon: "iconRef",
             click: () => {
                 const items = model.listItems(props.group.id);
@@ -124,12 +128,12 @@ const Group: Component<Props> = (props) => {
                     )
                     .join("\n");
                 navigator.clipboard.writeText(refs).then(() => {
-                    showMessage("复制成功");
+                    showMessage(i18n_.msgcopy);
                 });
             },
         });
         menu.addItem({
-            label: "复制为链接列表",
+            label: i18n_.copylink,
             icon: "iconSiYuan",
             click: () => {
                 const items = model.listItems(props.group.id);
@@ -140,7 +144,7 @@ const Group: Component<Props> = (props) => {
                     )
                     .join("\n");
                 navigator.clipboard.writeText(refs).then(() => {
-                    showMessage("复制成功");
+                    showMessage(i18n_.msgcopy);
                 });
             },
         });
@@ -148,7 +152,7 @@ const Group: Component<Props> = (props) => {
         const docFlow = (globalThis as any).siyuan.ws.app.plugins.find(p => p.name === 'sy-docs-flow');
         if (docFlow) {
             menu.addItem({
-                label: "文档流",
+                label: i18n_.docflow,
                 icon: "iconFlow",
                 click: () => {
                     const idlist = shownItems().map(item => item.id);
@@ -161,11 +165,11 @@ const Group: Component<Props> = (props) => {
         }
         menu.addSeparator();
         menu.addItem({
-            label: "重命名书签组",
+            label: i18n_.rename,
             icon: "iconEdit",
             click: async () => {
                 const title = await inputDialogSync({
-                    title: "重命名书签组",
+                    title: i18n_.rename,
                     defaultText: props.group.name,
                     width: "300px",
                 });
@@ -176,11 +180,11 @@ const Group: Component<Props> = (props) => {
         });
         if (isDynamicGroup()) {
             menu.addItem({
-                label: "更改规则值",
+                label: i18n_.edit,
                 icon: "iconEdit",
                 click: async () => {
                     const ruleinput = await inputDialogSync({
-                        title: "编辑规则",
+                        title: i18n_.edit,
                         defaultText: props.group.rule.input,
                         width: "500px",
                         height: "300px"
@@ -192,7 +196,7 @@ const Group: Component<Props> = (props) => {
             });
         }
         menu.addItem({
-            label: "删除书签组",
+            label: i18n_.delete,
             icon: "iconTrashcan",
             click: async () => {
                 props.groupDelete(props.group);
@@ -200,33 +204,33 @@ const Group: Component<Props> = (props) => {
         });
         menu.addSeparator();
         menu.addItem({
-            label: '移动',
+            label: i18n_.move,
             icon: 'iconMove',
             type: 'submenu',
             submenu: [
                 {
-                    label: "置顶",
+                    label: i18n_.top,
                     icon: "iconTop",
                     click: async () => {
                         props.groupMove({ to: 'top', group: props.group });
                     },
                 },
                 {
-                    label: "上移",
+                    label: i18n_.up,
                     icon: "iconUp",
                     click: async () => {
                         props.groupMove({ to: 'up', group: props.group });
                     },
                 },
                 {
-                    label: "下移",
+                    label: i18n_.down,
                     icon: "iconDown",
                     click: async () => {
                         props.groupMove({ to: 'down', group: props.group });
                     },
                 },
                 {
-                    label: "置底",
+                    label: i18n_.bottom,
                     icon: "iconTop",
                     iconClass: "rotate-180",
                     click: async () => {
@@ -238,7 +242,7 @@ const Group: Component<Props> = (props) => {
         if (!isDynamicGroup()) {
             menu.addSeparator();
             menu.addItem({
-                label: "从剪贴板中插入块",
+                label: i18n_.fromclipboard,
                 icon: "iconAdd",
                 click: () => {
                     const BlockRegex = {
@@ -255,12 +259,12 @@ const Group: Component<Props> = (props) => {
                                 return;
                             }
                         }
-                        showMessage(`无法从[${text}]中解析到块`, 5000, "error");
+                        showMessage(renderI18n(i18n_.msgparse, text), 5000, "error");
                     });
                 },
             });
             menu.addItem({
-                label: "添加当前文档块",
+                label: i18n_.currentdoc,
                 icon: "iconAdd",
                 click: () => {
                     const li = document.querySelector(
@@ -289,8 +293,8 @@ const Group: Component<Props> = (props) => {
             title = title.slice(0, 20) + "...";
         }
         confirm(
-            `是否删除书签项目${title}?`,
-            "⚠️ 删除后无法恢复！确定删除吗？",
+            renderI18n(i18n_.msgdelconfirm[0], title),
+            i18n_.msgdelconfirm[1],
             () => {
                 model.delItem(props.group.id, detail.id);
             }
