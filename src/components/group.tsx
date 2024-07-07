@@ -184,7 +184,7 @@ const Group: Component<Props> = (props) => {
                 icon: "iconEdit",
                 click: async () => {
                     const ruleinput = await inputDialogSync({
-                        title: i18n_.edit,
+                        title: i18n_.edit + `@${i18n.ruletype[props.group.rule.type]}`,
                         defaultText: props.group.rule.input,
                         width: "500px",
                         height: "300px"

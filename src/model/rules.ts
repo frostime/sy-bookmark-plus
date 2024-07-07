@@ -2,8 +2,8 @@
  * Copyright (c) 2023 by Yp Z (frostime). All Rights Reserved.
  * @Author       : Yp Z
  * @Date         : 2023-07-29 15:17:15
- * @FilePath     : /src/func/bookmarks/model/rules.ts
- * @LastEditTime : 2024-07-07 15:33:15
+ * @FilePath     : /src/model/rules.ts
+ * @LastEditTime : 2024-07-07 21:44:27
  * @Description  : 
  */
 import * as api from "@/api";
@@ -140,7 +140,7 @@ class Attr extends MatchRule {
      * @returns 
      */
     validateInput(): boolean {
-        const inputPattern = /^([\-\w]+)(?:\s*(=|like)\s*(.+))?$/;
+        const inputPattern = /^([\-\w\%]+)(?:\s*(=|like)\s*(.+))?$/;
         let ok = inputPattern.test(this._input);
         if (!ok) return false;
         const matches = this._input.match(inputPattern);
