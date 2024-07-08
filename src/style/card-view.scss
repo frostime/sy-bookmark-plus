@@ -4,6 +4,7 @@
 }
 
 .custom-bookmark-body.card-view {
+    padding-left: 3px; //略微补偿右侧滚动条占据空间带来的不对称
     background-color: var(--fmisc-bookmark-body-bg__card-view);
 }
 

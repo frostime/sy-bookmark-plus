@@ -7,7 +7,16 @@ section#custom-bookmark-container {
         container-type: inline-size;
     }
     main.custom-bookmark-body {
-        scrollbar-width: none;
+        overflow-y: scroll;
+        &::-webkit-scrollbar {
+            width: 7px;
+        }
+        &::-webkit-scrollbar-thumb {
+            border-width: 1px;
+        }
+        &::-webkit-scrollbar-thumb:hover {
+            border-color: var(--b3-theme-primary-lighter);
+        }
     }
 }
 
