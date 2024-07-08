@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-07-08 15:05:09
+ * @LastEditTime : 2024-07-08 15:35:06
  * @Description  : 
  */
 import {
@@ -29,17 +29,12 @@ import "@/index.scss";
 let model: BookmarkDataModel;
 
 const initBookmark = async (ele: HTMLElement, plugin: PluginBookmarkPlus) => {
-    await model.load();
     await model.updateAll();
     ele.classList.add('fn__flex-column');
     render(() => Bookmark({
         plugin: plugin,
         model: model
     }), ele);
-
-    if (configs.replaceDefault) {
-        plugin.replaceDefaultBookmark();
-    }
 };
 
 const destroyBookmark = () => {
@@ -69,9 +64,11 @@ export default class PluginBookmarkPlus extends Plugin {
 
         model = getModel(this);
 
-        //疑似首先 await load 会导致 addDock 无法正常执行
-        // await model.load();
-        // await model.updateItems();
+        await model.load();
+
+        if (configs.replaceDefault) {
+            this.replaceDefaultBookmark();
+        }
 
         this.addDock({
             type: '::dock',
