@@ -60,21 +60,6 @@ const BookmarkComponent: Component<Props> = (props) => {
         return newg;
     });
 
-    const openSetting = () => {
-        let container = document.createElement("div") as HTMLDivElement;
-        container.classList.add("fn__flex-1", "fn__flex");
-        render(() => Setting(), container);
-        simpleDialog({
-            title: "Setting",
-            ele: container,
-            width: '600px',
-            height: '700px',
-            callback: () => {
-                props.model.save();
-            }
-        })
-    }
-
     const groupAdd = () => {
         createNewGroup((result: {group: any, rule: any}) => {
             console.log(result);
@@ -165,7 +150,7 @@ const BookmarkComponent: Component<Props> = (props) => {
                     data-type="setting"
                     class="block__icon ariaLabel"
                     aria-label={I18N.logo.setting}
-                    onClick={openSetting}
+                    onClick={props.plugin.openSetting}
                 >
                     <svg class="">
                         <use href="#iconSettings"></use>

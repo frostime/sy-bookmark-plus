@@ -3,22 +3,28 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-07-07 19:11:12
+ * @LastEditTime : 2024-07-08 15:05:09
  * @Description  : 
  */
 import {
     Plugin,
 } from "siyuan";
-import "@/index.scss";
 
 import { render } from "solid-js/web";
-import { getModel, rmModel, BookmarkDataModel } from "./model";
+
+import { simpleDialog } from "./libs/dialog";
+
+import { getModel, rmModel, type BookmarkDataModel } from "./model";
 import { configs } from "./model";
+
 import Bookmark from "./components/bookmark";
+import Setting from './components/setting';
+
 import { updateStyleDom, removeStyleDom } from "@/utils/style";
 import { Svg } from "@/utils/const";
-
 import { setI18n } from "@/utils/i18n";
+
+import "@/index.scss";
 
 let model: BookmarkDataModel;
 
@@ -112,6 +118,21 @@ export default class PluginBookmarkPlus extends Plugin {
         destroyBookmark();
         bookmarkKeymap.custom = bookmarkKeymap.default;
         // this.commands = this.commands.filter((command) => command.langKey !== 'F-Misc::Bookmark');
+    }
+
+    openSetting(): void {
+        let container = document.createElement("div") as HTMLDivElement;
+        container.classList.add("fn__flex-1", "fn__flex");
+        render(() => Setting(), container);
+        simpleDialog({
+            title: window.siyuan.languages.config,
+            ele: container,
+            width: '600px',
+            height: '700px',
+            callback: () => {
+                model.save();
+            }
+        })
     }
 
 }
