@@ -8,14 +8,19 @@ section#custom-bookmark-container {
     }
     main.custom-bookmark-body {
         overflow-y: scroll;
+        padding-left: 3px; //略微补偿右侧滚动条占据空间带来的不对称
         &::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
+            height: 20px;
         }
         &::-webkit-scrollbar-thumb {
-            border-width: 3px;
+            box-sizing: content-box;
+            border: 3px solid rgba(0, 0, 0, 0);
+            border-radius: var(--b3-border-radius);
+            box-shadow: inset 0 0 4px 4px var(--b3-scroll-color);
         }
         &::-webkit-scrollbar-thumb:hover {
-            border-width: 1px;
+            border-width: 0px;
         }
     }
 }
