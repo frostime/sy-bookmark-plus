@@ -214,7 +214,7 @@ const Item: Component<IProps> = (props) => {
     };
 
     const onDragStart = (event: DragEvent) => {
-        console.log('Drag Start', item());
+        // console.log('Drag Start', item());
         event.dataTransfer.setData("bookmark/item", JSON.stringify({ group: props.group, id: item().id }));
         event.dataTransfer.effectAllowed = "move";
         setOpacityStyle('opacity: 0.5;');

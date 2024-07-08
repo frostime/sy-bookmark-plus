@@ -20,6 +20,9 @@ Click "Add" on the top bar to create a new bookmark group. Bookmark groups are c
     2. `<Attribute>=<val>`, e.g., `bookmark=test`, returns all blocks within the "test" bookmark
     3. `<Attribute> like <val>`
 
+![](./asset/newgroup.png)
+
+
 ## Adding Items
 
 ### Static Group
@@ -32,6 +35,8 @@ In a static bookmark group, you can add bookmark items through the following met
     1. Add from Clipboard: You can copy a block's ID, reference, or link, and the plugin will automatically recognize and add it to the bookmark group
     2. Add Current Document Block: Adds the currently edited document to the bookmark group
 
+![](./asset/add.gif)
+
 ### Dynamic Group
 
 Dynamic bookmark groups mainly acquire bookmark items by executing queries.
@@ -39,20 +44,37 @@ Dynamic bookmark groups mainly acquire bookmark items by executing queries.
 1. Global Update: Click the update button on the top bar to update all bookmark groups
 2. Right-click Menu: Click the right-click menu of the dynamic group to re-execute the query in the current group and obtain the latest bookmark items
 
+![](./asset/dynamic-group.gif)
+
 ## Bookmark Items
 
 * Click an item to navigate to the corresponding block
 * Hover over the block icon to preview the block's content
+
+  ![](./asset/hover.png)
+
+* Drag the item and move to other group
+
+  ![](./asset/drag-move.gif)
+
 * More features are available in the right-click menu~
+
+  ![](./asset/contextmenu.png)
 
 
 ## Plugin Settings
 
-* Replace Built-in Bookmarks: If enabled, the plugin will automatically block the default SiYuan bookmarks at startup and override the bookmark shortcuts (default is Alt + 3)
-* Display Styles: The plugin provides two styles
+![](./asset/setting.png)
 
-  * Bookmark Style: Same as the built-in bookmarks of SiYuan
-  * Card Style: Each bookmark group is presented in a card style
+* Replace Built-in Bookmarks: If enabled, the plugin will automatically block the default SiYuan bookmarks at startup and override the bookmark shortcuts (default is Alt + 3)
+* Display Styles: The plugin provides two styles (views)
+
+  * Bookmark View: Same as the built-in bookmarks of SiYuan
+
+    ![](./asset/bookmark-view.png)
+  * Card View: Each bookmark group is presented in a card style
+
+    ![](./asset/card-view.png)
 * Hide Items: Bookmark items may not be indexed due to being deleted or the notebook containing the block being closed
 
   * Hide Closed Items: When enabled, hide items from closed notebooks

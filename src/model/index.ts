@@ -455,6 +455,7 @@ export class BookmarkDataModel {
     }
 
     moveItem(detail: IMoveItemDetail) {
+        console.debug('Move item', detail);
         let { srcGroup, targetGroup, srcItem, afterItem } = detail;
         let src = groupMap().get(srcGroup);
         let target = groupMap().get(targetGroup);
