@@ -318,10 +318,11 @@ export class BookmarkDataModel {
         return group;
     }
 
-    updateGroupRule(gid: TBookmarkGroupId, ruleInput: string) {
+    async updateGroupRule(gid: TBookmarkGroupId, ruleInput: string) {
         setGroups((g) => g.id === gid, 'rule', 'input', ruleInput);
         let group = groupMap().get(gid);
-        this.updateDynamicGroup(group);
+        await this.updateDynamicGroup(group);
+        this.save();
     }
 
     delGroup(id: TBookmarkGroupId) {
