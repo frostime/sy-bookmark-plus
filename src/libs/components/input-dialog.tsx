@@ -10,7 +10,7 @@ const Enter = (e: KeyboardEvent) => {
 
 const TextArea = (props: {text: string, update: (v: string) => void}) => {
     return <textarea class="b3-text-field fn__block" onkeydown={Enter}
-        style="font-size: 16px;"
+        style="font-size: 16px; resize: none;"
         spellcheck={false}
         onInput={(e) => {
         props.update(e.currentTarget.value);
@@ -43,7 +43,12 @@ const InputDialog = (props: IProps) => {
 
     return (
         <>
-            <div class="b3-dialog__content fn__flex" style="height: 100%;">
+            <div class="fn__flex" style={{
+                height: '100%',
+                flex: 1,
+                padding: '16px 24px',
+                'overflow-y': 'auto'
+            }}>
                 <div class="ft__breakword fn__flex fn__flex-1" style="height: 100%;">
                 {
                     props.type === 'textarea' ?

@@ -114,6 +114,7 @@ const BookmarkComponent: Component<Props> = (props) => {
             group: IBookmarkGroup;
         }
     ) => {
+        //BUG 由于存在 hidden group，所以这里的操作有时候会让 group 的顺序看上去没有发生变化
         const srcIdx = shownGroups().findIndex(
             (g: IBookmarkGroup) => g.id === detail.group.id
         );
