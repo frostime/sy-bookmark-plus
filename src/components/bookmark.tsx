@@ -3,11 +3,10 @@ import { render } from "solid-js/web";
 import Group from "./group";
 import { confirm, Menu, Plugin, showMessage } from "siyuan";
 import { type BookmarkDataModel, configs, groups } from "../model";
-import { confirmDialog, simpleDialog } from "@/libs/dialog";
+import { confirmDialog } from "@/libs/dialog";
 
 import { BookmarkContext } from "./context";
 
-import Setting from './setting';
 import NewGroup from "./new-group";
 
 import { i18n, renderI18n } from "@/utils/i18n";
@@ -99,17 +98,30 @@ const BookmarkComponent: Component<Props> = (props) => {
             group: IBookmarkGroup;
         }
     ) => {
-        //BUG 由于存在 hidden group，所以这里的操作有时候会让 group 的顺序看上去没有发生变化
-        const srcIdx = shownGroups().findIndex(
+        const srcIdx = groups.findIndex(
             (g: IBookmarkGroup) => g.id === detail.group.id
         );
-        let targetIdx: number;
-        if (detail.to === "up") targetIdx = srcIdx - 1;
-        else if (detail.to === "down") targetIdx = srcIdx + 1;
+        let targetIdx: number = -1;
+        if (detail.to === "up") {
+            for (let i = srcIdx - 1; i > 0; i--) {
+                if (!groups[i].hidden) {
+                    targetIdx = i;
+                    break;
+                }
+            }
+        }
+        else if (detail.to === "down") {
+            for (let i = srcIdx + 1; i < groups.length; i++) {
+                if (!groups[i].hidden) {
+                    targetIdx = i;
+                    break;
+                }
+            }
+        }
         else if (detail.to === "top") targetIdx = 0;
-        else if (detail.to === "bottom") targetIdx = shownGroups().length - 1;
+        else if (detail.to === "bottom") targetIdx = groups.length - 1;
         else return;
-        if (targetIdx < 0 || targetIdx >= shownGroups().length) return;
+        if (targetIdx < 0 || targetIdx >= groups.length) return;
 
         props.model.moveGroup(srcIdx, targetIdx);
     };
