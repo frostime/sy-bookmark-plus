@@ -54,7 +54,7 @@ const showErrItem = (item: IBookmarkItemInfo) => {
     element.style.padding = '10px';
     render(() => <Typography markdown={markdown} fontSize="18px"/>, element);
     simpleDialog({
-        title: item.err,
+        title: `<span style="font-weight: bold; color: var(--b3-theme-error);">${item.err}</span>`,
         ele: element,
         width: '640px'
     });
