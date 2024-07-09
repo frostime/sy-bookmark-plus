@@ -1,8 +1,10 @@
-import { Component, createEffect, createMemo, createSignal, Match, useContext } from "solid-js";
+import { Component, createEffect, createMemo, createSignal, Match, useContext, Show } from "solid-js";
 import { For, Switch } from "solid-js";
+// import { Transition } from "solid-transition-group";
+
 import { Menu, Constants, confirm, showMessage } from "siyuan";
 import Item from "./item";
-// import { inputDialogSync } from "@/libs/dialog";
+
 import inputDialog from '@/libs/components/input-dialog';
 import { groups, setGroups, configs, itemInfo } from "../model";
 import { ClassName } from "../libs/dom";
@@ -368,7 +370,6 @@ const Group: Component<Props> = (props) => {
     }
 
     const svgArrowClass = () => isOpen() ? "b3-list-item__arrow--open" : "";
-    const itemsClass = () => isOpen() ? "" : "fn__none";
 
     return (
         <section
@@ -425,17 +426,20 @@ const Group: Component<Props> = (props) => {
                 </span>
                 <span class="counter">{shownItems().length}</span>
             </li>
-            <ul
-                class={`custom-bookmark-group-list ${itemsClass()}`}
-                data-groupid={props.group.id}
-                data-groupname={props.group.name}
-            >
-                <For each={shownItems()}>
-                    {(item: IItemCore) => (
-                        <Item group={props.group.id} itemCore={item} deleteItem={itemDelete} />
-                    )}
-                </For>
-            </ul>
+            <Show when={isOpen()}>
+                <ul
+                    class="custom-bookmark-group-list"
+                    data-groupid={props.group.id}
+                    data-groupname={props.group.name}
+                >
+                    <For each={shownItems()}>
+                        {(item: IItemCore) => (
+                            <Item group={props.group.id} itemCore={item} deleteItem={itemDelete} />
+                        )}
+                    </For>
+                </ul>
+            </Show>
+
         </section>
     );
 };
