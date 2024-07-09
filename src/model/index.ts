@@ -258,19 +258,16 @@ export class BookmarkDataModel {
                     err: ''
                 }
                 if (notebookMap?.[item.box]?.closed === true) {
-                    // obj.title = `笔记本「${notebookMap[item.box].name}」已经关闭`;
                     obj.title = renderI18n(i18n.itemErr.closed, notebookMap[item.box].name);
                     obj.err = 'BoxClosed';
                 } else {
-                    // obj.title = `无法找到内容块，可能已经被删除！旧块内容：${JSON.stringify(item)}`;
-                    obj.title = renderI18n(i18n.itemErr.deleted, JSON.stringify(item));
-
+                    obj.title = renderI18n(i18n.itemErr.deleted, item.title);
                     obj.err = 'BlockDeleted';
                 }
+                if (item.err === obj.err) return; //防止多次刷新失效的 item 导致 title 变得巨长无比
                 batch(() => {
                     setItemInfo(id, 'title', obj.title);
-                    //@ts-ignore
-                    setItemInfo(id, 'err', obj.err);
+                    setItemInfo(id, 'err', obj.err as ("BoxClosed" | "BlockDeleted"));
                 });
             }
             // ItemInfoStore[id].set({ ...item });

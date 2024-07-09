@@ -7,7 +7,7 @@ msg:
   groupNameEmpty: 书签组的名称不能为空!
 itemErr:
   closed: '笔记本「{0}」已经关闭'
-  deleted: '无法找到内容块，可能已经被删除！旧块内容：{0}'
+  deleted: '无法找到内容块，可能已经被删除！旧块内容: 「{0}」'
 setting:
   replaceDefault:
     title: 替换内置书签
