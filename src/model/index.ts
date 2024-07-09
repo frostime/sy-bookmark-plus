@@ -252,7 +252,7 @@ export class BookmarkDataModel {
                 ni.icon = icon;
                 setItemInfo(id, ni);
             } else {
-                console.warn(`block ${id} not found`);
+                console.warn(`Block ${id} from box "${notebookMap?.[item.box]?.name}" not found`);
                 let obj = {
                     title: '',
                     err: ''
