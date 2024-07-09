@@ -73,6 +73,7 @@ item:
   top: 置顶
   bottom: 置底
   del: 删除书签
+  checkerritem: 查看失效项详情
 newgroup:
   name:
     - 书签组名称

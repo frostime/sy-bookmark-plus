@@ -73,6 +73,7 @@ item:
   top: Move to Top
   bottom: Move to Bottom
   del: Delete Bookmark
+  checkerritem: Check detail
 newgroup:
   name:
     - Bookmark Group Name
