@@ -1,6 +1,6 @@
 {
   "name": "sy-bookmark-plus",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "A more powerful bookmark",
   "repository": "",
@@ -10,6 +10,7 @@
   "scripts": {
     "make-link": "node  --no-warnings ./scripts/make_dev_link.js",
     "dev": "vite build --watch",
+    "dev-srcmap": "vite build --watch --sourcemap=inline",
     "build": "vite build",
     "make-install": "vite build && node --no-warnings ./scripts/make_install.js"
   },

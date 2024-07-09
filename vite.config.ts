@@ -9,13 +9,14 @@ import fg from 'fast-glob';
 
 import vitePluginYamlI18n from './yaml-plugin';
 
-const args = minimist(process.argv.slice(2))
-const isWatch = args.watch || args.w || false
-const devDistDir = "dev"
-const distDir = isWatch ? devDistDir : "dist"
+const args = minimist(process.argv.slice(2));
+const isWatch = args.watch || args.w || false;
+const isSrcmap = args.sourcemap || false;
+const devDistDir = "dev";
+const distDir = isWatch ? devDistDir : "dist";
 
-console.log("isWatch=>", isWatch)
-console.log("distDir=>", distDir)
+console.log("isWatch=>", isWatch);
+console.log("isSrcmap=>", isSrcmap);
 
 export default defineConfig({
     resolve: {
@@ -72,13 +73,7 @@ export default defineConfig({
         outDir: distDir,
         emptyOutDir: false,
 
-        sourcemap: isWatch ? 'inline' : false,
-
-        // 设置为 false 可以禁用最小化混淆
-        // 或是用来指定是应用哪种混淆器
-        // boolean | 'terser' | 'esbuild'
-        // 不压缩，用于调试
-        minify: !isWatch,
+        minify: !isWatch || (isWatch && (isSrcmap === 'inline')),
 
         lib: {
             // Could also be a dictionary or array of multiple entry points
