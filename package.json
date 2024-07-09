@@ -31,5 +31,8 @@
     "vite-plugin-solid": "^2.10.2",
     "vite-plugin-static-copy": "^1.0.5",
     "vite-plugin-zip-pack": "^1.2.2"
+  },
+  "dependencies": {
+    "solid-transition-group": "^0.2.3"
   }
 }
