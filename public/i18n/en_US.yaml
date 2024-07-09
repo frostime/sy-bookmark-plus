@@ -7,7 +7,7 @@ msg:
   groupNameEmpty: The name of the bookmark group cannot be empty!
 itemErr:
   closed: 'The notebook "{0}" is already closed'
-  deleted: 'Content block not found, it may have been deleted! Old block content: {0}'
+  deleted: 'Content block not found, it may have been deleted! Old block content: [{0}]'
 setting:
   replaceDefault:
     title: Replace Built-in Bookmarks
@@ -73,6 +73,7 @@ item:
   top: Move to Top
   bottom: Move to Bottom
   del: Delete Bookmark
+  checkerritem: Check detail
 newgroup:
   name:
     - Bookmark Group Name

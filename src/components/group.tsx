@@ -1,16 +1,17 @@
-import { Component, createEffect, createMemo, createSignal, Match, useContext } from "solid-js";
+import { Component, createEffect, createMemo, createSignal, Match, useContext, Show } from "solid-js";
 import { For, Switch } from "solid-js";
+import { Transition } from "solid-transition-group";
+
 import { Menu, Constants, confirm, showMessage } from "siyuan";
-import Item from "./item";
-// import { inputDialogSync } from "@/libs/dialog";
-import inputDialog from '@/libs/components/input-dialog';
-import { groups, setGroups, configs, itemInfo } from "../model";
-import { ClassName } from "../libs/dom";
+
 import { getBlockByID } from "@/api";
-
-import { BookmarkContext, itemMoving, setItemMoving, groupDrop, setGroupDrop } from "./context";
-
+import inputDialog from '@/libs/components/input-dialog';
+import { ClassName } from "@/libs/dom";
 import { i18n, renderI18n } from "@/utils/i18n";
+
+import Item from "./item";
+import { groups, setGroups, configs, itemInfo } from "../model";
+import { BookmarkContext, itemMoving, setItemMoving, groupDrop, setGroupDrop } from "./context";
 
 
 interface Props {
@@ -368,7 +369,6 @@ const Group: Component<Props> = (props) => {
     }
 
     const svgArrowClass = () => isOpen() ? "b3-list-item__arrow--open" : "";
-    const itemsClass = () => isOpen() ? "" : "fn__none";
 
     return (
         <section
@@ -425,17 +425,42 @@ const Group: Component<Props> = (props) => {
                 </span>
                 <span class="counter">{shownItems().length}</span>
             </li>
-            <ul
-                class={`custom-bookmark-group-list ${itemsClass()}`}
-                data-groupid={props.group.id}
-                data-groupname={props.group.name}
+            <Transition
+                onExit={(el, done) => {
+                    const a = el.animate({
+                        opacity: [1, 0],
+                        transform: ['translateY(0)', 'translateY(-10px)'], //向上移动
+                    }, {
+                        duration: 120,
+                        easing: 'ease-in-out'
+                    });
+                    a.finished.then(done);
+                }}
+                onEnter={(el, done) => {
+                    const a = el.animate({
+                        opacity: [0, 1],
+                        transform: ['translateY(-10px)', 'translateY(0)'], //向下移动
+                    }, {
+                        duration: 120,
+                        easing: 'ease-in-out'
+                    });
+                    a.finished.then(done);
+                }}
             >
-                <For each={shownItems()}>
-                    {(item: IItemCore) => (
-                        <Item group={props.group.id} itemCore={item} deleteItem={itemDelete} />
-                    )}
-                </For>
-            </ul>
+                <Show when={isOpen()}>
+                    <ul
+                        class="custom-bookmark-group-list"
+                        data-groupid={props.group.id}
+                        data-groupname={props.group.name}
+                    >
+                        <For each={shownItems()}>
+                            {(item: IItemCore) => (
+                                <Item group={props.group.id} itemCore={item} deleteItem={itemDelete} />
+                            )}
+                        </For>
+                    </ul>
+                </Show>
+            </Transition>
         </section>
     );
 };

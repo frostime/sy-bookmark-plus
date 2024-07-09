@@ -1,4 +1,5 @@
 import { Component, createEffect, createMemo, createSignal, useContext } from "solid-js";
+import { render } from "solid-js/web";
 import { Menu, openTab, showMessage } from "siyuan";
 import { buildItemDetail } from "../libs/dom";
 
@@ -7,6 +8,8 @@ import { itemInfo, setGroups, groupMap } from "../model";
 import { BookmarkContext, itemMoving, setItemMoving } from "./context";
 
 import { i18n } from "@/utils/i18n";
+import { simpleDialog } from "@/libs/dialog";
+import Typography from "@/libs/components/typography";
 
 interface IProps {
     group: TBookmarkGroupId;
@@ -36,6 +39,25 @@ const setStyleBtn = (key: string, label: string): HTMLElement => {
     let div = document.createElement('div');
     div.innerHTML = html;
     return div.firstElementChild as HTMLElement;
+}
+
+const showErrItem = (item: IBookmarkItemInfo) => {
+    const markdown = `
+- **ID**: ${item.id}
+- **Box**: ${item.box}
+- **Type**: ${item.type}
+- **Subtype**: ${item.subtype}
+- **Title**: ${item.title}
+`;
+    let element = document.createElement('div');
+    // element.style.display = 'contents';
+    element.style.padding = '10px';
+    render(() => <Typography markdown={markdown} fontSize="18px"/>, element);
+    simpleDialog({
+        title: `<span style="font-weight: bold; color: var(--b3-theme-error);">${item.err}</span>`,
+        ele: element,
+        width: '640px'
+    });
 }
 
 
@@ -91,6 +113,15 @@ const Item: Component<IProps> = (props) => {
     const showItemContextMenu = (e: MouseEvent) => {
         e.stopPropagation();
         const menu = new Menu();
+        if (item().err) {
+            menu.addItem({
+                label: i18n_.checkerritem,
+                icon: "iconBug",
+                click: () => {
+                    showErrItem(item());
+                },
+            });
+        }
         menu.addItem({
             label: i18n_.copyref,
             icon: "iconRef",
