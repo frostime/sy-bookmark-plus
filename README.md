@@ -94,3 +94,9 @@ Dynamic bookmark groups mainly acquire bookmark items by executing queries.
 * Create a new bookmark group
 * Select Dynamic Group and Attribute Rule
 * Fill in `bookmark` or `bookmark=<bookmark name>` in the attribute rule
+
+
+### Can I modify the display title of bookmark items?
+
+* Simply add block `name` attribute to blocks.
+* When bookmark items are displayed, if a `name` is available, it will be displayed first. Otherwise, the `content` of the block will be displayed.
