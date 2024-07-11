@@ -1,5 +1,7 @@
 This plugin implements a more user-friendly bookmark feature, supporting drag-and-drop addition, bookmark group management, link copying, dynamic queries, and more.
 
+> 🔔 Attention! By default, this plugin will hide the built-in bookmark button in the sidebar of SiYuan. You can disable this default behavior in the settings.
+
 Below are the core functionalities. Please explore other detailed features on your own.
 
 ## Bookmark Groups

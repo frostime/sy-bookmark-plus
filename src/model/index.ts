@@ -78,7 +78,7 @@ export class BookmarkDataModel {
     }
 
     private async saveCore(fpath?: string) {
-        console.log('save bookmarks');
+        // console.debug('save bookmarks');
         let result: { [key: TBookmarkGroupId]: IBookmarkGroup } = {};
 
         for (let [id, group] of groupMap()) {
@@ -97,7 +97,7 @@ export class BookmarkDataModel {
         await this.plugin.saveData(StorageFileItemSnapshot, itemInfo);
     }
 
-    save = debounce(this.saveCore.bind(this), 500);
+    save = debounce(this.saveCore.bind(this), 1000);
 
     hasItem(id: BlockId, groupId?: TBookmarkGroupId) {
         if (groupId === undefined) {
