@@ -51,6 +51,9 @@ const NewGroup = (props: IPrpos) => {
         };
     });
 
+
+    const transitionDuration = 100;
+
     return (
         <div class="config__tab-container fn__flex fn__flex-1 fn__flex-column"
             onkeydown={(e) => {
@@ -102,7 +105,7 @@ const NewGroup = (props: IPrpos) => {
                         opacity: [1, 0],
                         transform: ['translateY(0)', 'translateY(-5px)'],
                     }, {
-                        duration: 300,
+                        duration: transitionDuration,
                         easing: 'ease-in-out'
                     });
                     a.finished.then(done);
@@ -112,7 +115,7 @@ const NewGroup = (props: IPrpos) => {
                         opacity: [0, 1],
                         transform: ['translateY(-5px)', 'translateY(0)'],
                     }, {
-                        duration: 300,
+                        duration: transitionDuration,
                         easing: 'ease-in-out'
                     });
                     a.finished.then(done);
