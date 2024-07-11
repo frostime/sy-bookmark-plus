@@ -103,7 +103,7 @@ const BookmarkComponent: Component<Props> = (props) => {
         );
         let targetIdx: number = -1;
         if (detail.to === "up") {
-            for (let i = srcIdx - 1; i > 0; i--) {
+            for (let i = srcIdx - 1; i >= 0; i--) {
                 if (!groups[i].hidden) {
                     targetIdx = i;
                     break;
