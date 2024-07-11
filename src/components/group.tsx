@@ -276,8 +276,8 @@ const Group: Component<Props> = (props) => {
                 icon: "iconAdd",
                 click: () => {
                     let wnd = document.querySelector('div.layout__wnd--active[data-type="wnd"]');
-                    if (!wnd) return;
-                    const li = wnd.querySelector(
+                    let container = wnd ?? document;
+                    const li = container.querySelector(
                         "ul.layout-tab-bar>li.item--focus"
                     );
                     if (!li) return;
