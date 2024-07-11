@@ -348,7 +348,7 @@ export class BookmarkDataModel {
         }
     }
 
-    addItem(gid: TBookmarkGroupId, item: IBookmarkItem) {
+    addItem(gid: TBookmarkGroupId, item: IBookmarkItem): boolean | 'exists' {
         let group = groupMap().get(gid);
         if (group) {
             let exist = itemInfo[item.id] !== undefined;
@@ -357,7 +357,7 @@ export class BookmarkDataModel {
                 setItemInfo(item.id, iteminfo);
             } else if (this.hasItem(item.id, gid)) {
                 console.warn(`addItem: item ${item.id} already in group ${gid}`);
-                return false;
+                return 'exists';
             }
 
             setGroups((g) => g.id === gid, 'items', (items) => {

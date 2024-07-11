@@ -68,12 +68,13 @@ item:
   copylink: 复制为链接
   msgcopy: 复制为引用
   style: 样式
-  transfer: 移动到其他分组
+  transfer: 移动到
   move: 移动
   top: 置顶
   bottom: 置底
   del: 删除书签
   checkerritem: 查看失效项详情
+  copyitem: 复制到
 newgroup:
   name:
     - 书签组名称

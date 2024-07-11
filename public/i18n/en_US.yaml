@@ -68,12 +68,13 @@ item:
   copylink: Copy as Link
   msgcopy: Copy Successful
   style: Style
-  transfer: Move to Other Group
+  transfer: Move to
   move: Move
   top: Move to Top
   bottom: Move to Bottom
   del: Delete Bookmark
   checkerritem: Check detail
+  copyitem: Copy to
 newgroup:
   name:
     - Bookmark Group Name

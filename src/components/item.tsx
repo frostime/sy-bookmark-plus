@@ -7,7 +7,7 @@ import { itemInfo, setGroups, groupMap } from "../model";
 
 import { BookmarkContext, itemMoving, setItemMoving } from "./context";
 
-import { i18n } from "@/utils/i18n";
+import { i18n, renderI18n } from "@/utils/i18n";
 import { simpleDialog } from "@/libs/dialog";
 import Typography from "@/libs/components/typography";
 
@@ -183,20 +183,20 @@ const Item: Component<IProps> = (props) => {
             ]
         })
         menu.addSeparator();
+        const staticGroups = shownGroups().filter((g) => g.id !== props.group && g.type !== 'dynamic');
         if (!inDynamicGroup()) {
-            const groups = shownGroups().filter((g) => g.id !== props.group && g.type !== 'dynamic').map((g) => {
-                return {
-                    label: g.name,
-                    click: () => {
-                        model.transferItem(props.group, g.id, item());
-                    },
-                };
-            });
             menu.addItem({
                 label: i18n_.transfer,
                 icon: "iconFolder",
                 type: 'submenu',
-                submenu: groups
+                submenu: staticGroups.map((g) => {
+                    return {
+                        label: g.name,
+                        click: () => {
+                            model.transferItem(props.group, g.id, item());
+                        },
+                    };
+                })
             });
             menu.addItem({
                 label: i18n_.move,
@@ -220,14 +220,31 @@ const Item: Component<IProps> = (props) => {
                     }
                 ]
             });
+            menu.addItem({
+                label: i18n_.del,
+                icon: "iconTrashcan",
+                click: () => {
+                    props.deleteItem(item());
+                },
+            });
+        } else {
+            menu.addItem({
+                label: i18n_.copyitem,
+                icon: "iconFolder",
+                type: 'submenu',
+                submenu: staticGroups.map((g) => {
+                    return {
+                        label: g.name,
+                        click: () => {
+                            let ans = model.addItem(g.id, item());
+                            if (ans === 'exists') {
+                                showMessage(renderI18n(i18n.group.msgexist, item().id), 3000, 'error');
+                            }
+                        },
+                    };
+                })
+            });
         }
-        menu.addItem({
-            label: i18n_.del,
-            icon: "iconTrashcan",
-            click: () => {
-                props.deleteItem(item());
-            },
-        });
         menu.open({
             x: e.clientX,
             y: e.clientY,
