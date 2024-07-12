@@ -4,6 +4,8 @@ This plugin implements a more user-friendly bookmark feature, supporting drag-an
 
 Below are the core functionalities. Please explore other detailed features on your own.
 
+If you are satisfied with the plugin, welcome to visit our [Github page](https://github.com/frostime/sy-bookmark-plus) and star it!
+
 ## Bookmark Groups
 
 Click "Add" on the top bar to create a new bookmark group. Bookmark groups are classified into two types:
