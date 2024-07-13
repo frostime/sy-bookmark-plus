@@ -103,7 +103,7 @@
   * 卡片模式下的背景颜色基于两个 css 变量：
 
     * 底层背景颜色：`--fmisc-bookmark-body-bg__card-view`，默认为 `var(--b3-theme-surface-light)`
-    * 卡片背景颜色：`--fmisc-bookmark-group-bg__card-view`，默认为 `--fmisc-bookmark-group-bg__card-view`
+    * 卡片背景颜色：`--fmisc-bookmark-group-bg__card-view`，默认为 `var(--b3-theme-background)`
 * 各个书签组：`.custom-bookmark-group`
 
   * 书签组的标头：`.custom-bookmark-group-header`

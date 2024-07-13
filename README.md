@@ -99,7 +99,7 @@ Each component within the plugin has a specific `class` name. If customization i
   * Background color in card mode is based on two CSS variables:
 
     * Base background color: `--fmisc-bookmark-body-bg__card-view`, default is `var(--b3-theme-surface-light)`
-    * Card background color: `--fmisc-bookmark-group-bg__card-view`, default is `--fmisc-bookmark-group-bg__card-view`
+    * Card background color: `--fmisc-bookmark-group-bg__card-view`, default is `var(--b3-theme-background)`
 * Each bookmark group: `.custom-bookmark-group`
 
   * Bookmark group header: `.custom-bookmark-group-header`
