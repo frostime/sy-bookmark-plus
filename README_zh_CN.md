@@ -93,6 +93,41 @@
   * 鼠标拖放可以调整各个书签组的先后顺序
   * 可以通过取消显示，来隐藏一些暂时不需要的书签组
 
+## Styling
+
+插件当中的每个组件部分都有特定的 `class` 名称，如果有自定义需求（例如修改字体）可以自行编写 css 样式并放入思源的「代码片段」中。
+
+* 顶层：`.custom-bookmark-body`
+
+  * 卡片模式：`.custom-bookmark-body.card-view`
+  * 卡片模式下的背景颜色基于两个 css 变量：
+
+    * 底层背景颜色：`--fmisc-bookmark-body-bg__card-view`，默认为 `var(--b3-theme-surface-light)`
+    * 卡片背景颜色：`--fmisc-bookmark-group-bg__card-view`，默认为 `--fmisc-bookmark-group-bg__card-view`
+* 各个书签组：`.custom-bookmark-group`
+
+  * 书签组的标头：`.custom-bookmark-group-header`
+  * 书签列表：`.custom-bookmark-group-list`
+* 各个书签项目：`.custom-bookmark-item`
+
+案例：
+
+* 修改书签项目的字体
+
+  ```css
+  .custom-bookmark-item.b3-list-item {
+    font-size: 20px;
+    line-height: 24px;
+  }
+  ```
+* 修改卡片背景颜色：
+
+  ```css
+  :root {
+      --fmisc-bookmark-body-bg__card-view: white;
+      --fmisc-bookmark-group-bg__card-view: grey;
+  }
+  ```
 
 ## Q&A
 
@@ -106,3 +141,8 @@
 
 * 可以给块添加块命名
 * 书签项目在显示的时候，如果有命名（name）会优先显示命名，否则就显示块的内容（content）
+
+### 顶栏的「刷新」按钮是在刷新什么？
+
+* 对于动态组，会重新执行查询，并显示最新的查询结果
+* 对于静态组，会查询当中每个项目（块）的最新情况，并根据最新结果更新项目

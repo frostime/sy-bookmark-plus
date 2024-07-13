@@ -89,6 +89,42 @@ Dynamic bookmark groups mainly acquire bookmark items by executing queries.
   * Adjust the order of bookmark groups by dragging with the mouse
   * You can hide temporarily unnecessary bookmark groups by deselecting their display
 
+## Styling
+
+Each component within the plugin has a specific `class` name. If customization is needed (e.g., modifying fonts), you can write your own CSS styles and place them in SiYuan's "Code Snippets".
+
+* Top-level: `.custom-bookmark-body`
+
+  * Card mode: `.custom-bookmark-body.card-view`
+  * Background color in card mode is based on two CSS variables:
+
+    * Base background color: `--fmisc-bookmark-body-bg__card-view`, default is `var(--b3-theme-surface-light)`
+    * Card background color: `--fmisc-bookmark-group-bg__card-view`, default is `--fmisc-bookmark-group-bg__card-view`
+* Each bookmark group: `.custom-bookmark-group`
+
+  * Bookmark group header: `.custom-bookmark-group-header`
+  * Bookmark list: `.custom-bookmark-group-list`
+* Each bookmark item: `.custom-bookmark-item`
+
+Example:
+
+* Modify the font of bookmark items
+
+  ```css
+  .custom-bookmark-item.b3-list-item {
+    font-size: 20px;
+    line-height: 24px;
+  }
+  ```
+* Modify the card background color:
+
+  ```css
+  :root {
+      --fmisc-bookmark-body-bg__card-view: white;
+      --fmisc-bookmark-group-bg__card-view: grey;
+  }
+  ```
+
 ## Q&A
 
 ### Is there a way to import items from the built-in bookmarks of SiYuan?
@@ -102,3 +138,9 @@ Dynamic bookmark groups mainly acquire bookmark items by executing queries.
 
 * Simply add block `name` attribute to blocks.
 * When bookmark items are displayed, if a `name` is available, it will be displayed first. Otherwise, the `content` of the block will be displayed.
+
+
+### What does the "Refresh" button in the top bar do?
+
+* For dynamic groups, it re-executes the query and displays the most recent query results.
+* For static groups, it checks the current status of each item (block) and updates them based on the latest results.
