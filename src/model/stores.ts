@@ -2,8 +2,8 @@
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
  * @Date         : 2024-07-07 14:44:03
- * @FilePath     : /src/func/bookmarks/model/stores.ts
- * @LastEditTime : 2024-07-07 17:06:43
+ * @FilePath     : /src/model/stores.ts
+ * @LastEditTime : 2024-07-15 18:43:34
  * @Description  : 
  */
 import { createStore } from "solid-js/store";
@@ -22,11 +22,13 @@ interface IConfig {
     hideDeleted: boolean;
     viewMode: 'bookmark' | 'card';
     replaceDefault: boolean;
+    autoRefreshOnExpand: boolean;
 }
 
 export const [configs, setConfigs] = createStore<IConfig>({
     hideClosed: true,
     hideDeleted: true,
     viewMode: 'bookmark',
-    replaceDefault: true
+    replaceDefault: true,
+    autoRefreshOnExpand: false
 });

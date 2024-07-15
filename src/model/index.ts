@@ -41,7 +41,7 @@ export class BookmarkDataModel {
         let snapshot: { [key: BlockId]: IBookmarkItemInfo } = await this.plugin.loadData(StorageFileItemSnapshot);
 
         if (configs_) {
-            setConfigs({...configs, ...configs_});
+            setConfigs({ ...configs, ...configs_ });
         }
 
         this.plugin.data.bookmarks = bookmarks ?? {};
@@ -121,7 +121,7 @@ export class BookmarkDataModel {
             }
         });
         await Promise.all(toUpdated);
-        this.updateItems();
+        await this.updateStaticItems();
     }
 
     /**
@@ -158,8 +158,7 @@ export class BookmarkDataModel {
         // 被删掉的 id (在 idsInGroup 中但不在 idsInFetch 中)
         let removedIds = Array.from(idsInGroupSet).filter(id => !idsInFetchSet.has(id));
 
-        //update item infos, 要首先更新 items 在更新 group
-        batch(() => {
+        const updateState = () => {
             //删掉已经不存在的 items
             removedIds.forEach(id => {
                 let item = itemInfo[id];
@@ -198,20 +197,32 @@ export class BookmarkDataModel {
             }, {});
             setGroups((g) => g.id === group.id, 'items', () => {
                 let iitemcores = idsInFetch.map(id => {
-                    return {id, style: itemCores?.[id]?.style ?? ''};
+                    return { id, style: itemCores?.[id]?.style ?? '' };
                 });
                 return iitemcores;
             })
-        });
+        };
+
+        //update item infos, 要首先更新 items 在更新 group
+        batch(updateState);
 
     }
 
-    async updateItems() {
+    async updateStaticItems() {
         console.debug('Update all Bookmark items');
-        //1. 获取所有的 block 的最新内容
-        let items = Object.values(itemInfo);
-        let ids = items.map(item => item.id);
-        let blocks = await getBlocks(...ids);
+        //1. 获取 block 的最新内容
+        let allIds = [];
+        //一般调用 updateItems 之前会已经调用过 update dynamic group; 如果再次更新就有些冗余了
+        //不这么做似乎会造成 item 404 的 bug
+        const staticGroups = groups.filter(g => g.type !== 'dynamic');
+        staticGroups.filter(g => g.hidden === false).forEach(g => {
+            allIds = allIds.concat(g.items.map(it => it.id));
+        })
+        let allIdsSet = new Set(allIds);
+        allIds = Array.from(allIdsSet);
+
+        let blocks = await getBlocks(...allIds);
+
         //2. 更新文档块的 logo
         let docsItem: DocumentId[] = [];
         Object.values(blocks).forEach(block => {
@@ -227,8 +238,11 @@ export class BookmarkDataModel {
             return acc;
         }, {});
 
-        let allItems = Object.entries(itemInfo);
-        allItems.forEach(([id, item], _) => {
+        let itemsToUpdate = Object.entries(itemInfo).filter(([id, _], __) => allIdsSet.has(id));
+
+        let batchFns = [];
+
+        itemsToUpdate.forEach(([id, item], _) => {
             let block = blocks[id];
             if (block) {
                 const { name, fcontent, content, box, type, subtype } = block;
@@ -250,7 +264,9 @@ export class BookmarkDataModel {
                     }
                 }
                 ni.icon = icon;
-                setItemInfo(id, ni);
+                batchFns.push(() => {
+                    setItemInfo(id, ni);
+                })
             } else {
                 console.warn(`Block ${id} from box "${notebookMap?.[item.box]?.name}" not found`);
                 let obj = {
@@ -265,7 +281,8 @@ export class BookmarkDataModel {
                     obj.err = 'BlockDeleted';
                 }
                 if (item.err === obj.err) return; //防止多次刷新失效的 item 导致 title 变得巨长无比
-                batch(() => {
+
+                batchFns.push(() => {
                     setItemInfo(id, 'title', obj.title);
                     setItemInfo(id, 'err', obj.err as ("BoxClosed" | "BlockDeleted"));
                 });
@@ -273,6 +290,14 @@ export class BookmarkDataModel {
             // ItemInfoStore[id].set({ ...item });
         });
         console.debug('更新所有 Bookmark items 完成');
+
+        //batch 更新
+        batch(() => {
+            for (let fn of batchFns) {
+                fn();
+            }
+        });
+
     }
 
     listItems(group?: TBookmarkGroupId) {

@@ -1,4 +1,4 @@
-import { createMemo, createSignal, Show } from "solid-js";
+import { Accessor, createMemo, createSignal, Show } from "solid-js";
 
 import ItemWrap from "@/libs/components/item-wrap";
 import InputItem from "@/libs/components/item-input";
@@ -6,9 +6,11 @@ import InputItem from "@/libs/components/item-input";
 import { i18n } from "@/utils/i18n";
 import { Transition } from "solid-transition-group";
 
+import { RuleTemplate } from "@/utils/const";
+
 interface IPrpos {
     setGroup: (arg: { name?: string, type?: TBookmarkGroupType }) => void;
-    setRule: (arg: { type?: string, input?: '' }) => void;
+    setRule: (arg: { type?: string, input?: string }) => void;
 }
 
 const NewGroup = (props: IPrpos) => {
@@ -17,6 +19,8 @@ const NewGroup = (props: IPrpos) => {
 
     let [groupType, setGroupType] = createSignal("normal");
     let [ruleType, setRuleType] = createSignal("sql");
+
+    let [ruleInput, setRuleInput] = createSignal('');
 
     let aboutRule = createMemo(() => {
         switch (ruleType()) {
@@ -51,6 +55,19 @@ const NewGroup = (props: IPrpos) => {
         };
     });
 
+    //模板的值 key: templateString
+    let template: Accessor<{ [key: string]: string }> = createMemo(() => {
+        let template = RuleTemplate?.[ruleType()] ?? {};
+        return { no: '', ...template };
+    });
+    //模板 key: templateName
+    const templateToSelect = (): { [key: string]: string } => {
+        return Object.keys(template()).reduce((obj, key) => {
+            let text = i18n.template[ruleType()][key];
+            obj[key] = text ?? '';
+            return obj;
+        }, {} as { [key: string]: string });
+    }
 
     const transitionDuration = 100;
 
@@ -148,16 +165,41 @@ const NewGroup = (props: IPrpos) => {
                             //@ts-ignore
                             direction={aboutRule().direction}
                         >
+                            <Show when={['sql', 'attr'].includes(ruleType())}>
+                                <div style={{
+                                    display: "flex",
+                                    gap: '10px',
+                                    position: 'absolute',
+                                    right: '0px',
+                                    top: '-60px',
+                                    padding: '0px',
+                                    margin: 0,
+                                    'align-items': 'center'
+                                }}>
+                                    <span class="b3-label__text">{i18n_.choosetemplate}</span>
+                                    <InputItem
+                                        key="ruleTemplate"
+                                        value={'no'}
+                                        options={templateToSelect()}
+                                        type='select'
+                                        changed={(key) => {
+                                            let temp = template()[key].trim();
+                                            setRuleInput(temp);
+                                            props.setRule({ input: temp });
+                                        }}
+                                        style={{ 'width': '130px' }}
+                                    />
+                                </div>
+                            </Show>
                             <InputItem
                                 key="ruleInput"
-                                value=''
+                                value={ruleInput()}
                                 //@ts-ignore
                                 type={aboutRule().input}
                                 changed={(v) => {
                                     props.setRule({ input: v });
                                 }}
-                                // nofnSize={true}
-                                flex1={ruleType() === 'attr' ? true : false}
+                                style={ruleType() === 'attr' ? { 'flex': 1, 'width': '100%' } : null}
                             />
                         </ItemWrap>
                     </div>

@@ -90,6 +90,7 @@ newgroup:
     sql: Please enter the SQL query below
     backlinks: Please enter the block ID of the backlink
     attr: Please enter the attribute to search for; You can fill in [attribute name], or [attribute name][= or like][attribute value]
+  choosetemplate: Template
 bookmarktype:
   normal: 'Normal Bookmark'
   dynamic: 'Dynamic Bookmark'
@@ -98,3 +99,10 @@ ruletype:
   sql: SQL
   backlinks: Backlinks
   attr: Block Attributes
+template:
+  sql:
+    random: Random Roam
+    updated: Recently Updated
+    thisday: On this day
+  attr:
+    dailynote: Daily Note

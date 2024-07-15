@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-06-22 19:14:01
+ * @LastEditTime : 2024-07-15 18:39:27
  * @Description  : 
  */
 
@@ -113,3 +113,24 @@ export const NodeIcons = {
     }
 };
 
+export const RuleTemplate = {
+    sql: {
+        'random': `select * from blocks\nwhere type='d'\norder by random() limit 5;`,
+        'updated': `
+select * from blocks
+where type='d' and
+updated >= strftime('%Y%m%d%H%M%S', datetime('now', '-7 days'))
+order by updated desc limit 5;
+`,
+        'thisday': `
+SELECT * FROM blocks WHERE type = 'd'
+and substr(created, 5, 4)  = strftime('%m%d', 'now')
+and substr(created, 1, 4)  != strftime('%Y', 'now')
+and created >= strftime('%Y%m%d%H%M%S', datetime('now', '-5 years'))
+order by created desc
+`
+    },
+    attr: {
+        'dailynote': `custom-dailynote-%`
+    }
+}
