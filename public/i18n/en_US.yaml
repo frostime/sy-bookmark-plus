@@ -24,6 +24,9 @@ setting:
   grouplist:
     title: Bookmark Groups
     description: Set up bookmark groups
+  autoRefreshOnExpand:
+    title: Auto Refresh on Expand
+    description: Automatically refreshes the items within a dynamic group when it is expanded from a collapsed state.
 viewMode:
   bookmark: Bookmark Style
   card: Card Style

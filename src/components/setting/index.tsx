@@ -44,8 +44,8 @@ const App = () => {
                 />
             </SettingItemWrap>
             <SettingItemWrap
-                title="展开后刷新"
-                description="展开一个被折叠的动态组时，自动刷新其中的内容"
+                title={i18n_.autoRefreshOnExpand.title}
+                description={i18n_.autoRefreshOnExpand.title}
             >
                 <InputItem
                     type='checkbox'

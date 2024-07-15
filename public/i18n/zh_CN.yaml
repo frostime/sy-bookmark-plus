@@ -24,6 +24,9 @@ setting:
   grouplist:
     title: 书签组
     description: 设置书签组
+  autoRefreshOnExpand:
+    title: 展开后刷新
+    description: 展开一个被折叠的动态组时，自动刷新其中的内容
 viewMode:
   bookmark: 书签样式
   card: 卡片样式

@@ -40,7 +40,7 @@ const initBookmark = async (ele: HTMLElement, plugin: PluginBookmarkPlus) => {
 const destroyBookmark = () => {
     rmModel();
     model = null;
-    const ele = document.querySelector('span[data-type="sy-f-misc::dock::Bookmark"]') as HTMLElement;
+    const ele = document.querySelector('span[data-type="sy-bookmark-plus::dock"]') as HTMLElement;
     ele?.remove();
     removeStyleDom('hide-bookmark');
 };
