@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-06-22 19:14:01
+ * @LastEditTime : 2024-07-15 17:57:15
  * @Description  : 
  */
 
@@ -113,3 +113,11 @@ export const NodeIcons = {
     }
 };
 
+export const RuleTemplate = {
+    sql: {
+        'random': `select * from blocks\nwhere type='d'\norder by random() limit 5;`
+    },
+    attr: {
+        'dailynote': `custom-dailynote-%`
+    }
+}
