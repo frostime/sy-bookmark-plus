@@ -90,6 +90,7 @@ newgroup:
     sql: 请在下方输入 SQL 查询
     backlinks: 请输入反链的块 ID
     attr: 请输入要查找的属性; 可以填写 [属性名], 或者 [属性名][= 或 like][属性值]
+  choosetemplate: 选择模板
 bookmarktype:
   normal: '普通书签'
   dynamic: '动态书签'
@@ -98,3 +99,10 @@ ruletype:
   sql: SQL
   backlinks: 反向链接
   attr: 块属性
+template:
+  sql:
+    random: 随机漫游
+    updated: 最近更新
+    thisday: 历史上的今天
+  attr:
+    dailynote: Daily Note

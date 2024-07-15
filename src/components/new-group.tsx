@@ -58,12 +58,13 @@ const NewGroup = (props: IPrpos) => {
     //模板的值 key: templateString
     let template: Accessor<{ [key: string]: string }> = createMemo(() => {
         let template = RuleTemplate?.[ruleType()] ?? {};
-        return {no: '', ...template};
+        return { no: '', ...template };
     });
     //模板 key: templateName
     const templateToSelect = (): { [key: string]: string } => {
         return Object.keys(template()).reduce((obj, key) => {
-            obj[key] = key;
+            let text = i18n.template[ruleType()][key];
+            obj[key] = text ?? '';
             return obj;
         }, {} as { [key: string]: string });
     }
@@ -175,19 +176,18 @@ const NewGroup = (props: IPrpos) => {
                                     margin: 0,
                                     'align-items': 'center'
                                 }}>
-                                    <span class="b3-label__text">可选模板</span>
+                                    <span class="b3-label__text">{i18n_.choosetemplate}</span>
                                     <InputItem
                                         key="ruleTemplate"
                                         value={'no'}
                                         options={templateToSelect()}
                                         type='select'
                                         changed={(key) => {
-                                            console.log('choose template', key);
-                                            let temp = template()[key];
+                                            let temp = template()[key].trim();
                                             setRuleInput(temp);
                                             props.setRule({ input: temp });
                                         }}
-                                        style={{'width': '150px'}}
+                                        style={{ 'width': '130px' }}
                                     />
                                 </div>
                             </Show>
@@ -199,7 +199,7 @@ const NewGroup = (props: IPrpos) => {
                                 changed={(v) => {
                                     props.setRule({ input: v });
                                 }}
-                                style={ruleType() === 'attr' ? {'flex': 1, 'width': '100%'} : null}
+                                style={ruleType() === 'attr' ? { 'flex': 1, 'width': '100%' } : null}
                             />
                         </ItemWrap>
                     </div>
