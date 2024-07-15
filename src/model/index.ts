@@ -41,7 +41,7 @@ export class BookmarkDataModel {
         let snapshot: { [key: BlockId]: IBookmarkItemInfo } = await this.plugin.loadData(StorageFileItemSnapshot);
 
         if (configs_) {
-            setConfigs({...configs, ...configs_});
+            setConfigs({ ...configs, ...configs_ });
         }
 
         this.plugin.data.bookmarks = bookmarks ?? {};
@@ -198,7 +198,7 @@ export class BookmarkDataModel {
             }, {});
             setGroups((g) => g.id === group.id, 'items', () => {
                 let iitemcores = idsInFetch.map(id => {
-                    return {id, style: itemCores?.[id]?.style ?? ''};
+                    return { id, style: itemCores?.[id]?.style ?? '' };
                 });
                 return iitemcores;
             })

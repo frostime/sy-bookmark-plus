@@ -49,6 +49,12 @@ const Group: Component<Props> = (props) => {
 
     const toggleOpen = (open?: boolean) => {
         let expand = !(open !== undefined ? open : !isOpen());
+
+        if (configs['autoRefreshOnExpand'] && isDynamicGroup() && expand === false) {
+            // console.log('auto refresh', props.group.name);
+            model.updateDynamicGroup(props.group);
+        }
+
         setGroups((g) => g.id === props.group.id, 'expand', expand);
         model.save();
     };
