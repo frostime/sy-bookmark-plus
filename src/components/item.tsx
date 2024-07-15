@@ -10,6 +10,7 @@ import { BookmarkContext, itemMoving, setItemMoving } from "./context";
 import { i18n, renderI18n } from "@/utils/i18n";
 import { simpleDialog } from "@/libs/dialog";
 import Typography from "@/libs/components/typography";
+import { getNotebook } from "@/utils";
 
 interface IProps {
     group: TBookmarkGroupId;
@@ -44,10 +45,10 @@ const setStyleBtn = (key: string, label: string): HTMLElement => {
 const showErrItem = (item: IBookmarkItemInfo) => {
     const markdown = `
 - **ID**: ${item.id}
-- **Box**: ${item.box}
+- **Title**: ${item.title}
+- **Box**: ${getNotebook(item.box)?.name ?? item.box}
 - **Type**: ${item.type}
 - **Subtype**: ${item.subtype}
-- **Title**: ${item.title}
 `;
     let element = document.createElement('div');
     // element.style.display = 'contents';
