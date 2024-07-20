@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-18 21:05:32
  * @FilePath     : /src/utils/index.ts
- * @LastEditTime : 2024-06-14 13:37:22
+ * @LastEditTime : 2024-07-20 18:17:00
  * @Description  : 
  */
 import * as api from '../api';
@@ -27,21 +27,20 @@ export const getNotebook = (boxId: string): Notebook => {
     }
 }
 
-export function getActiveDoc() {
-    let tab = document.querySelector("div.layout__wnd--active ul.layout-tab-bar>li.item--focus");
-    let dataId: string = tab?.getAttribute("data-id");
-    if (!dataId) {
-        return null;
-    }
-    const activeTab: HTMLDivElement = document.querySelector(
-        `.layout-tab-container.fn__flex-1>div.protyle[data-id="${dataId}"]`
-    ) as HTMLDivElement;
-    if (!activeTab) {
-        return;
-    }
-    const eleTitle = activeTab.querySelector(".protyle-title");
-    let docId = eleTitle?.getAttribute("data-node-id");
-    return docId;
+export function getActiveDoc(): DocumentId {
+    let wnd = document.querySelector('div.layout__wnd--active[data-type="wnd"]');
+    let container = wnd ?? document;
+    const li = container.querySelector(
+        "ul.layout-tab-bar>li.item--focus"
+    );
+    if (!li) return;
+    const dataId = li.getAttribute("data-id");
+    const protyle = document.querySelector(
+        `div.protyle[data-id="${dataId}"] .protyle-title`
+    );
+    if (!protyle) return;
+    const id = protyle.getAttribute("data-node-id");
+    return id;
 }
 
 export function isnot(value: any) {
