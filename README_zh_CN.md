@@ -7,6 +7,8 @@
 > - 如果图片无法显示，可以访问 [线上文档](https://flowus.cn/share/d84d5d98-cc4c-471b-ba2b-62338bb88511?code=80RAFK) 查看
 > - 如果您对本项目还满意，欢迎来[Github主页](https://github.com/frostime/sy-bookmark-plus)为项目点 star
 
+📝 更新日志见: [CHANGELOG.md](./CHANGELOG.md)
+
 ## 书签组
 
 在顶栏中点击「添加」，可以新建一个书签组，书签组分类两种类型：
