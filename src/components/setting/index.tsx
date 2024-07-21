@@ -83,6 +83,19 @@ const App = () => {
                 />
             </SettingItemWrap>
             <SettingItemWrap
+                title={"悬浮框"}
+                description={"悬浮在图标上，在悬浮框中显示item完整内容"}
+            >
+                <InputItem
+                    type='checkbox'
+                    key='ariaLabel'
+                    value={configs['ariaLabel']}
+                    changed={(v: any) => {
+                        setConfigs('ariaLabel', v);
+                    }}
+                />
+            </SettingItemWrap>
+            <SettingItemWrap
                 title={i18n_.grouplist.title}
                 description={i18n_.grouplist.description}
                 direction="row"
