@@ -83,6 +83,19 @@ const App = () => {
                 />
             </SettingItemWrap>
             <SettingItemWrap
+                title={i18n_.ariaLabel.title}
+                description={i18n_.ariaLabel.description}
+            >
+                <InputItem
+                    type='checkbox'
+                    key='ariaLabel'
+                    value={configs['ariaLabel']}
+                    changed={(v: any) => {
+                        setConfigs('ariaLabel', v);
+                    }}
+                />
+            </SettingItemWrap>
+            <SettingItemWrap
                 title={i18n_.grouplist.title}
                 description={i18n_.grouplist.description}
                 direction="row"

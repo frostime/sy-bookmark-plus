@@ -3,7 +3,7 @@ import { render } from "solid-js/web";
 import { Menu, openTab, showMessage } from "siyuan";
 import { buildItemDetail } from "../libs/dom";
 
-import { itemInfo, setGroups, groupMap } from "../model";
+import { itemInfo, setGroups, groupMap, configs } from "../model";
 
 import { BookmarkContext, itemMoving, setItemMoving } from "./context";
 
@@ -61,6 +61,8 @@ const showErrItem = (item: IBookmarkItemInfo) => {
     });
 }
 
+// const ariaLabel = () => `Callout 插件 <small class='ft__on-surface'>10.07 kB</small><br>更新于 2024-07-18 15:36:20, 3 天前<br>创建于 2024-06-29 19:09:50, 3 个星期前`;
+
 
 const Item: Component<IProps> = (props) => {
     const item = () => itemInfo[props.itemCore.id];
@@ -83,6 +85,14 @@ const Item: Component<IProps> = (props) => {
         } else {
             return '';
         }
+    });
+
+    const notebook = createMemo(() => {
+        return getNotebook(item().box).name;
+    })
+
+    const hoverContext = createMemo(() => {
+        return `<b>${notebook()}</b><br/>${item().title}`;
     });
 
     createEffect(() => {
@@ -316,7 +326,13 @@ const Item: Component<IProps> = (props) => {
                 </svg>
             </span>
             <div innerHTML={Icon()} />
-            <span class="b3-list-item__text ariaLabel" data-position="parentE" style={titleStyle()}>
+            <span class="b3-list-item__text"
+                classList={{
+                    ariaLabel: configs.ariaLabel
+                }}
+                data-position="parentE"
+                {...(configs.ariaLabel ? { 'aria-label': hoverContext() } : {})}
+                style={titleStyle()}>
                 {item().title}
             </span>
             <span

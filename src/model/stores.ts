@@ -23,6 +23,7 @@ interface IConfig {
     viewMode: 'bookmark' | 'card';
     replaceDefault: boolean;
     autoRefreshOnExpand: boolean;
+    ariaLabel: boolean;
 }
 
 export const [configs, setConfigs] = createStore<IConfig>({
@@ -30,5 +31,6 @@ export const [configs, setConfigs] = createStore<IConfig>({
     hideDeleted: true,
     viewMode: 'bookmark',
     replaceDefault: true,
-    autoRefreshOnExpand: false
+    autoRefreshOnExpand: false,
+    ariaLabel: false,
 });

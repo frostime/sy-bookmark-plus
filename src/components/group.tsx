@@ -12,6 +12,7 @@ import { i18n, renderI18n } from "@/utils/i18n";
 import Item from "./item";
 import { groups, setGroups, configs, itemInfo } from "../model";
 import { BookmarkContext, itemMoving, setItemMoving, groupDrop, setGroupDrop } from "./context";
+import { getActiveDoc } from "@/utils";
 
 
 interface Props {
@@ -281,18 +282,7 @@ const Group: Component<Props> = (props) => {
                 label: i18n_.currentdoc,
                 icon: "iconAdd",
                 click: () => {
-                    let wnd = document.querySelector('div.layout__wnd--active[data-type="wnd"]');
-                    let container = wnd ?? document;
-                    const li = container.querySelector(
-                        "ul.layout-tab-bar>li.item--focus"
-                    );
-                    if (!li) return;
-                    const dataId = li.getAttribute("data-id");
-                    const protyle = document.querySelector(
-                        `div.protyle[data-id="${dataId}"] .protyle-title`
-                    );
-                    if (!protyle) return;
-                    const id = protyle.getAttribute("data-node-id");
+                    let id = getActiveDoc();
                     addItemByBlockId(id);
                 },
             });
