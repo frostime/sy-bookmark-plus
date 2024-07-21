@@ -27,6 +27,9 @@ setting:
   autoRefreshOnExpand:
     title: Auto Refresh on Expand
     description: Automatically refreshes the items within a dynamic group when it is expanded from a collapsed state.
+  ariaLabel:
+    title: Display Hover Box
+    description: Display full title of the bookmark item in a hover box when the mouse hovers
 viewMode:
   bookmark: Bookmark Style
   card: Card Style

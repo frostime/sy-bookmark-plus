@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-07-08 15:35:06
+ * @LastEditTime : 2024-07-21 17:20:44
  * @Description  : 
  */
 import {
@@ -124,7 +124,7 @@ export default class PluginBookmarkPlus extends Plugin {
         simpleDialog({
             title: window.siyuan.languages.config,
             ele: container,
-            width: '600px',
+            width: '700px',
             height: '700px',
             callback: () => {
                 model.save();

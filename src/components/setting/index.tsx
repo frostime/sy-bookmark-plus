@@ -83,8 +83,8 @@ const App = () => {
                 />
             </SettingItemWrap>
             <SettingItemWrap
-                title={"悬浮框"}
-                description={"悬浮在图标上，在悬浮框中显示item完整内容"}
+                title={i18n_.ariaLabel.title}
+                description={i18n_.ariaLabel.description}
             >
                 <InputItem
                     type='checkbox'

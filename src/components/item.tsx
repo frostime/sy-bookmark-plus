@@ -87,6 +87,14 @@ const Item: Component<IProps> = (props) => {
         }
     });
 
+    const notebook = createMemo(() => {
+        return getNotebook(item().box).name;
+    })
+
+    const hoverContext = createMemo(() => {
+        return `<b>${notebook()}</b><br/>${item().title}`;
+    });
+
     createEffect(() => {
         let value = item();
         if (value) {
@@ -323,7 +331,7 @@ const Item: Component<IProps> = (props) => {
                     ariaLabel: configs.ariaLabel
                 }}
                 data-position="parentE"
-                {...(configs.ariaLabel ? { 'aria-label': item().title } : {})}
+                {...(configs.ariaLabel ? { 'aria-label': hoverContext() } : {})}
                 style={titleStyle()}>
                 {item().title}
             </span>
