@@ -11,6 +11,8 @@ import { RuleTemplate } from "@/utils/const";
 
 import { createContext, useContext } from "solid-js";
 
+import { Caret } from "@/utils/const";
+
 const NewGroupContext = createContext<{
     groupType: Accessor<TBookmarkGroupType>;
     setGroupType: Setter<TBookmarkGroupType>;
@@ -56,7 +58,7 @@ const RuleInput = () => {
             let process = '';
             const backlinkInput = () => {
                 if (process !== '') {
-                    return id + window.Lute.Caret + process;
+                    return id + Caret + process;
                 } else {
                     return id;
                 }

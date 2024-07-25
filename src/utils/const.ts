@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-07-15 18:39:27
+ * @LastEditTime : 2024-07-25 20:57:24
  * @Description  : 
  */
 
@@ -134,3 +134,5 @@ order by created desc
         'dailynote': `custom-dailynote-%`
     }
 }
+
+export const Caret = '‸';
