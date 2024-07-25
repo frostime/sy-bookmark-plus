@@ -10,7 +10,8 @@ export const parseEmoji = (code: string) => {
 interface CommonProps {
     fontSize?: string;
     height?: string;
-    weight?: string;
+    width?: string;
+    style?: { [key: string]: string | number };
 }
 
 interface SymbolProps extends CommonProps {
@@ -36,20 +37,30 @@ type IProps = SymbolProps | EmojiCodeProps | ImgProps;
 
 const Icon: Component<IProps> = (props) => {
 
+    let style = {
+        "font-size": props?.fontSize ?? '14px',
+        "height": props?.height,
+        "width": props?.width,
+    }
+
+    if (props.style) {
+        style = {...style, ...props.style};
+    }
+
     const Symbol = () => (
-        <svg class="b3-list-item__graphic" style="width: 100%; height: 100%;">
-            <use href="#iconFolder"></use>
+        <svg style={style}>
+            <use href={`#${props.symbol}`}></use>
         </svg>
     );
 
     const Emoji = () => (
-        <span class="b3-list-item__graphic" style="width: 100%; height: 100%;">
+        <span class="b3-list-item__graphic" style={style}>
             {parseEmoji(props.emojiCode)}
         </span>
     );
 
     const Img = () => (
-        <img alt="" class="emoji" src={props.img} title="" style="width: 100%; height: 100%;"></img>
+        <img alt="" class="emoji" src={props.img} title="" style={style}></img>
     );
 
     const createIcon = () => {
@@ -58,16 +69,8 @@ const Icon: Component<IProps> = (props) => {
         else if (props.img) return Img;
     }
 
-    const style = {
-        "font-size": props?.fontSize ?? '14px',
-        "height": props?.height,
-        "weight": props?.weight,
-    }
-
     return (
-        <span style={style}>
-            <Dynamic component={createIcon()} />
-        </span>
+        <Dynamic component={createIcon()} />
     );
 };
 

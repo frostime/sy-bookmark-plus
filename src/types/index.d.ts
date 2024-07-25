@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-03-19 14:07:28
  * @FilePath     : /src/types/index.d.ts
- * @LastEditTime : 2024-06-12 22:16:03
+ * @LastEditTime : 2024-07-25 20:36:31
  * @Description  : 
  */
 
@@ -115,7 +115,9 @@ declare interface Window {
         languages: any;
         emojis: any;
     };
-    Lute: any;
+    Lute: {
+        Caret: string;
+    }
 }
 
 interface IPluginProtyleSlash {

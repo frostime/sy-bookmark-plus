@@ -2,6 +2,7 @@ import { Accessor, createMemo, createSignal, Setter, Show } from "solid-js";
 
 import ItemWrap from "@/libs/components/item-wrap";
 import InputItem from "@/libs/components/item-input";
+import Icon from "./icon";
 
 import { i18n } from "@/utils/i18n";
 import { Transition } from "solid-transition-group";
@@ -25,6 +26,7 @@ export const useNewGroup = () => useContext(NewGroupContext);
 
 const RuleInput = () => {
     const { ruleType, ruleInput, setRule } = useNewGroup();
+
     const render = () => {
         if (ruleType() === 'attr') {
             return (
@@ -50,24 +52,56 @@ const RuleInput = () => {
                 />
             );
         } else if (ruleType() === 'backlinks') {
+            let id = ruleInput();
+            let process = '';
+            const backlinkInput = () => {
+                if (process !== '') {
+                    return id + window.Lute.Caret + process;
+                } else {
+                    return id;
+                }
+            }
             return (
                 <>
                     <InputItem
                         key="ruleInput"
-                        value={ruleInput()}
+                        value={id}
                         type='textinput'
                         changed={(v) => {
-                            setRule({ input: v });
+                            id = v;
+                            setRule({ input: backlinkInput() });
                         }}
                         style={{ 'flex': 1, 'width': '100%' }}
                     />
-                    <div style={{ display: 'flex', 'gap': '10px' }}>
-                        <div class="b3-label__text fn__flex-1">展示模式</div>
+                    <div style={{ display: 'flex', 'gap': '2px' }}>
+                        <span
+                            class="ariaLabel"
+                            aria-label="<b>容器首个子块: </b>当搜索到的引用块为列表项、引述块的第一个子块时，显示完整的容器块<br/><b>显示为文档块: </b>显示引用块所在的文档，而非引用块本身"
+                            style="display: flex; align-items: center; justify-content: center;"
+                        >
+                            <Icon
+                                symbol="iconHelp"
+                                width="13px"
+                                height="13px"
+                                style={{
+                                    cursor: 'pointer'
+                                }}
+                            />
+                        </span>
+                        <div class="b3-label__text fn__flex-1">额外处理</div>
                         <InputItem
                             key="ruleInput"
-                            value={false}
-                            type='checkbox'
-                            changed={() => {}}
+                            value={process}
+                            type='select'
+                            options={{
+                                '': '无',
+                                'fb2p': '容器首个子块',
+                                'b2doc': '显示为文档块'
+                            }}
+                            changed={(v) => {
+                                process = v;
+                                setRule({ input: backlinkInput() });
+                            }}
                         />
                     </div>
                 </>
@@ -203,10 +237,11 @@ const NewGroup = (props: IPrpos) => {
     const i18n_ = i18n.newgroup;
 
     let [groupType, setGroupType] = createSignal<TBookmarkGroupType>("normal");
-    let [ruleType, setRuleType] = createSignal<TRuleType>("sql");
+    let [ruleType, setRuleType] = createSignal<TRuleType>("backlinks");
 
     let [ruleInput, setRuleInput] = createSignal('');
 
+    props.setGroup({ name: 'New Group' });
 
     const transitionDuration = 100;
 
@@ -225,7 +260,7 @@ const NewGroup = (props: IPrpos) => {
                 >
                     <InputItem
                         key="name"
-                        value=""
+                        value="New Group"
                         type="textinput"
                         changed={(v) => {
                             props.setGroup({ name: v });
