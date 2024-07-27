@@ -110,5 +110,6 @@ template:
     random: 随机漫游
     updated: 最近更新
     thisday: 历史上的今天
+    todo: 未完成的任务
   attr:
     dailynote: Daily Note

@@ -239,7 +239,7 @@ const NewGroup = (props: IPrpos) => {
     const i18n_ = i18n.newgroup;
 
     let [groupType, setGroupType] = createSignal<TBookmarkGroupType>("normal");
-    let [ruleType, setRuleType] = createSignal<TRuleType>("backlinks");
+    let [ruleType, setRuleType] = createSignal<TRuleType>("sql");
 
     let [ruleInput, setRuleInput] = createSignal('');
 

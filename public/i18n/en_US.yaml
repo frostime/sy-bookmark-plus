@@ -110,5 +110,6 @@ template:
     random: Random Roam
     updated: Recently Updated
     thisday: On this day
+    todo: Unsolved Task
   attr:
     dailynote: Daily Note
