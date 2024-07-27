@@ -29,6 +29,7 @@ export const useNewGroup = () => useContext(NewGroupContext);
 const RuleInput = () => {
     const { ruleType, ruleInput, setRule } = useNewGroup();
 
+    const i18nPost = i18n.newgroup.postprocess;
     const render = () => {
         if (ruleType() === 'attr') {
             return (
@@ -78,7 +79,7 @@ const RuleInput = () => {
                     <div style={{ display: 'flex', 'gap': '2px' }}>
                         <span
                             class="ariaLabel"
-                            aria-label="<b>容器首个子块: </b>当搜索到的引用块为列表项、引述块的第一个子块时，显示完整的容器块<br/><b>显示为文档块: </b>显示引用块所在的文档，而非引用块本身"
+                            aria-label={i18nPost.ariaLabel}
                             style="display: flex; align-items: center; justify-content: center;"
                         >
                             <Icon
@@ -90,15 +91,15 @@ const RuleInput = () => {
                                 }}
                             />
                         </span>
-                        <div class="b3-label__text fn__flex-1">额外处理</div>
+                        <div class="b3-label__text fn__flex-1">{i18nPost.name}</div>
                         <InputItem
                             key="ruleInput"
                             value={process}
                             type='select'
                             options={{
-                                '': '无',
-                                'fb2p': '容器首个子块',
-                                'b2doc': '显示为文档块'
+                                '': i18nPost.omit,
+                                'fb2p': i18nPost.fb2p,
+                                'b2doc': i18nPost.b2doc
                             }}
                             changed={(v) => {
                                 process = v;
