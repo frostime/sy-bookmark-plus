@@ -17,7 +17,14 @@ Click "Add" on the top bar to create a new bookmark group. Bookmark groups are c
 * Dynamic Bookmark Group: A query-based dynamic bookmark group that lists query results; supports the following rules:
 
   * SQL Query: Input SQL query statements
-  * Backlinks: Input block ID to query the backlinks of the corresponding block
+  * Backlinks: Input block ID to query the backlinks of the corresponding block; users can specify a post-processing scheme.
+
+    1. **No Process**: Display the queried block directly as it is.
+    2. **First child of container**: When the referenced block is the first child block of a list item or quote block, display the complete container block.
+    3. **Display as document block**: Display the document containing the referenced block, rather than the referenced block itself.
+
+    > Note: If you are confused or do not understand the "post-processing scheme," please refer to the [Q&A section](#what-is-the-post-process-for-the-backlink-rule).
+
   * Block Attribute: Query specified block attributes. You can input the block attributes you want to query, such as:
 
     1. `<Attribute>`, e.g., `custom-b`, returns all blocks containing the `custom-b` custom attribute
@@ -125,7 +132,40 @@ Example:
   }
   ```
 
-## Q&A
+## 🤔 Q&A
+
+
+### What is the "Post process" for the "Backlink" rule?
+
+**Display as document block** is relatively straightforward. It means that the document itself from which the referenced block comes is displayed, rather than the referenced block itself. If multiple referenced blocks come from the same document, only one document block item is displayed, without repetition.
+
+The meaning of **First child of container** is: if the queried block is the first paragraph block of a container block (like: list item block, block quote block), we will consider it as having queried the container block itself.
+
+![](https://assets.liuyun.io/file/2024/06/image-RTUxmW5.png)
+
+Here is an example: a list item references `DocumentX`.
+
+```md
+- Foo
+- [[DocumentX]]
+  - AAA
+  - BBB
+- Boo
+```
+
+If using SQL to query the backlink of DocumentX, it will eventually got the **paragraph block** `[[DocumentX]]`, which is:
+
+```md
+[[DocumentX]]
+```
+
+However, if the user enables the "First child of container" post-processing scheme, the bookmark display will show the complete list item block itself.
+
+```md
+- [[DocumentX]]
+  - AAA
+  - BBB
+```
 
 ### Is there a way to import items from the built-in bookmarks of SiYuan?
 
