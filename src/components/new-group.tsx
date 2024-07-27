@@ -186,8 +186,9 @@ const RuleEditor = () => {
                         attr: i18n.ruletype.attr,
                     }}
                     changed={(v) => {
-                        setRule({ type: v });
+                        setRule({ type: v, input: '' });
                         setRuleType(v);
+                        setRuleInput('');
                     }}
                 />
             </ItemWrap>

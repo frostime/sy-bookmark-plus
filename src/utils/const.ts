@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-07-27 16:28:57
+ * @LastEditTime : 2024-07-27 16:41:57
  * @Description  : 
  */
 
@@ -132,7 +132,7 @@ order by created desc
         'todo': `
 select * from blocks
 where type = 'i' and subtype = 't'
-and markdown like '%[ ] %'
+and markdown like '* [ ] %'
 order by updated desc;`
     },
     attr: {
