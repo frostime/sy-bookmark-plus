@@ -3,10 +3,13 @@
  * @Author       : Yp Z
  * @Date         : 2023-07-29 15:17:15
  * @FilePath     : /src/model/rules.ts
- * @LastEditTime : 2024-07-07 21:44:27
+ * @LastEditTime : 2024-07-25 21:06:16
  * @Description  : 
  */
 import * as api from "@/api";
+import { fb2p, getBlocksByIDs } from "@/libs/query";
+
+import { Caret } from "@/utils/const";
 
 
 export abstract class MatchRule implements IDynamicRule {
@@ -62,31 +65,56 @@ const matchIDFormat = (id: string) => {
 }
 
 
+type TBacklinkProcess =  '' | 'fb2p' | 'b2doc';
 export class Backlinks extends MatchRule {
-    constructor(id: BlockId) {
+
+    id: string;
+    process: TBacklinkProcess = '';
+    constructor(input: string) {
         super("backlinks");
-        this.input = id;
+        let parts = input.split(Caret);
+        if (parts.length === 2) {
+            this.id = parts[0];
+            this.process = parts[1] as TBacklinkProcess;
+        } else {
+            this.id = parts[0];
+        }
     }
 
     validateInput(): boolean {
-        return matchIDFormat(this.input) !== null;
+        return matchIDFormat(this.id) !== null && ['', 'fb2p', 'b2doc'].includes(this.process);
     }
 
     async fetch() {
         this.eof = true;
-        if (!this.input) {
+        if (!this.id) {
             return [];
         }
         const sql = `
             select blocks.* 
             from blocks 
             join refs on blocks.id = refs.block_id 
-            where refs.def_block_id = '${this.input}' 
+            where refs.def_block_id = '${this.id}' 
             order by blocks.updated desc 
             limit 999;
         `;
-        const blocks = await api.sql(sql);
-        return blocks ?? [];
+        let blocks: Block[] = await api.sql(sql);
+        if (blocks.length == 0) {
+            return blocks;
+        }
+        if (this.process === '') {
+            return blocks;
+        }
+        else if (this.process === 'b2doc') {
+            let docIds = blocks.map(b => b.root_id);
+            docIds = Array.from(new Set(docIds));
+            let docs = await getBlocksByIDs(...docIds);
+            return docs;
+        }
+        else if (this.process === 'fb2p') {
+            blocks = await fb2p(blocks);
+        }
+        return blocks;
     }
 
 }

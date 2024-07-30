@@ -1,59 +1,127 @@
-import { Accessor, createMemo, createSignal, Show } from "solid-js";
+import { Accessor, createMemo, createSignal, Setter, Show } from "solid-js";
 
 import ItemWrap from "@/libs/components/item-wrap";
 import InputItem from "@/libs/components/item-input";
+import Icon from "./icon";
 
 import { i18n } from "@/utils/i18n";
 import { Transition } from "solid-transition-group";
 
 import { RuleTemplate } from "@/utils/const";
 
-interface IPrpos {
-    setGroup: (arg: { name?: string, type?: TBookmarkGroupType }) => void;
+import { createContext, useContext } from "solid-js";
+
+import { Caret } from "@/utils/const";
+
+const NewGroupContext = createContext<{
+    groupType: Accessor<TBookmarkGroupType>;
+    setGroupType: Setter<TBookmarkGroupType>;
+    ruleType: Accessor<TRuleType>;
+    setRuleType: Setter<TRuleType>;
+    ruleInput: Accessor<string>;
+    setRuleInput: Setter<string>;
+
     setRule: (arg: { type?: string, input?: string }) => void;
+}>();
+
+export const useNewGroup = () => useContext(NewGroupContext);
+
+const RuleInput = () => {
+    const { ruleType, ruleInput, setRule } = useNewGroup();
+
+    const i18nPost = i18n.newgroup.postprocess;
+    const render = () => {
+        if (ruleType() === 'attr') {
+            return (
+                <InputItem
+                    key="ruleInput"
+                    value={ruleInput()}
+                    type='textinput'
+                    changed={(v) => {
+                        setRule({ input: v });
+                    }}
+                    style={{ 'flex': 1, 'width': '100%' }}
+                />
+            );
+        } else if (ruleType() === 'sql') {
+            return (
+                <InputItem
+                    key="ruleInput"
+                    value={ruleInput()}
+                    type='textarea'
+                    changed={(v) => {
+                        setRule({ input: v });
+                    }}
+                />
+            );
+        } else if (ruleType() === 'backlinks') {
+            let id = ruleInput();
+            let process = '';
+            const backlinkInput = () => {
+                if (process !== '') {
+                    return id + Caret + process;
+                } else {
+                    return id;
+                }
+            }
+            return (
+                <>
+                    <InputItem
+                        key="ruleInput"
+                        value={id}
+                        type='textinput'
+                        changed={(v) => {
+                            id = v;
+                            setRule({ input: backlinkInput() });
+                        }}
+                        style={{ 'flex': 1, 'width': '100%' }}
+                    />
+                    <div style={{ display: 'flex', 'gap': '2px' }}>
+                        <span
+                            class="ariaLabel"
+                            aria-label={i18nPost.ariaLabel}
+                            style="display: flex; align-items: center; justify-content: center;"
+                        >
+                            <Icon
+                                symbol="iconHelp"
+                                width="13px"
+                                height="13px"
+                                style={{
+                                    cursor: 'pointer'
+                                }}
+                            />
+                        </span>
+                        <div class="b3-label__text fn__flex-1">{i18nPost.name}</div>
+                        <InputItem
+                            key="ruleInput"
+                            value={process}
+                            type='select'
+                            options={{
+                                '': i18nPost.omit,
+                                'fb2p': i18nPost.fb2p,
+                                'b2doc': i18nPost.b2doc
+                            }}
+                            changed={(v) => {
+                                process = v;
+                                setRule({ input: backlinkInput() });
+                            }}
+                        />
+                    </div>
+                </>
+            )
+        } else {
+            return <>Fallback!</>
+        }
+    }
+
+    return <>{render()}</>
 }
 
-const NewGroup = (props: IPrpos) => {
-    // let grouptype = 'normal';
+type TAbout = { desc: string; direction: "row" | "column"; };
+const RuleEditor = () => {
     const i18n_ = i18n.newgroup;
 
-    let [groupType, setGroupType] = createSignal("normal");
-    let [ruleType, setRuleType] = createSignal("sql");
-
-    let [ruleInput, setRuleInput] = createSignal('');
-
-    let aboutRule = createMemo(() => {
-        switch (ruleType()) {
-            case 'SQL':
-                return {
-                    desc: i18n_.desc.sql,
-                    direction: "row",
-                    input: "textarea"
-                }
-
-            case 'backlinks':
-                return {
-                    desc: i18n_.desc.backlinks,
-                    direction: "column",
-                    input: "textinput"
-                }
-
-            case 'attr':
-                return {
-                    desc: i18n_.desc.attr,
-                    direction: "row",
-                    input: "textinput"
-                }
-
-            default:
-                break;
-        }
-        return {
-            desc: i18n_.desc.sql,
-            direction: "row",
-            input: "textarea"
-        };
-    });
+    const { ruleType, setRuleType, setRuleInput, setRule } = useNewGroup();
 
     //模板的值 key: templateString
     let template: Accessor<{ [key: string]: string }> = createMemo(() => {
@@ -68,6 +136,116 @@ const NewGroup = (props: IPrpos) => {
             return obj;
         }, {} as { [key: string]: string });
     }
+
+
+    let aboutRule = createMemo<TAbout>(() => {
+        switch (ruleType()) {
+            case 'sql':
+                return {
+                    desc: i18n_.desc.sql,
+                    direction: "row",
+                    // input: "textarea"
+                }
+
+            case 'backlinks':
+                return {
+                    desc: i18n_.desc.backlinks,
+                    direction: "row",
+                    // input: "textinput"
+                }
+
+            case 'attr':
+                return {
+                    desc: i18n_.desc.attr,
+                    direction: "row",
+                    // input: "textinput"
+                }
+
+            default:
+                break;
+        }
+        return {
+            desc: i18n_.desc.sql,
+            direction: "row",
+            // input: "textarea"
+        };
+    });
+
+    return (
+        <div style={{ display: "flex", "flex-direction": 'column' }}>
+            <ItemWrap
+                title={i18n_.rtype[0]}
+                description={i18n_.rtype[1]}
+            >
+                <InputItem
+                    key="ruleType"
+                    value={ruleType()}
+                    type="select"
+                    options={{
+                        sql: i18n.ruletype.sql,
+                        backlinks: i18n.ruletype.backlinks,
+                        attr: i18n.ruletype.attr,
+                    }}
+                    changed={(v) => {
+                        setRule({ type: v, input: '' });
+                        setRuleType(v);
+                        setRuleInput('');
+                    }}
+                />
+            </ItemWrap>
+            <ItemWrap
+                title={i18n_.rinput}
+                description={aboutRule().desc}
+                direction={aboutRule().direction}
+            >
+                <Show when={['sql', 'attr'].includes(ruleType())}>
+                    <div style={{
+                        display: "flex",
+                        gap: '10px',
+                        position: 'absolute',
+                        right: '0px',
+                        top: '-60px',
+                        padding: '0px',
+                        margin: 0,
+                        'align-items': 'center'
+                    }}>
+                        <span class="b3-label__text">{i18n_.choosetemplate}</span>
+                        <InputItem
+                            key="ruleTemplate"
+                            value={'no'}
+                            options={templateToSelect()}
+                            type='select'
+                            changed={(key) => {
+                                let temp = template()[key].trim();
+                                setRuleInput(temp);
+                                setRule({ input: temp });
+                            }}
+                            style={{ 'width': '130px' }}
+                        />
+                    </div>
+                </Show>
+                <RuleInput />
+            </ItemWrap>
+        </div>
+    );
+}
+
+
+interface IPrpos {
+    setGroup: (arg: { name?: string, type?: TBookmarkGroupType }) => void;
+    setRule: (arg: { type?: string, input?: string }) => void;
+}
+
+const NewGroup = (props: IPrpos) => {
+    // let grouptype = 'normal';
+    const i18n_ = i18n.newgroup;
+
+    let [groupType, setGroupType] = createSignal<TBookmarkGroupType>("normal");
+    let [ruleType, setRuleType] = createSignal<TRuleType>("sql");
+
+    let [ruleInput, setRuleInput] = createSignal('');
+
+    props.setGroup({ name: 'New Group' });
 
     const transitionDuration = 100;
 
@@ -86,7 +264,7 @@ const NewGroup = (props: IPrpos) => {
                 >
                     <InputItem
                         key="name"
-                        value=""
+                        value="New Group"
                         type="textinput"
                         changed={(v) => {
                             props.setGroup({ name: v });
@@ -139,70 +317,9 @@ const NewGroup = (props: IPrpos) => {
                 }}
             >
                 <Show when={groupType() !== 'normal'}>
-                    <div style={{ display: "flex", "flex-direction": 'column' }}>
-                        <ItemWrap
-                            title={i18n_.rtype[0]}
-                            description={i18n_.rtype[1]}
-                        >
-                            <InputItem
-                                key="ruleType"
-                                value={ruleType()}
-                                type="select"
-                                options={{
-                                    sql: i18n.ruletype.sql,
-                                    backlinks: i18n.ruletype.backlinks,
-                                    attr: i18n.ruletype.attr,
-                                }}
-                                changed={(v) => {
-                                    props.setRule({ type: v });
-                                    setRuleType(v);
-                                }}
-                            />
-                        </ItemWrap>
-                        <ItemWrap
-                            title={i18n_.rinput}
-                            description={aboutRule().desc}
-                            //@ts-ignore
-                            direction={aboutRule().direction}
-                        >
-                            <Show when={['sql', 'attr'].includes(ruleType())}>
-                                <div style={{
-                                    display: "flex",
-                                    gap: '10px',
-                                    position: 'absolute',
-                                    right: '0px',
-                                    top: '-60px',
-                                    padding: '0px',
-                                    margin: 0,
-                                    'align-items': 'center'
-                                }}>
-                                    <span class="b3-label__text">{i18n_.choosetemplate}</span>
-                                    <InputItem
-                                        key="ruleTemplate"
-                                        value={'no'}
-                                        options={templateToSelect()}
-                                        type='select'
-                                        changed={(key) => {
-                                            let temp = template()[key].trim();
-                                            setRuleInput(temp);
-                                            props.setRule({ input: temp });
-                                        }}
-                                        style={{ 'width': '130px' }}
-                                    />
-                                </div>
-                            </Show>
-                            <InputItem
-                                key="ruleInput"
-                                value={ruleInput()}
-                                //@ts-ignore
-                                type={aboutRule().input}
-                                changed={(v) => {
-                                    props.setRule({ input: v });
-                                }}
-                                style={ruleType() === 'attr' ? { 'flex': 1, 'width': '100%' } : null}
-                            />
-                        </ItemWrap>
-                    </div>
+                    <NewGroupContext.Provider value={{ groupType, setGroupType, ruleType, setRuleType, ruleInput, setRuleInput, setRule: props.setRule }}>
+                        <RuleEditor />
+                    </NewGroupContext.Provider>
                 </Show>
             </Transition>
         </div>

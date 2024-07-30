@@ -191,6 +191,12 @@ const Group: Component<Props> = (props) => {
             },
         });
         if (isDynamicGroup()) {
+            let type: "textline" | "textarea" = 'textline';
+            let height = null;
+            if (props.group.rule.type === 'sql') {
+                type = 'textarea';
+                height = "300px";
+            }
             menu.addItem({
                 label: i18n_.edit,
                 icon: "iconEdit",
@@ -198,9 +204,9 @@ const Group: Component<Props> = (props) => {
                     inputDialog({
                         title: i18n_.edit + `@${i18n.ruletype[props.group.rule.type]}`,
                         defaultText: props.group.rule.input,
-                        width: "650px",
-                        height: "300px",
-                        type: 'textarea',
+                        width: "600px",
+                        height: height,
+                        type: type,
                         confirm: (ruleinput: string) => {
                             if (ruleinput) {
                                 model.updateGroupRule(props.group.id, ruleinput);

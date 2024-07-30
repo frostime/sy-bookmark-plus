@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-07-15 18:39:27
+ * @LastEditTime : 2024-07-27 16:41:57
  * @Description  : 
  */
 
@@ -128,9 +128,16 @@ and substr(created, 5, 4)  = strftime('%m%d', 'now')
 and substr(created, 1, 4)  != strftime('%Y', 'now')
 and created >= strftime('%Y%m%d%H%M%S', datetime('now', '-5 years'))
 order by created desc
-`
+`,
+        'todo': `
+select * from blocks
+where type = 'i' and subtype = 't'
+and markdown like '* [ ] %'
+order by updated desc;`
     },
     attr: {
         'dailynote': `custom-dailynote-%`
     }
 }
+
+export const Caret = '‸';

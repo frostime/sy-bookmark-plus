@@ -97,6 +97,12 @@ newgroup:
     backlinks: 请输入反链的块 ID
     attr: 请输入要查找的属性; 可以填写 [属性名], 或者 [属性名][= 或 like][属性值]
   choosetemplate: 选择模板
+  postprocess:
+    ariaLabel: '<b>容器首个子块: </b>当搜索到的引用块为列表项、引述块的第一个子块时，显示完整的容器块<br/><b>显示为文档块: </b>显示引用块所在的文档，而非引用块本身<br/><b>详情请见 README 文档</b>'
+    name: 后处理方案
+    omit: 无处理
+    fb2p: 容器首个子块
+    b2doc: 显示为文档块
 bookmarktype:
   normal: '普通书签'
   dynamic: '动态书签'
@@ -110,5 +116,6 @@ template:
     random: 随机漫游
     updated: 最近更新
     thisday: 历史上的今天
+    todo: 未完成的任务
   attr:
     dailynote: Daily Note

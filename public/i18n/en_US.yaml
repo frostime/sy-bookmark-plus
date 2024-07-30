@@ -97,6 +97,13 @@ newgroup:
     backlinks: Please enter the block ID of the backlink
     attr: Please enter the attribute to search for; You can fill in [attribute name], or [attribute name][= or like][attribute value]
   choosetemplate: Template
+  postprocess:
+    ariaLabel: '<b>First child of container: </b>Display the full container block when the referenced block is the first child of a list item or quote block.<br/><b>Display as document block: </b>Display the document containing the referenced block, rather than the referenced block itself.<br/><b>See README for details</b>'
+    name: Post-process
+    omit: No Process
+    fb2p: First child of container
+    b2doc: Display as document block
+
 bookmarktype:
   normal: 'Normal Bookmark'
   dynamic: 'Dynamic Bookmark'
@@ -110,5 +117,6 @@ template:
     random: Random Roam
     updated: Recently Updated
     thisday: On this day
+    todo: Unsolved Task
   attr:
     dailynote: Daily Note
