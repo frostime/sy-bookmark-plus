@@ -82,7 +82,7 @@ export class Backlinks extends MatchRule {
     }
 
     validateInput(): boolean {
-        return matchIDFormat(this.id) !== null && ['', 'fb2p', 'b2doc'].includes(this.process);
+        return matchIDFormat(this.id) && ['', 'fb2p', 'b2doc'].includes(this.process);
     }
 
     async fetch() {
