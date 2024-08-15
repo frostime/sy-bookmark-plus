@@ -184,3 +184,10 @@ However, if the user enables the "First child of container" post-processing sche
 
 * For dynamic groups, it re-executes the query and displays the most recent query results.
 * For static groups, it checks the current status of each item (block) and updates them based on the latest results.
+
+
+### Can plugins be used on mobile devices?
+
+![](asset/mobile.png)
+
+However, since plugin development is done on the desktop, some operations on mobile devices may be less convenient.

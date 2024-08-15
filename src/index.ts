@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-07-21 17:20:44
+ * @LastEditTime : 2024-08-15 17:38:22
  * @Description  : 
  */
 import {
@@ -25,12 +25,19 @@ import { Svg } from "@/utils/const";
 import { setI18n } from "@/utils/i18n";
 
 import "@/index.scss";
+import { isMobile } from "./utils";
 
 let model: BookmarkDataModel;
 
 const initBookmark = async (ele: HTMLElement, plugin: PluginBookmarkPlus) => {
     await model.updateAll();
     ele.classList.add('fn__flex-column');
+
+    if (isMobile()) {
+        //Refer to https://github.com/frostime/sy-bookmark-plus/issues/13#issuecomment-2283031563
+        let empty = ele.querySelector('.b3-list--empty') as HTMLElement;
+        if (empty) empty.style.display = 'none';
+    }
     render(() => Bookmark({
         plugin: plugin,
         model: model
@@ -46,6 +53,7 @@ const destroyBookmark = () => {
 };
 
 const bookmarkKeymap = window.siyuan.config.keymap.general.bookmark;
+
 
 
 export default class PluginBookmarkPlus extends Plugin {
@@ -121,14 +129,23 @@ export default class PluginBookmarkPlus extends Plugin {
         let container = document.createElement("div") as HTMLDivElement;
         container.classList.add("fn__flex-1", "fn__flex");
         render(() => Setting(), container);
+        let size = {
+            width: '700px',
+            height: '700px'
+        }
+        if (isMobile()) {
+            size = {
+                width: '100%',
+                height: '90%'
+            }
+        }
         simpleDialog({
             title: window.siyuan.languages.config,
             ele: container,
-            width: '700px',
-            height: '700px',
             callback: () => {
                 model.save();
-            }
+            },
+            ...size
         })
     }
 

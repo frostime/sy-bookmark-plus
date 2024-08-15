@@ -6,7 +6,13 @@
  * @LastEditTime : 2024-07-20 18:17:00
  * @Description  : 
  */
+import { getFrontend } from 'siyuan';
 import * as api from '../api';
+
+
+export const isMobile = () => {
+    return getFrontend().endsWith('mobile');
+}
 
 
 export function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {

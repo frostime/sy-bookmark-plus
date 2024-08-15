@@ -10,7 +10,7 @@ const App = () => {
 
     return (
         <div class="config__tab-container fn__flex-1" style={{
-            'font-size': '1.2rem',
+            'font-size': '1rem',
             padding: '10px 20px'
         }}>
             <SettingItemWrap

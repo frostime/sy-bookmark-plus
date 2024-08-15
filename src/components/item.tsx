@@ -1,6 +1,6 @@
 import { Component, createEffect, createMemo, createSignal, useContext } from "solid-js";
 import { render } from "solid-js/web";
-import { Menu, openTab, showMessage } from "siyuan";
+import { Menu, openTab, showMessage, openMobileFileById } from "siyuan";
 import { buildItemDetail } from "../libs/dom";
 
 import { itemInfo, setGroups, groupMap, configs } from "../model";
@@ -10,7 +10,7 @@ import { BookmarkContext, itemMoving, setItemMoving } from "./context";
 import { i18n, renderI18n } from "@/utils/i18n";
 import { simpleDialog } from "@/libs/dialog";
 import Typography from "@/libs/components/typography";
-import { getNotebook } from "@/utils";
+import { getNotebook, isMobile } from "@/utils";
 
 interface IProps {
     group: TBookmarkGroupId;
@@ -263,13 +263,17 @@ const Item: Component<IProps> = (props) => {
     };
 
     const openBlock = () => {
-        openTab({
-            app: plugin.app,
-            doc: {
-                id: item().id,
-                zoomIn: item().type === 'd' ? false : true,
-            },
-        });
+        if (isMobile()) {
+            openMobileFileById(plugin.app, item().id);
+        } else {
+            openTab({
+                app: plugin.app,
+                doc: {
+                    id: item().id,
+                    zoomIn: item().type === 'd' ? false : true,
+                },
+            });
+        }
     };
 
     const onDragStart = (event: DragEvent) => {

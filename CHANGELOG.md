@@ -1,5 +1,12 @@
 ## Changelog
 
+## v1.2.3
+
+- ⚡ perf: 适配优化移动端 [#13](https://github.com/frostime/sy-bookmark-plus/issues/13)
+  - 允许移动端点击跳转
+  - 去掉异常显示的 empty element
+  - 优化 setting 对话框显示
+
 ## v1.2.2
 
 - ✨ feat: 优化反查询功能，允许添加后处理
