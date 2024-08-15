@@ -11,7 +11,7 @@ itemErr:
 setting:
   replaceDefault:
     title: Replace Built-in Bookmarks
-    description: If enabled, the default bookmarks will be blocked, and bookmark shortcut keys (default is Alt+3) will be bound;<br/>Takes effect after restart
+    description: 'If enabled, the default bookmarks will be blocked, and bookmark shortcut keys (default is Alt+3) will be bound;<br/>Takes effect after restart; Notice: not appliable in mobile devices!'
   viewMode:
     title: Display Mode
     description: Select the style of the bookmark bar display

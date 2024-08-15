@@ -11,7 +11,7 @@ itemErr:
 setting:
   replaceDefault:
     title: 替换内置书签
-    description: 如果启用，则屏蔽默认书签，并且绑定书签快捷键(默认为 Alt+3);<br/>重启后生效
+    description: '如果启用，则屏蔽默认书签，并且绑定书签快捷键(默认为 Alt+3);<br/>重启后生效; 注意: 移动端不生效'
   viewMode:
     title: 展示模式
     description: 选择书签栏展示的样式

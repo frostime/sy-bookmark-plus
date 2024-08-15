@@ -188,6 +188,8 @@ However, if the user enables the "First child of container" post-processing sche
 
 ### Can plugins be used on mobile devices?
 
+> Note: On mobile devices, it will not be possible to replace the built-in bookmark functionality. It can only be accessed separately through the plugin panel.
+
 ![](asset/mobile.png)
 
 However, since plugin development is done on the desktop, some operations on mobile devices may be less convenient.
