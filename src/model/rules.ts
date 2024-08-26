@@ -3,7 +3,7 @@
  * @Author       : Yp Z
  * @Date         : 2023-07-29 15:17:15
  * @FilePath     : /src/model/rules.ts
- * @LastEditTime : 2024-08-26 12:01:37
+ * @LastEditTime : 2024-08-26 13:18:55
  * @Description  : 
  */
 import * as api from "@/api";
@@ -173,7 +173,7 @@ class Attr extends MatchRule {
      * @returns 
      */
     validateInput(): boolean {
-        const inputPattern = /^([\-\w\%]+)(?:\s*(=|like)\s*(.+))?$/;
+        const inputPattern = /^([\-\w\%\{\}]+)(?:\s*(=|like)\s*(.+))?$/;
         let ok = inputPattern.test(this._input);
         if (!ok) return false;
         const matches = this._input.match(inputPattern);
@@ -192,8 +192,8 @@ class Attr extends MatchRule {
 
     async fetch() {
         let name = renderTemplate(this.attrname);
-        let value = renderTemplate(this.attrval);
-        if (!name || !value) return [];
+        let value = this.attrval ? renderTemplate(this.attrval) : '';
+        // if (!name || !value) return [];
         let query = `
         SELECT B.*
         FROM blocks AS B
