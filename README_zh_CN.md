@@ -59,6 +59,38 @@
 
 ![](./asset/dynamic-group.gif)
 
+### 变量渲染
+
+在动态组中，支持基于 `{{VarName}}` 的变量渲染。变量渲染允许你在规则中插入一些动态变量，这些变量会在渲染时被替换为实际的值。目前支持的变量包括：
+
+* `{{CurDocId}}`：当前活动文档的 ID
+* `{{CurRootId}}`：`{{CurDocId}}` 的别名，二者等价
+* `{{yyyy}}`：当前年份（四位数）
+* `{{MM}}`：当前月份（两位数）
+* `{{dd}}`：当前日期（两位数）
+* `{{yy}}`：当前年份的后两位数
+* `{{today}}`：当前日期（等价于 `{{yyyy}}{{MM}}{{dd}}`）
+
+
+案例1，SQL 规则：查看本月所有更新
+
+```sql
+select * from blocks where
+type='d' and updated like '{{yyyy}}{{MM}}%'
+order by updated desc
+```
+
+案例2，属性规则：查看本月所有日记
+
+```
+custom-dailynote-% like {{yyyy}}{{MM}}%
+```
+
+案例3，反链规则：查看当前文档的反链:
+
+```
+{{CurDocId}}
+```
 
 ## 书签项目
 

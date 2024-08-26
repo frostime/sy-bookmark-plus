@@ -57,6 +57,38 @@ Dynamic bookmark groups mainly acquire bookmark items by executing queries.
 
 ![](./asset/dynamic-group.gif)
 
+### Variable Rendering
+
+In dynamic groups, variable rendering is supported based on `{{VarName}}`. Variable rendering allows you to insert dynamic variables into rules, which will be replaced with actual values during rendering. Currently supported variables include:
+
+* `{{CurDocId}}`: ID of the currently active document
+* `{{CurRootId}}`: Alias of `{{CurDocId}}`
+* `{{yyyy}}`: Current year (four digits)
+* `{{MM}}`: Current month (two digits)
+* `{{dd}}`: Current day (two digits)
+* `{{yy}}`: Last two digits of the current year
+* `{{today}}`: Current date (equivalent to `{{yyyy}}{{MM}}{{dd}}`)
+
+Example 1, SQL rule: View all updates for the current month
+
+```sql
+select * from blocks where
+type='d' and updated like '{{yyyy}}{{MM}}%'
+order by updated desc
+```
+
+Example 2, Attribute rule: View all daily notes for the current month
+
+```
+custom-dailynote-% like {{yyyy}}{{MM}}%
+```
+
+Example 3, Backlink rule: View backlinks that refer to the current active document:
+
+```
+{{CurDocId}}
+```
+
 ## Bookmark Items
 
 * Click an item to navigate to the corresponding block
