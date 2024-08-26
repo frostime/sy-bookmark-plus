@@ -1,11 +1,11 @@
-import { createMemo, For } from "solid-js";
+import { createMemo, For, JSX } from "solid-js";
 
 interface IProps extends ISettingItemCore {
-    changed: (v?: any) => void;
-    style?: { [key: string]: string | number };
+    changed?: (v?: any) => void;
+    style?: JSX.CSSProperties;
 }
 
-export default function InputItem(props: IProps) {
+export default function FormInput(props: IProps) {
 
     const fn_size = true;
 
@@ -23,7 +23,7 @@ export default function InputItem(props: IProps) {
             styles = { resize: "vertical", height: '10rem', "white-space": "nowrap" };
         }
         let propstyle = props.style ?? {};
-        styles = { ...styles, ...propstyle };
+        styles = {...styles, ...propstyle};
         return {
             style: styles
         };
@@ -92,7 +92,7 @@ export default function InputItem(props: IProps) {
                     {...attrStyle()}
                     onClick={click}
                 >
-                    {props.button.label}
+                    {props.button?.label ?? props.value}
                 </button>
             );
         } else if (props.type === "select") {

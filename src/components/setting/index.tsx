@@ -1,5 +1,4 @@
-import SettingItemWrap from "@/libs/components/item-wrap";
-import InputItem from "@/libs/components/item-input";
+import { FormWrap as SettingItemWrap, FormInput as InputItem } from '@/libs/components/Form';
 import GroupList from './group-list';
 import { configs, setConfigs } from "@/model";
 
@@ -9,7 +8,7 @@ const App = () => {
     const i18n_ = i18n.setting;
 
     return (
-        <div class="config__tab-container fn__flex-1" style={{
+        <div class="fn__flex-1" style={{
             'font-size': '1rem',
             padding: '10px 20px'
         }}>

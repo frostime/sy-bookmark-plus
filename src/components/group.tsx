@@ -332,6 +332,10 @@ const Group: Component<Props> = (props) => {
             event.preventDefault();
             event.dataTransfer.dropEffect = "copy";
             setIsDragOver(true);
+        } else if (type.startsWith(Constants.SIYUAN_DROP_FILE)) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "copy";
+            setIsDragOver(true);
         } else if (type === 'bookmark/item') {
             event.preventDefault();
             event.dataTransfer.dropEffect = "move";
@@ -358,6 +362,21 @@ const Group: Component<Props> = (props) => {
             const info = meta.split(Constants.ZWSP);
             const nodeId = info[2];
             addItemByBlockId(nodeId);
+        }  else if (type.startsWith(Constants.SIYUAN_DROP_FILE)) {
+            const ele: HTMLElement = window.siyuan.dragElement;
+            if (ele && ele.innerText) {
+                const blockid = ele.innerText;
+                //if '/', it might be the box other than document
+                if (blockid && blockid !== '/') {
+                    addItemByBlockId(blockid);
+                }
+                //Clean up the effect of dragging element
+                const item: HTMLElement = document.querySelector(`.file-tree.sy__tree li[data-node-id="${blockid}"]`);
+                if (item) {
+                    item.style.opacity = "1";
+                }
+                window.siyuan.dragElement = undefined;
+            }
         } else if (type === 'bookmark/item') {
             model.moveItem(itemMoving());
         }

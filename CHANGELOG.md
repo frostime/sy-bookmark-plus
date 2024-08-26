@@ -1,5 +1,11 @@
 ## Changelog
 
+## v1.3.0
+
+- ✨ feat: 支持传入变量如当前文档id  [#14](https://github.com/frostime/sy-bookmark-plus/issues/14)
+  - 相关用法已更新 README
+- ✨ feat: 支持从文档树中直接拖入文档加入书签中 [#16](https://github.com/frostime/sy-bookmark-plus/issues/16)
+
 ## v1.2.3
 
 - ⚡ perf: 适配优化移动端 [#13](https://github.com/frostime/sy-bookmark-plus/issues/13)

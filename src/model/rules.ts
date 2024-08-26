@@ -3,13 +3,14 @@
  * @Author       : Yp Z
  * @Date         : 2023-07-29 15:17:15
  * @FilePath     : /src/model/rules.ts
- * @LastEditTime : 2024-07-25 21:06:16
+ * @LastEditTime : 2024-08-26 13:18:55
  * @Description  : 
  */
 import * as api from "@/api";
 import { fb2p, getBlocksByIDs } from "@/libs/query";
 
 import { Caret } from "@/utils/const";
+import { renderTemplate, VAR_NAMES } from "./templating";
 
 
 export abstract class MatchRule implements IDynamicRule {
@@ -82,19 +83,22 @@ export class Backlinks extends MatchRule {
     }
 
     validateInput(): boolean {
-        return matchIDFormat(this.id) && ['', 'fb2p', 'b2doc'].includes(this.process);
+        const validateID = matchIDFormat(this.id) || this.id === `{{${VAR_NAMES.CurDocId}}}` || this.id === `{{${VAR_NAMES.CurRootId}}}`;
+        const validProcess = ['', 'fb2p', 'b2doc'].includes(this.process);
+        return validateID && validProcess;
     }
 
     async fetch() {
         this.eof = true;
-        if (!this.id) {
+        let runtimeId = renderTemplate(this.id);
+        if (!runtimeId) {
             return [];
         }
         const sql = `
             select blocks.* 
             from blocks 
             join refs on blocks.id = refs.block_id 
-            where refs.def_block_id = '${this.id}' 
+            where refs.def_block_id = '${runtimeId}' 
             order by blocks.updated desc 
             limit 999;
         `;
@@ -142,10 +146,11 @@ export class SQL extends MatchRule {
 
     async fetch() {
         this.eof = true;
-        if (!this.input) {
+        let sqlCode = renderTemplate(this.input);
+        if (!sqlCode) {
             return [];
         }
-        let result = await api.sql(this.input);
+        let result = await api.sql(sqlCode);
         return result ?? [];
     }
 }
@@ -168,7 +173,7 @@ class Attr extends MatchRule {
      * @returns 
      */
     validateInput(): boolean {
-        const inputPattern = /^([\-\w\%]+)(?:\s*(=|like)\s*(.+))?$/;
+        const inputPattern = /^([\-\w\%\{\}]+)(?:\s*(=|like)\s*(.+))?$/;
         let ok = inputPattern.test(this._input);
         if (!ok) return false;
         const matches = this._input.match(inputPattern);
@@ -186,14 +191,17 @@ class Attr extends MatchRule {
     }
 
     async fetch() {
+        let name = renderTemplate(this.attrname);
+        let value = this.attrval ? renderTemplate(this.attrval) : '';
+        // if (!name || !value) return [];
         let query = `
         SELECT B.*
         FROM blocks AS B
         WHERE B.id IN (
             SELECT A.block_id
             FROM attributes AS A
-            WHERE A.name like '${this.attrname}'
-            ${this.attrval ? `AND A.value ${this.attrop} '${this.attrval}'` : ''}
+            WHERE A.name like '${name}'
+            ${value ? `AND A.value ${this.attrop} '${value}'` : ''}
         );`;
         let result = await api.sql(query);
         return result ?? [];

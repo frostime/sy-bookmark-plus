@@ -1,7 +1,8 @@
 import { Accessor, createMemo, createSignal, Setter, Show } from "solid-js";
 
-import ItemWrap from "@/libs/components/item-wrap";
-import InputItem from "@/libs/components/item-input";
+// import ItemWrap from "@/libs/components/item-wrap";
+// import InputItem from "@/libs/components/item-input";
+import Form from "@/libs/components/Form";
 import Icon from "./icon";
 
 import { i18n } from "@/utils/i18n";
@@ -33,7 +34,7 @@ const RuleInput = () => {
     const render = () => {
         if (ruleType() === 'attr') {
             return (
-                <InputItem
+                <Form.Input
                     key="ruleInput"
                     value={ruleInput()}
                     type='textinput'
@@ -45,7 +46,7 @@ const RuleInput = () => {
             );
         } else if (ruleType() === 'sql') {
             return (
-                <InputItem
+                <Form.Input
                     key="ruleInput"
                     value={ruleInput()}
                     type='textarea'
@@ -66,7 +67,7 @@ const RuleInput = () => {
             }
             return (
                 <>
-                    <InputItem
+                    <Form.Input
                         key="ruleInput"
                         value={id}
                         type='textinput'
@@ -92,7 +93,7 @@ const RuleInput = () => {
                             />
                         </span>
                         <div class="b3-label__text fn__flex-1">{i18nPost.name}</div>
-                        <InputItem
+                        <Form.Input
                             key="ruleInput"
                             value={process}
                             type='select'
@@ -173,11 +174,11 @@ const RuleEditor = () => {
 
     return (
         <div style={{ display: "flex", "flex-direction": 'column' }}>
-            <ItemWrap
+            <Form.Wrap
                 title={i18n_.rtype[0]}
                 description={i18n_.rtype[1]}
             >
-                <InputItem
+                <Form.Input
                     key="ruleType"
                     value={ruleType()}
                     type="select"
@@ -192,40 +193,39 @@ const RuleEditor = () => {
                         setRuleInput('');
                     }}
                 />
-            </ItemWrap>
-            <ItemWrap
+            </Form.Wrap>
+            <Form.Wrap
                 title={i18n_.rinput}
                 description={aboutRule().desc}
                 direction={aboutRule().direction}
+                action={
+                    <Show when={['sql', 'attr'].includes(ruleType())}>
+                        <div style={{
+                            display: "flex",
+                            gap: '10px',
+                            padding: '0px',
+                            margin: 0,
+                            'align-items': 'center'
+                        }}>
+                            <span class="b3-label__text">{i18n_.choosetemplate}</span>
+                            <Form.Input
+                                key="ruleTemplate"
+                                value={'no'}
+                                options={templateToSelect()}
+                                type='select'
+                                changed={(key) => {
+                                    let temp = template()[key].trim();
+                                    setRuleInput(temp);
+                                    setRule({ input: temp });
+                                }}
+                                style={{ 'width': '130px' }}
+                            />
+                        </div>
+                    </Show>
+                }
             >
-                <Show when={['sql', 'attr'].includes(ruleType())}>
-                    <div style={{
-                        display: "flex",
-                        gap: '10px',
-                        position: 'absolute',
-                        right: '0px',
-                        top: '-60px',
-                        padding: '0px',
-                        margin: 0,
-                        'align-items': 'center'
-                    }}>
-                        <span class="b3-label__text">{i18n_.choosetemplate}</span>
-                        <InputItem
-                            key="ruleTemplate"
-                            value={'no'}
-                            options={templateToSelect()}
-                            type='select'
-                            changed={(key) => {
-                                let temp = template()[key].trim();
-                                setRuleInput(temp);
-                                setRule({ input: temp });
-                            }}
-                            style={{ 'width': '130px' }}
-                        />
-                    </div>
-                </Show>
                 <RuleInput />
-            </ItemWrap>
+            </Form.Wrap>
         </div>
     );
 }
@@ -250,7 +250,7 @@ const NewGroup = (props: IPrpos) => {
     const transitionDuration = 100;
 
     return (
-        <div class="config__tab-container fn__flex fn__flex-1 fn__flex-column"
+        <div class="fn__flex fn__flex-1 fn__flex-column"
             onkeydown={(e) => {
                 if (e.key === 'Enter') {
                     e.stopImmediatePropagation(); // 防止 enter 让 dialog 直接 confirm 了
@@ -258,11 +258,11 @@ const NewGroup = (props: IPrpos) => {
             }}
         >
             <div style={{ display: "flex", "flex-direction": 'column' }}>
-                <ItemWrap
+                <Form.Wrap
                     title={i18n_.name[0]}
                     description={i18n_.name[1]}
                 >
-                    <InputItem
+                    <Form.Input
                         key="name"
                         value="New Group"
                         type="textinput"
@@ -270,12 +270,12 @@ const NewGroup = (props: IPrpos) => {
                             props.setGroup({ name: v });
                         }}
                     />
-                </ItemWrap>
-                <ItemWrap
+                </Form.Wrap>
+                <Form.Wrap
                     title={i18n_.type[0]}
                     description={i18n_.type[1]}
                 >
-                    <InputItem
+                    <Form.Input
                         key="type"
                         value={groupType()}
                         type="select"
@@ -292,7 +292,7 @@ const NewGroup = (props: IPrpos) => {
                             }
                         }}
                     />
-                </ItemWrap>
+                </Form.Wrap>
             </div>
             <Transition
                 onExit={(el, done) => {

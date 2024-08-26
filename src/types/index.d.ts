@@ -118,6 +118,7 @@ declare interface Window {
         ws: any;
         languages: any;
         emojis: any;
+        dragElement?: HTMLDivElement;
     };
     Lute: {
         Caret: string;
