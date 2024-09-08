@@ -433,6 +433,19 @@ const Group: Component<Props> = (props) => {
                 <span class="b3-list-item__text ariaLabel" data-position="parentE">
                     {props.group.name}
                 </span>
+                <Show when={isDynamicGroup()}>
+                    <span
+                        class="b3-list-item__action"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            model.updateDynamicGroup(props.group);
+                        }}
+                    >
+                        <svg>
+                            <use href="#iconRefresh"></use>
+                        </svg>
+                    </span>
+                </Show>
                 <span
                     class="b3-list-item__action"
                     onClick={(e) => {
