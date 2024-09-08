@@ -6,6 +6,8 @@ Below are the core functionalities. Please explore other detailed features on yo
 
 If you are satisfied with the plugin, welcome to visit our [Github page](https://github.com/frostime/sy-bookmark-plus) and star it!
 
+📝 Changlog (in Chinese, however): [CHANGELOG.md](./CHANGELOG.md)
+
 ## Bookmark Groups
 
 Click "Add" on the top bar to create a new bookmark group. Bookmark groups are classified into two types:
