@@ -88,7 +88,8 @@ const Item: Component<IProps> = (props) => {
     });
 
     const notebook = createMemo(() => {
-        return getNotebook(item().box).name;
+        const notebook = getNotebook(item().box);
+        return notebook?.name ?? 'Box Not Found';
     })
 
     const hoverContext = createMemo(() => {

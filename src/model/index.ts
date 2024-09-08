@@ -214,8 +214,8 @@ export class BookmarkDataModel {
         let allIds = [];
         //一般调用 updateItems 之前会已经调用过 update dynamic group; 如果再次更新就有些冗余了
         //不这么做似乎会造成 item 404 的 bug
-        const staticGroups = groups.filter(g => g.type !== 'dynamic');
-        staticGroups.filter(g => g.hidden === false).forEach(g => {
+        const staticGroups = groups.filter(g => g.type !== 'dynamic' && g.hidden !== true);
+        staticGroups.forEach(g => {
             allIds = allIds.concat(g.items.map(it => it.id));
         })
         let allIdsSet = new Set(allIds);
