@@ -2,8 +2,8 @@
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
  * @Date         : 2024-05-21 20:25:51
- * @FilePath     : /src/func/bookmarks/utils.ts
- * @LastEditTime : 2024-05-28 16:29:01
+ * @FilePath     : /src/libs/dom.ts
+ * @LastEditTime : 2024-09-14 22:49:38
  * @Description  : 
  */
 import { NodeIcons, BlockType2NodeType } from "@/utils/const";

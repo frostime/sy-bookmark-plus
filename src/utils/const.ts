@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-07-27 16:41:57
+ * @LastEditTime : 2024-09-14 22:52:01
  * @Description  : 
  */
 
@@ -88,7 +88,10 @@ export const NodeIcons = {
         }
     },
     NodeListItem: {
-        icon: "iconListItem"
+        icon: "iconListItem",
+        subtypes: {
+            t: { icon: "iconCheck" },  // 对于任务列表，进行特别标记
+        }
     },
     NodeMathBlock: {
         icon: "iconMath"
