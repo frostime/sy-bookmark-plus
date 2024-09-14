@@ -21,6 +21,7 @@ import {
     groups
 } from './stores';
 import { getRule } from "./rules";
+import { formatItemTitle } from "./utils";
 export * from './stores';
 
 const StorageNameBookmarks = 'bookmarks';  //书签
@@ -181,9 +182,9 @@ export class BookmarkDataModel {
                 } else {
                     //新增条目
                     let block = blocksMap.get(id);
-                    const { name, fcontent, content, box, type, subtype } = block;
+                    const { box, type, subtype } = block;
                     let iteminfo = {
-                        id, title: name || fcontent || content,
+                        id, title: formatItemTitle(block),
                         box, type, subtype: subtype,
                         icon: '', ref: 1
                     };
@@ -245,10 +246,10 @@ export class BookmarkDataModel {
         itemsToUpdate.forEach(([id, item], _) => {
             let block = blocks[id];
             if (block) {
-                const { name, fcontent, content, box, type, subtype } = block;
+                const { box, type, subtype } = block;
                 const ni: IBookmarkItemInfo = {
                     id: item.id,
-                    title: name || fcontent || content,
+                    title: formatItemTitle(block),
                     box,
                     type,
                     subtype: subtype || '',
