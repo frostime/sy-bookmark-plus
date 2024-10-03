@@ -113,6 +113,8 @@ interface I18n {
             fb2p: string;
             b2doc: string;
         };
+        icontitle: string;
+        icondesc: string;
     };
     bookmarktype: {
         normal: string;

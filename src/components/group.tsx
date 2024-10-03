@@ -14,33 +14,23 @@ import { groups, setGroups, configs, itemInfo } from "../model";
 import { BookmarkContext, itemMoving, setItemMoving, groupDrop, setGroupDrop } from "./context";
 import { getActiveDoc } from "@/utils";
 import Icon from "./icon";
-import { parseEmoji} from "./icon";
+import { parseEmoji } from "./icon";
 
-import SelectIcons from "./select-icon";
-import { solidDialog } from "@/libs/dialog";
+import { selectGroupIcon } from "./select-icon";
 
 const useGroupIcon = (props: Parameters<typeof Group>[0]) => {
     const { model } = useContext(BookmarkContext);
 
     const changeGroupIcon = () => {
-        const chooseIcon = (args: {
-            type: 'symbol' | 'emoji' | ''; value: string;
-        }) => {
-            close();
-            if (args.type === '' && args.value === '') {
+        selectGroupIcon({
+            onReset: () => {
                 model.setGroups(props.group.id, 'icon', null);
                 showMessage('Reset!');
-            } else {
-                model.setGroups(props.group.id, 'icon', args);
-                showMessage((args.type === 'symbol' ? args.value : parseEmoji(args.value)));
+            },
+            onUpdate: (icon) => {
+                model.setGroups(props.group.id, 'icon', icon);
+                showMessage((icon.type === 'symbol' ? icon.value : parseEmoji(icon.value)));
             }
-        }
-
-        const { close } = solidDialog({
-            title: i18n.selecticon.title,
-            loader: () => <SelectIcons choose={chooseIcon} />,
-            width: '800px',
-            height: '600px'
         });
     }
 

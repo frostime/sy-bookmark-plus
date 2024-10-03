@@ -20,27 +20,30 @@ const createNewGroup = (confirmCb: (data: any) => void) => {
     let container = document.createElement("div") as HTMLDivElement;
     container.style.display = 'contents';
 
-    const [group, setGroup] = createSignal({name: "", type: "normal"});
-    const [rule, setRule] = createSignal({type: "", input: ""});
+    const [group, setGroup] = createSignal({ name: "", type: "normal" });
+    const [rule, setRule] = createSignal({ type: "", input: "" });
+    const [icon, setIcon] = createSignal<IBookmarkGroup['icon'] | null>(null);
 
     render(() => NewGroup({
         setGroup: (args) => {
             let current = group();
-            let newval = {...current, ...args};
+            let newval = { ...current, ...args };
             setGroup(newval);
         },
         setRule: (args) => {
             let current = rule();
-            let newval = {...current, ...args};
+            let newval = { ...current, ...args };
             setRule(newval);
-        }
+        },
+        icon,
+        setIcon
     }), container);
     confirmDialog({
         title: i18n.bookmark.new,
         content: container,
-        width: '600px',
+        width: '800px',
         confirm: () => {
-            confirmCb({group: group(), rule: rule()});
+            confirmCb({ group: group(), rule: rule(), icon: icon() });
         }
     });
 }
@@ -60,14 +63,14 @@ const BookmarkComponent: Component<Props> = (props) => {
     });
 
     const groupAdd = () => {
-        createNewGroup((result: {group: any, rule: any}) => {
+        createNewGroup((result: { group: any, rule: any, icon?: IBookmarkGroup['icon'] }) => {
             console.log(result);
-            let { group, rule } = result;
+            let { group, rule, icon } = result;
             if (group.name === "") {
                 showMessage(i18n.msg.groupNameEmpty, 3000, 'error');
                 return;
             }
-            props.model.newGroup(group.name, group.type, rule);
+            props.model.newGroup(group.name, group.type, rule, icon);
         });
     };
 

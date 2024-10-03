@@ -103,6 +103,9 @@ newgroup:
     omit: No Process
     fb2p: First child of container
     b2doc: Display as document block
+  icontitle: Group Icon
+  # icondesc: 可以手动选择分组的图标；如果不设置，插件会根据分组类型分配默认的图标。
+  icondesc: Select the icon for the group; if not set, the plugin will assign a default icon based on the group type.
 
 bookmarktype:
   normal: 'Normal Bookmark'

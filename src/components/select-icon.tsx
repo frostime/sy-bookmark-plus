@@ -1,6 +1,9 @@
 import { createSignal, For, Show } from "solid-js";
 import Icon from "./icon";
 import { inject } from "@/libs/inject";
+import { solidDialog } from "@/libs/dialog";
+
+import { i18n } from "@/utils/i18n";
 
 type ImojiGroup = {
     id: string;
@@ -73,6 +76,29 @@ const SelectIcons = (props: IProps) => {
             </Show>
         </div>
     );
+}
+
+export const selectGroupIcon = (param: {
+    onReset: () => void;
+    onUpdate: (icon: { type: 'symbol' | 'emoji' | ''; value: string }) => void;
+}) => {
+    const chooseIcon = (icon: {
+        type: 'symbol' | 'emoji' | ''; value: string;
+    }) => {
+        close();
+        if (icon.type === '' && icon.value === '') {
+            param.onReset();
+        } else {
+            param.onUpdate(icon);
+        }
+    }
+
+    const { close } = solidDialog({
+        title: i18n.selecticon.title,
+        loader: () => <SelectIcons choose={chooseIcon} />,
+        width: '800px',
+        height: '600px'
+    });
 }
 
 export default SelectIcons;

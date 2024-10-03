@@ -331,7 +331,7 @@ export class BookmarkDataModel {
         }
     }
 
-    newGroup(name: string, type?: TBookmarkGroupType, rule?: IDynamicRule) {
+    newGroup(name: string, type?: TBookmarkGroupType, rule?: IDynamicRule, icon?: IBookmarkGroup['icon']) {
         //6位 36进制
         let id: TBookmarkGroupId;
         while (id === undefined || groupMap().has(id)) {
@@ -343,7 +343,7 @@ export class BookmarkDataModel {
             items: [],
             type,
             rule,
-            icon: null
+            icon: icon ?? null
         };
 
         setGroups((gs) => [...gs, group]);
