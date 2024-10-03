@@ -136,6 +136,7 @@ interface I18n {
         };
     };
     selecticon: {
+        title: string;
         h3: string;
         reset: string;
     };

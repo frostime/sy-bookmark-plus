@@ -121,5 +121,6 @@ template:
   attr:
     dailynote: Daily Note
 selecticon:
+  title: Change Group Icon
   h3: Please select an icon
   reset: Reset

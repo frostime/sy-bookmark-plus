@@ -21,9 +21,8 @@ import { solidDialog } from "@/libs/dialog";
 
 const useGroupIcon = (props: Parameters<typeof Group>[0]) => {
     const { model } = useContext(BookmarkContext);
-    const onClickIcon = (e: MouseEvent) => {
-        e.stopPropagation();
-        e.preventDefault();
+
+    const changeGroupIcon = () => {
         const chooseIcon = (args: {
             type: 'symbol' | 'emoji' | ''; value: string;
         }) => {
@@ -38,11 +37,17 @@ const useGroupIcon = (props: Parameters<typeof Group>[0]) => {
         }
 
         const { close } = solidDialog({
-            title: 'Icon',
+            title: i18n.selecticon.title,
             loader: () => <SelectIcons choose={chooseIcon} />,
             width: '800px',
             height: '600px'
         });
+    }
+
+    const onClickIcon = (e: MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        changeGroupIcon();
     }
 
     const ShowIcon = (icon?: {
@@ -64,7 +69,8 @@ const useGroupIcon = (props: Parameters<typeof Group>[0]) => {
     )
 
     return {
-        IconView
+        IconView,
+        changeGroupIcon
     }
 }
 
@@ -78,7 +84,7 @@ interface Props {
 const Group: Component<Props> = (props) => {
     const { model, doAction } = useContext(BookmarkContext);
 
-    const { IconView } = useGroupIcon(props);
+    const { IconView, changeGroupIcon } = useGroupIcon(props);
 
     const isDynamicGroup = () => props.group.type === 'dynamic';
 
@@ -246,6 +252,12 @@ const Group: Component<Props> = (props) => {
                 });
             },
         });
+        menu.addItem({
+            label: i18n.selecticon.title,
+            icon: "iconImage",
+            click: changeGroupIcon
+        });
+
         if (isDynamicGroup()) {
             let type: "textline" | "textarea" = 'textline';
             let height = null;

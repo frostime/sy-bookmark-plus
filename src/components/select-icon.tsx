@@ -27,7 +27,7 @@ const SelectIcons = (props: IProps) => {
     const SIZE = '20px'
 
     const AllSymbols = () => (
-        <div class="icons" style={{ margin: '10px' }}>
+        <div class="icons">
             <For each={symbols}>
                 {(symbol) => (
                     <div style={{ display: 'inline-block', cursor: 'pointer', margin: '5px' }}
@@ -40,7 +40,7 @@ const SelectIcons = (props: IProps) => {
     );
 
     const EmojiIcons = () => (
-        <div class="icons" style={{ margin: '10px' }}>
+        <div class="icons">
             <For each={emojiUnicodes}>
                 {(unicode) => (
                     <div style={{ display: 'inline-block', cursor: 'pointer', margin: '5px' }}
@@ -53,15 +53,18 @@ const SelectIcons = (props: IProps) => {
     );
 
     return (
-        <div>
-            <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', margin: '10px' }}>
+        <div style={{ margin: '10px 24px' }}>
+            <div style={{ display: 'flex', 'align-items': 'center', gap: '15px' }}>
                 <h3>{i18n.selecticon.h3}</h3>
+                <div style={{ display: 'flex', gap: '10px', flex: 1 }}>
+                    <button class="b3-button" onClick={() => setActiveTab('symbols')}>Symbols</button>
+                    <button class="b3-button" onClick={() => setActiveTab('emojis')}>Emojis</button>
+                </div>
                 <button class="b3-button" onClick={() => props.choose({ type: '', value: '' })}>{i18n.selecticon.reset}</button>
             </div>
-            <div style={{ display: 'flex', margin: '10px', gap: '10px' }}>
-                <button class="b3-button" onClick={() => setActiveTab('symbols')}>Symbols</button>
-                <button class="b3-button" onClick={() => setActiveTab('emojis')}>Emojis</button>
-            </div>
+
+            <br />
+
             <Show when={activeTab() === 'symbols'}>
                 <AllSymbols />
             </Show>
