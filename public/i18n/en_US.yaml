@@ -120,3 +120,6 @@ template:
     todo: Unsolved Task
   attr:
     dailynote: Daily Note
+selecticon:
+  h3: Please select an icon
+  reset: Reset

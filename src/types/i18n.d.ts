@@ -135,4 +135,8 @@ interface I18n {
             dailynote: string;
         };
     };
+    selecticon: {
+        h3: string;
+        reset: string;
+    };
 }
