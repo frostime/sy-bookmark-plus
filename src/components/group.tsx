@@ -44,7 +44,7 @@ const useGroupIcon = (props: Parameters<typeof Group>[0]) => {
         type: 'symbol' | 'emoji' | ''; value: string;
     }) => {
         if (!icon || icon.type === '') {
-            return <Icon symbol={props.group.type === 'normal' ? 'iconFolder' : 'iconSearch'} />
+            return <Icon symbol={(!props.group.type || props.group.type === 'normal') ? 'iconFolder' : 'iconSearch'} />
         } else if (icon.type === 'symbol') {
             return <Icon symbol={icon.value} />
         } else if (icon.type === 'emoji') {

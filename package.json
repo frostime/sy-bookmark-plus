@@ -1,6 +1,6 @@
 {
   "name": "sy-bookmark-plus",
-  "version": "1.4.0-dev1",
+  "version": "1.4.0",
   "type": "module",
   "description": "A more powerful bookmark",
   "repository": "",
@@ -8,9 +8,6 @@
   "author": "frostime",
   "license": "GPL-3.0-only",
   "scripts": {
-    "make-link": "node  --no-warnings ./scripts/make_dev_link.js",
-    "make-link-win": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/elevate.ps1 -scriptPath ./scripts/make_dev_link.js",
-    "update-version": "node --no-warnings ./scripts/update_version.js",
     "dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
     "build": "cross-env NODE_ENV=production vite build",
     "build-srcmap": "cross-env NODE_ENV=production VITE_SOURCEMAP=inline vite build",

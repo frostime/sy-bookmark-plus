@@ -1,0 +1,11 @@
+code_files:
+- './src/**/*.ts'
+- './src/**/*.tsx'
+dict: {}
+export_dir: src/types
+i18n_dir: public/i18n
+i18n_pattern: \(\(`(.+?)`\)\)
+i18n_var_mid: filename
+i18n_var_prefix: i18n
+main_file: zh_CN.yaml
+strategy: diff
