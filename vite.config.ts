@@ -11,11 +11,12 @@ import vitePluginYamlI18n from './yaml-plugin';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
     const isSrcmap = env.VITE_SOURCEMAP === 'inline';
-    const isDev = mode === 'development';
+    const isDev = env.NODE_ENV === 'development';
     const distDir = isDev ? "dev" : "dist";
 
     console.log("isDev=>", isDev);
     console.log("isSrcmap=>", isSrcmap);
+    console.log("distDir=>", distDir);
 
     return {
         resolve: {

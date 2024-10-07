@@ -22,12 +22,12 @@ const SelectIcons = (props: IProps) => {
 
     const i18n = inject<I18n>('i18n');
 
-    const ALLOWED_EMOJI_GROUP = ['object', 'symbols', 'flags', 'nature', 'people', 'activity', 'travel'];
-    const EmojisGroups = (window.siyuan.emojis as ImojiGroup[]).filter(emoji => ALLOWED_EMOJI_GROUP.includes(emoji.id))
-        .sort((a, b) => ALLOWED_EMOJI_GROUP.indexOf(a.id) - ALLOWED_EMOJI_GROUP.indexOf(b.id));
+    const ALLOWED_EMOJI_GROUP = ['activity', 'travel', 'people', 'nature', 'food', 'symbols', 'object', 'flags'];
+    let EmojisGroups = (window.siyuan.emojis as ImojiGroup[]).filter(emoji => ALLOWED_EMOJI_GROUP.includes(emoji.id));
+    EmojisGroups.sort((a, b) => ALLOWED_EMOJI_GROUP.indexOf(a.id) - ALLOWED_EMOJI_GROUP.indexOf(b.id))
     const emojiUnicodes = EmojisGroups.map(group => group.items.map(item => item.unicode)).flat();
 
-    const SIZE = '20px'
+    const SIZE = '20px';
 
     const AllSymbols = () => (
         <div class="icons">
