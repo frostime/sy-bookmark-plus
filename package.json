@@ -11,10 +11,10 @@
     "make-link": "node  --no-warnings ./scripts/make_dev_link.js",
     "make-link-win": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/elevate.ps1 -scriptPath ./scripts/make_dev_link.js",
     "update-version": "node --no-warnings ./scripts/update_version.js",
-    "dev": "vite build --watch",
-    "dev-srcmap": "vite build --watch --sourcemap=inline",
-    "build": "vite build",
-    "make-install": "vite build && node --no-warnings ./scripts/make_install.js"
+    "dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
+    "build": "cross-env NODE_ENV=production vite build",
+    "build-srcmap": "cross-env NODE_ENV=production VITE_SOURCEMAP=inline vite build",
+    "make-install": "cross-env NODE_ENV=production vite build && node --no-warnings ./scripts/make_install.js"
   },
   "devDependencies": {
     "@types/node": "^20.3.0",
@@ -32,7 +32,8 @@
     "vite": "^5.2.13",
     "vite-plugin-solid": "^2.10.2",
     "vite-plugin-static-copy": "^1.0.5",
-    "vite-plugin-zip-pack": "^1.2.2"
+    "vite-plugin-zip-pack": "^1.2.2",
+    "cross-env": "^7.0.3"
   },
   "dependencies": {
     "solid-transition-group": "^0.2.3"
