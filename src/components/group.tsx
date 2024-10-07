@@ -1,5 +1,5 @@
-import { Component, createEffect, createMemo, createSignal, Match, useContext, Show } from "solid-js";
-import { For, Switch } from "solid-js";
+import { Component, createEffect, createMemo, createSignal, useContext, Show } from "solid-js";
+import { For } from "solid-js";
 import { Transition } from "solid-transition-group";
 
 import { Menu, Constants, confirm, showMessage } from "siyuan";
@@ -13,6 +13,56 @@ import Item from "./item";
 import { groups, setGroups, configs, itemInfo } from "../model";
 import { BookmarkContext, itemMoving, setItemMoving, groupDrop, setGroupDrop } from "./context";
 import { getActiveDoc } from "@/utils";
+import Icon from "./icon";
+import { parseEmoji } from "./icon";
+
+import { selectGroupIcon } from "./select-icon";
+
+const useGroupIcon = (props: Parameters<typeof Group>[0]) => {
+    const { model } = useContext(BookmarkContext);
+
+    const changeGroupIcon = () => {
+        selectGroupIcon({
+            onReset: () => {
+                model.setGroups(props.group.id, 'icon', null);
+                showMessage('Reset!');
+            },
+            onUpdate: (icon) => {
+                model.setGroups(props.group.id, 'icon', icon);
+                showMessage((icon.type === 'symbol' ? icon.value : parseEmoji(icon.value)));
+            }
+        });
+    }
+
+    const onClickIcon = (e: MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        changeGroupIcon();
+    }
+
+    const ShowIcon = (icon?: {
+        type: 'symbol' | 'emoji' | ''; value: string;
+    }) => {
+        if (!icon || icon.type === '') {
+            return <Icon symbol={(!props.group.type || props.group.type === 'normal') ? 'iconFolder' : 'iconSearch'} />
+        } else if (icon.type === 'symbol') {
+            return <Icon symbol={icon.value} />
+        } else if (icon.type === 'emoji') {
+            return <Icon emojiCode={icon.value} />
+        }
+    }
+
+    const IconView = () => (
+        <span class="group-icon__wrapper" style={{ display: 'contents' }} onClick={onClickIcon}>
+            {(() => ShowIcon(props.group.icon))()}
+        </span>
+    )
+
+    return {
+        IconView,
+        changeGroupIcon
+    }
+}
 
 
 interface Props {
@@ -23,6 +73,8 @@ interface Props {
 
 const Group: Component<Props> = (props) => {
     const { model, doAction } = useContext(BookmarkContext);
+
+    const { IconView, changeGroupIcon } = useGroupIcon(props);
 
     const isDynamicGroup = () => props.group.type === 'dynamic';
 
@@ -190,6 +242,12 @@ const Group: Component<Props> = (props) => {
                 });
             },
         });
+        menu.addItem({
+            label: i18n.selecticon.title,
+            icon: "iconImage",
+            click: changeGroupIcon
+        });
+
         if (isDynamicGroup()) {
             let type: "textline" | "textarea" = 'textline';
             let height = null;
@@ -362,7 +420,7 @@ const Group: Component<Props> = (props) => {
             const info = meta.split(Constants.ZWSP);
             const nodeId = info[2];
             addItemByBlockId(nodeId);
-        }  else if (type.startsWith(Constants.SIYUAN_DROP_FILE)) {
+        } else if (type.startsWith(Constants.SIYUAN_DROP_FILE)) {
             const ele: HTMLElement = window.siyuan.dragElement;
             if (ele && ele.innerText) {
                 const blockid = ele.innerText;
@@ -420,7 +478,7 @@ const Group: Component<Props> = (props) => {
                         <use href="#iconRight"></use>
                     </svg>
                 </span>
-                <svg class="b3-list-item__graphic">
+                {/* <svg class="b3-list-item__graphic">
                     <Switch fallback={<use href="#iconFolder"></use>}>
                         <Match when={props.group.type === 'normal'}>
                             <use href="#iconFolder"></use>
@@ -429,7 +487,9 @@ const Group: Component<Props> = (props) => {
                             <use href="#iconSearch"></use>
                         </Match>
                     </Switch>
-                </svg>
+                </svg> */}
+                <IconView />
+
                 <span class="b3-list-item__text ariaLabel" data-position="parentE">
                     {props.group.name}
                 </span>

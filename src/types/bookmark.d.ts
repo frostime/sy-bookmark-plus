@@ -2,8 +2,8 @@
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
  * @Date         : 2024-05-20 18:54:29
- * @FilePath     : /src/func/bookmarks/types/bookmark.d.ts
- * @LastEditTime : 2024-07-07 14:51:19
+ * @FilePath     : /src/types/bookmark.d.ts
+ * @LastEditTime : 2024-10-03 17:06:24
  * @Description  : 
  */
 type TBookmarkGroupId = string;
@@ -47,6 +47,9 @@ interface IBookmarkGroup {
     items: IItemCore[];
     type?: TBookmarkGroupType;
     rule?: IDynamicRule;
+    icon?: {
+        type: 'symbol' | 'emoji' | ''; value: string;
+    }
 }
 
 

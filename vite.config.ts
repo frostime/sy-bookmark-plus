@@ -1,6 +1,5 @@
 import { resolve } from "path"
 import { defineConfig, loadEnv } from "vite"
-import minimist from "minimist"
 import { viteStaticCopy } from "vite-plugin-static-copy"
 import livereload from "rollup-plugin-livereload"
 import solidPlugin from 'vite-plugin-solid';
@@ -9,86 +8,66 @@ import fg from 'fast-glob';
 
 import vitePluginYamlI18n from './yaml-plugin';
 
-const args = minimist(process.argv.slice(2));
-const isWatch = args.watch || args.w || false;
-const isSrcmap = args.sourcemap || false;
-const devDistDir = "dev";
-const distDir = isWatch ? devDistDir : "dist";
+export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, process.cwd(), '');
+    const isSrcmap = env.VITE_SOURCEMAP === 'inline';
+    const isDev = env.NODE_ENV === 'development';
+    const distDir = isDev ? "dev" : "dist";
 
-console.log("isWatch=>", isWatch);
-console.log("isSrcmap=>", isSrcmap);
+    console.log("isDev=>", isDev);
+    console.log("isSrcmap=>", isSrcmap);
+    console.log("distDir=>", distDir);
 
-export default defineConfig({
-    resolve: {
-        alias: {
-            "@": resolve(__dirname, "src"),
-        }
-    },
-
-    plugins: [
-        solidPlugin({
-            babel: {
-                plugins: ['solid-styled-jsx/babel']
+    return {
+        resolve: {
+            alias: {
+                "@": resolve(__dirname, "src"),
             }
-        }),
-
-        vitePluginYamlI18n({
-            inDir: 'public/i18n',
-            outDir: `${distDir}/i18n`
-        }),
-
-        viteStaticCopy({
-            targets: [
-                {
-                    src: "./README*.md",
-                    dest: "./",
-                },
-                {
-                    src: "./plugin.json",
-                    dest: "./",
-                },
-                {
-                    src: "./preview.png",
-                    dest: "./",
-                },
-                {
-                    src: "./icon.png",
-                    dest: "./",
-                }
-            ],
-        }),
-    ],
-
-    // https://github.com/vitejs/vite/issues/1930
-    // https://vitejs.dev/guide/env-and-mode.html#env-files
-    // https://github.com/vitejs/vite/discussions/3058#discussioncomment-2115319
-    // 在这里自定义变量
-    define: {
-        "process.env.DEV_MODE": `"${isWatch}"`,
-        "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV)
-    },
-
-    build: {
-        // 输出路径
-        outDir: distDir,
-        emptyOutDir: false,
-
-        minify: !isWatch || (isWatch && (isSrcmap === 'inline')),
-
-        lib: {
-            // Could also be a dictionary or array of multiple entry points
-            entry: resolve(__dirname, "src/index.ts"),
-            // the proper extensions will be added
-            fileName: "index",
-            formats: ["cjs"],
         },
-        rollupOptions: {
-            plugins: [
-                ...(
-                    isWatch ? [
-                        livereload(devDistDir),
+
+        plugins: [
+            solidPlugin({
+                babel: {
+                    plugins: ['solid-styled-jsx/babel']
+                }
+            }),
+
+            vitePluginYamlI18n({
+                inDir: 'public/i18n',
+                outDir: `${distDir}/i18n`
+            }),
+
+            viteStaticCopy({
+                targets: [
+                    { src: "./README*.md", dest: "./" },
+                    { src: "./plugin.json", dest: "./" },
+                    { src: "./preview.png", dest: "./" },
+                    { src: "./icon.png", dest: "./" }
+                ],
+            }),
+        ],
+
+        define: {
+            "process.env.DEV_MODE": JSON.stringify(isDev),
+            "process.env.NODE_ENV": JSON.stringify(env.NODE_ENV)
+        },
+
+        build: {
+            outDir: distDir,
+            emptyOutDir: false,
+            minify: true,
+            sourcemap: isSrcmap ? 'inline' : false,
+
+            lib: {
+                entry: resolve(__dirname, "src/index.ts"),
+                fileName: "index",
+                formats: ["cjs"],
+            },
+            rollupOptions: {
+                plugins: [
+                    ...(isDev ? [
+                        livereload(distDir),
                         {
-                            //监听静态资源文件
                             name: 'watch-external',
                             async buildStart() {
                                 const files = await fg([
@@ -107,23 +86,21 @@ export default defineConfig({
                             outDir: './',
                             outFileName: 'package.zip'
                         })
-                    ]
-                )
-            ],
+                    ])
+                ],
 
-            // make sure to externalize deps that shouldn't be bundled
-            // into your library
-            external: ["siyuan", "process"],
+                external: ["siyuan", "process"],
 
-            output: {
-                entryFileNames: "[name].js",
-                assetFileNames: (assetInfo) => {
-                    if (assetInfo.name === "style.css") {
-                        return "index.css"
-                    }
-                    return assetInfo.name
+                output: {
+                    entryFileNames: "[name].js",
+                    assetFileNames: (assetInfo) => {
+                        if (assetInfo.name === "style.css") {
+                            return "index.css"
+                        }
+                        return assetInfo.name
+                    },
                 },
             },
-        },
+        }
     }
 })

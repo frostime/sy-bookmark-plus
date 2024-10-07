@@ -3,10 +3,12 @@
  * @Author       : frostime
  * @Date         : 2024-03-23 21:37:33
  * @FilePath     : /src/libs/dialog.ts
- * @LastEditTime : 2024-07-07 22:58:44
+ * @LastEditTime : 2024-10-03 16:44:41
  * @Description  : 对话框相关工具
  */
 import { Dialog } from "siyuan";
+import { JSXElement } from "solid-js";
+import { render } from "solid-js/web";
 
 export const simpleDialog = (args: {
     title: string, ele: HTMLElement | DocumentFragment,
@@ -24,6 +26,24 @@ export const simpleDialog = (args: {
     return dialog;
 }
 
+export const solidDialog = (args: {
+    title: string, loader: () => JSXElement,
+    width?: string, height?: string,
+    callback?: () => void;
+}) => {
+    let container = document.createElement('div')
+    container.style.display = 'contents';
+    let disposer = render(args.loader, container);
+    const dialog = simpleDialog({...args, ele: container, callback: () => {
+        disposer();
+        if (args.callback) args.callback();;
+    }});
+    return {
+        dialog,
+        close: () => dialog.destroy(),
+        container
+    }
+}
 
 interface IConfirmDialogArgs {
     title: string;

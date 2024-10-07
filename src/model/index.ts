@@ -100,6 +100,16 @@ export class BookmarkDataModel {
 
     save = debounce(this.saveCore.bind(this), 1000);
 
+    setGroups(gid: TBookmarkGroupId, key: keyof IBookmarkGroup, value: IBookmarkGroup[keyof IBookmarkGroup]) {
+        setGroups((gs) => gs.id === gid, key, value);
+        this.save();
+    }
+
+    setItemInfo(id: BlockId, key: keyof IBookmarkItemInfo, value: IBookmarkItemInfo[keyof IBookmarkItemInfo]) {
+        setItemInfo(id, key, value);
+        this.save();
+    }
+
     hasItem(id: BlockId, groupId?: TBookmarkGroupId) {
         if (groupId === undefined) {
             return itemInfo[id] !== undefined
@@ -321,18 +331,19 @@ export class BookmarkDataModel {
         }
     }
 
-    newGroup(name: string, type?: TBookmarkGroupType, rule?: IDynamicRule) {
+    newGroup(name: string, type?: TBookmarkGroupType, rule?: IDynamicRule, icon?: IBookmarkGroup['icon']) {
         //6位 36进制
         let id: TBookmarkGroupId;
         while (id === undefined || groupMap().has(id)) {
             id = Math.random().toString(36).slice(-6);
         }
-        let group = {
+        let group: IBookmarkGroup = {
             id,
             name,
             items: [],
             type,
-            rule
+            rule,
+            icon: icon ?? null
         };
 
         setGroups((gs) => [...gs, group]);

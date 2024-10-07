@@ -1,4 +1,4 @@
-import { Component } from "solid-js";
+import { Component, JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
 
 export const parseEmoji = (code: string) => {
@@ -11,7 +11,7 @@ interface CommonProps {
     fontSize?: string;
     height?: string;
     width?: string;
-    style?: { [key: string]: string | number };
+    style?: JSX.CSSProperties;
 }
 
 interface SymbolProps extends CommonProps {
@@ -37,7 +37,7 @@ type IProps = SymbolProps | EmojiCodeProps | ImgProps;
 
 const Icon: Component<IProps> = (props) => {
 
-    let style = {
+    let style: JSX.CSSProperties = {
         "font-size": props?.fontSize ?? '14px',
         "height": props?.height,
         "width": props?.width,
@@ -48,7 +48,7 @@ const Icon: Component<IProps> = (props) => {
     }
 
     const Symbol = () => (
-        <svg style={style}>
+        <svg class="b3-list-item__graphic" style={style}>
             <use href={`#${props.symbol}`}></use>
         </svg>
     );

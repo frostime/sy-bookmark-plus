@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-06-12 19:48:53
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-08-15 17:38:22
+ * @LastEditTime : 2024-10-03 14:55:24
  * @Description  : 
  */
 import {
@@ -26,11 +26,11 @@ import { setI18n } from "@/utils/i18n";
 
 import "@/index.scss";
 import { isMobile } from "./utils";
+import { provide, purge } from "./libs/inject";
 
 let model: BookmarkDataModel;
 
 const initBookmark = async (ele: HTMLElement, plugin: PluginBookmarkPlus) => {
-    await model.updateAll();
     ele.classList.add('fn__flex-column');
 
     if (isMobile()) {
@@ -42,6 +42,7 @@ const initBookmark = async (ele: HTMLElement, plugin: PluginBookmarkPlus) => {
         plugin: plugin,
         model: model
     }), ele);
+    await model.updateAll();
 };
 
 const destroyBookmark = () => {
@@ -65,7 +66,9 @@ export default class PluginBookmarkPlus extends Plugin {
     }
 
     async onload() {
-        setI18n(this.i18n);
+        setI18n(this.i18n as I18n);
+        provide<I18n>('i18n', this.i18n as I18n);
+        provide<PluginBookmarkPlus>('plugin', this);
 
         let svgs = Object.values(Svg);
         this.addIcons(svgs.join(''));
@@ -120,6 +123,7 @@ export default class PluginBookmarkPlus extends Plugin {
     }
 
     onunload(): void {
+        purge();
         destroyBookmark();
         bookmarkKeymap.custom = bookmarkKeymap.default;
         // this.commands = this.commands.filter((command) => command.langKey !== 'F-Misc::Bookmark');

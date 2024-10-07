@@ -103,6 +103,8 @@ newgroup:
     omit: 无处理
     fb2p: 容器首个子块
     b2doc: 显示为文档块
+  icontitle: 分组图标
+  icondesc: 可以手动选择分组的图标；如果不设置，插件会根据分组类型分配默认的图标。
 bookmarktype:
   normal: '普通书签'
   dynamic: '动态书签'
@@ -119,3 +121,7 @@ template:
     todo: 未完成的任务
   attr:
     dailynote: Daily Note
+selecticon:
+  title: 更改组图标
+  h3: 请选择图标
+  reset: 重置

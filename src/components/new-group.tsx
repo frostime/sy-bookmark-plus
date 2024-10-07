@@ -13,6 +13,7 @@ import { RuleTemplate } from "@/utils/const";
 import { createContext, useContext } from "solid-js";
 
 import { Caret } from "@/utils/const";
+import { selectGroupIcon } from "./select-icon";
 
 const NewGroupContext = createContext<{
     groupType: Accessor<TBookmarkGroupType>;
@@ -234,6 +235,8 @@ const RuleEditor = () => {
 interface IPrpos {
     setGroup: (arg: { name?: string, type?: TBookmarkGroupType }) => void;
     setRule: (arg: { type?: string, input?: string }) => void;
+    icon: Accessor<IBookmarkGroup['icon']>;
+    setIcon: (args: IBookmarkGroup['icon']) => void;
 }
 
 const NewGroup = (props: IPrpos) => {
@@ -248,6 +251,17 @@ const NewGroup = (props: IPrpos) => {
     props.setGroup({ name: 'New Group' });
 
     const transitionDuration = 100;
+
+    const changeGroupIcon = () => {
+        selectGroupIcon({
+            onReset: () => {
+                props.setIcon(null);
+            },
+            onUpdate: (icon) => {
+                props.setIcon(icon);
+            }
+        });
+    }
 
     return (
         <div class="fn__flex fn__flex-1 fn__flex-column"
@@ -292,6 +306,22 @@ const NewGroup = (props: IPrpos) => {
                             }
                         }}
                     />
+                </Form.Wrap>
+                <Form.Wrap
+                    title={i18n_.icontitle}
+                    description={i18n_.icondesc}
+                >
+                    <div style={{ display: 'flex', "align-items": 'center' }} onClick={changeGroupIcon}>
+                        {(() => {
+                            if (!props.icon()) {
+                                return  <Icon symbol={groupType() === 'normal' ? 'iconFolder' : 'iconSearch'} />
+                            } else if (props.icon()?.type === 'symbol') {
+                                return <Icon symbol={props.icon()?.value} />
+                            } else {
+                                return <Icon emojiCode={props.icon()?.value} />
+                            }
+                        })()}
+                    </div>
                 </Form.Wrap>
             </div>
             <Transition
