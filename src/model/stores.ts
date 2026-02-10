@@ -3,8 +3,8 @@
  * @Author       : frostime
  * @Date         : 2024-07-07 14:44:03
  * @FilePath     : /src/model/stores.ts
- * @LastEditTime : 2025-02-22 17:49:12
- * @Description  : 
+ * @LastEditTime : 2026-02-10 22:14:32
+ * @Description  :
  */
 import { createStore, unwrap } from "solid-js/store";
 
@@ -13,6 +13,13 @@ import { createStoreRef, wrapStoreRef } from "@frostime/solid-signal-ref";
 import { debounce, thisPlugin } from "@frostime/siyuan-plugin-kits";
 
 export const [itemInfo, setItemInfo] = createStore<{ [key: BlockId]: IBookmarkItemInfo }>({});
+
+export const clearItemInfo = () => {
+    const keys = Object.keys(itemInfo);
+    for (const key of keys) {
+        setItemInfo(key as BlockId, undefined!);
+    }
+};
 
 export const [groups, setGroups] = createStore<IBookmarkGroup[]>([]);
 export const groupMap = createMemo<Map<TBookmarkGroupId, IBookmarkGroup & { index: number }>>(() => {

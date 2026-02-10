@@ -12,6 +12,7 @@ import { i18n, renderI18n } from "@/utils/i18n";
 import {
     itemInfo,
     setItemInfo,
+    clearItemInfo,
     setGroups,
     groupMap,
     groups,
@@ -79,6 +80,26 @@ export class BookmarkDataModel {
                 setGroups((gs) => [...gs, groupV2])
             })
         })
+    }
+
+    /**
+     * 重新加载数据（清空后重新加载）
+     * 用于 onDataChanged 回调，处理云端数据同步变化
+     * - 清空现有数据（groups + itemInfo）
+     * - 重新从存储加载
+     * - 更新所有动态规则和静态项目元数据
+     * 注意：不会重新加载/注销 dock，仅更新底层数据
+     */
+    async reload() {
+        // 清空现有数据
+        setGroups(() => []);
+        clearItemInfo();
+
+        // 重新加载数据
+        await this.load();
+
+        // 刷新所有视图的动态规则和静态项目元数据
+        await this.updateViews();
     }
 
     private async saveCore(fpath?: string) {
@@ -496,9 +517,9 @@ export class BookmarkDataModel {
 
     /**
      * 将 item 移动到 gid 下
-     * @param gid 
-     * @param id 
-     * @returns 
+     * @param gid
+     * @param id
+     * @returns
      */
     transferItem(fromGroup: TBookmarkGroupId, toGroup: TBookmarkGroupId, item: IBookmarkItemInfo) {
         if (fromGroup === toGroup) {
