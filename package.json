@@ -23,7 +23,7 @@
     "minimist": "^1.2.8",
     "rollup-plugin-livereload": "^2.0.5",
     "sass": "^1.72.0",
-    "siyuan": "1.1.0",
+    "siyuan": "1.1.7",
     "solid-js": "^1.8.17",
     "solid-styled-jsx": "^0.27.1",
     "ts-node": "^10.9.2",
@@ -34,8 +34,8 @@
     "vite-plugin-zip-pack": "^1.2.2"
   },
   "dependencies": {
-    "@frostime/siyuan-plugin-kits": "^1.5.10",
-    "@frostime/solid-signal-ref": "^2.1.0",
+    "@frostime/siyuan-plugin-kits": "^1.6.0",
+    "@frostime/solid-signal-ref": "^2.2.0",
     "solid-transition-group": "^0.2.3"
   }
 }
