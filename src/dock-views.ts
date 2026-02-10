@@ -3,8 +3,8 @@
  * @Author       : frostime
  * @Date         : 2025-02-22 00:35:14
  * @FilePath     : /src/dock-views.ts
- * @LastEditTime : 2025-03-08 19:16:16
- * @Description  : 
+ * @LastEditTime : 2026-02-10 23:51:14
+ * @Description  :
  */
 import { render } from "solid-js/web";
 
@@ -62,14 +62,27 @@ export const disposers = {
     }
 };
 
-export const dockViewTypeName = (vid: TBookmarkSubViewId | 'DEFAULT') => {
-    return '::sub-view::' + vid;
+// Map 存储 vid 与 typename
+const dockViewTypeMap = new Map<TBookmarkSubViewId | 'DEFAULT', string>();
+
+/**
+ * 注册并生成 dock view 的 type name（包含 position 信息）
+ */
+export const registerDockViewTypeName = (vid: TBookmarkSubViewId | 'DEFAULT', position: string): void => {
+    const typeName = `::sub-view::${position}::${vid}`;
+    dockViewTypeMap.set(vid, typeName);
 }
 
+/**
+ * 获取已注册的 dock view 的 type name
+ */
+export const getDockViewTypeName = (vid: TBookmarkSubViewId | 'DEFAULT'): string => {
+    return dockViewTypeMap.get(vid) ?? `::sub-view::${vid}`;
+}
 
 export const dockViewIconElement = (vid: TBookmarkSubViewId | 'DEFAULT') => {
     const plugin = thisPlugin();
-    return document.querySelector(`span[data-type="${plugin.name}${dockViewTypeName(vid)}"]`) as HTMLElement;
+    return document.querySelector(`span[data-type="${plugin.name}${getDockViewTypeName(vid)}"]`) as HTMLElement;
 }
 
 const lazyUpdateModel = {

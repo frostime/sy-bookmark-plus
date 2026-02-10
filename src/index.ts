@@ -30,7 +30,7 @@ import { loadSdk, unloadSdk } from "./sdk";
 import { registerPlugin } from "@frostime/siyuan-plugin-kits";
 import { enableAutoRefresh } from "./model/auto-refresh";
 
-import { destroyAllBookmark, dockViewIconElement, dockViewTypeName, initBookmark } from "./dock-views";
+import { destroyAllBookmark, dockViewIconElement, registerDockViewTypeName, getDockViewTypeName, initBookmark } from "./dock-views";
 
 let model: BookmarkDataModel;
 
@@ -92,8 +92,9 @@ export default class PluginBookmarkPlus extends Plugin {
             this.replaceDefaultBookmark();
         }
 
+        registerDockViewTypeName('DEFAULT', 'RightBottom');
         this.addDock({
-            type: dockViewTypeName('DEFAULT'),
+            type: getDockViewTypeName('DEFAULT'),
             config: {
                 position: 'RightBottom',
                 size: {
@@ -119,8 +120,10 @@ export default class PluginBookmarkPlus extends Plugin {
             if (view.icon?.type === 'symbol') {
                 icon = view.icon.value;
             }
+            const position = view.dockPosition ?? 'RightBottom';
+            registerDockViewTypeName(vid as TBookmarkSubViewId, position);
             this.addDock({
-                type: dockViewTypeName(vid),
+                type: getDockViewTypeName(vid),
                 config: {
                     position: view.dockPosition ?? 'RightBottom',
                     size: {
