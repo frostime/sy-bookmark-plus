@@ -209,7 +209,7 @@ const Group: Component<{
                 const refs = items
                     .map(
                         (item) =>
-                            `* [${item.title.replaceAll("\n", "")}](${item.id})`
+                            `* [${item.title.replaceAll("\n", "")}](siyuan://blocks/${item.id})`
                     )
                     .join("\n");
                 navigator.clipboard.writeText(refs).then(() => {
