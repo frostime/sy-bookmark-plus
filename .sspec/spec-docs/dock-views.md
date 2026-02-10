@@ -1,7 +1,7 @@
 ---
 name: Dock 视图系统
 description: sy-bookmark-plus 的 Dock 视图注册、多视图管理、Disposer 模式和生命周期管理
-updated: 2026-02-10
+updated: 2026-02-11
 scope:
   - /src/dock-views.ts
   - /src/index.ts
@@ -38,8 +38,9 @@ sy-bookmark-plus 支持多视图模式，可以在思源的 Dock 侧栏中注册
 **注册时机**：`index.ts` 的 `onload()` 阶段
 
 ```typescript
+registerDockViewTypeName('DEFAULT', 'RightBottom');
 this.addDock({
-    type: dockViewTypeName('DEFAULT'),
+    type: getDockViewTypeName('DEFAULT'),
     config: {
         position: 'RightBottom',
         size: { width: 200, height: 200 },
@@ -74,11 +75,13 @@ for (let [vid, view] of Object.entries(subViews())) {
     if (view.hidden === true) continue;  // 跳过隐藏的视图
 
     let icon = view.icon?.type === 'symbol' ? view.icon.value : 'iconEmoji';
+    const position = view.dockPosition ?? 'RightBottom';
+    registerDockViewTypeName(vid as TBookmarkSubViewId, position);
 
     this.addDock({
-        type: dockViewTypeName(vid),
+        type: getDockViewTypeName(vid),
         config: {
-            position: view.dockPosition ?? 'RightBottom',
+            position: position,
             size: { width: 200, height: 200 },
             icon: icon,
             title: view.name || 'Bookmark+'
@@ -111,14 +114,18 @@ sequenceDiagram
     P->>P: onload()
     P->>S: 读取 subViews
 
-    P->>SI: addDock('DEFAULT')
+    P->>DV: registerDockViewTypeName('DEFAULT', 'RightBottom')
+    DV->>DV: 保存 typename 到 map
+    P->>SI: addDock(getDockViewTypeName('DEFAULT'))
     SI->>DV: init() → initBookmark(ele, 'DEFAULT')
     DV->>SJ: render(Bookmark)
     SJ-->>DV: dispose function
     DV->>DV: disposers.add('DEFAULT', dispose, ele)
 
     P->>P: For each subView
-    P->>SI: addDock(vid)
+    P->>DV: registerDockViewTypeName(vid, position)
+    DV->>DV: 保存 typename 到 map
+    P->>SI: addDock(getDockViewTypeName(vid))
     SI->>DV: init() → initBookmark(ele, vid)
     DV->>SJ: render(Bookmark)
     SJ-->>DV: dispose function
@@ -128,23 +135,41 @@ sequenceDiagram
     Note over DV: 首次加载时刷新所有动态组
 ```
 
-### dockViewTypeName
+### registerDockViewTypeName
 
-**作用**：生成唯一的 Dock 视图类型名
+**作用**：注册并生成唯一的 Dock 视图类型名（包含 position 信息）
 
 ```typescript
-export const dockViewTypeName = (vid: TBookmarkSubViewId | 'DEFAULT') => {
-    return '::sub-view::' + vid;
+export const registerDockViewTypeName = (vid: TBookmarkSubViewId | 'DEFAULT', position: string): void => {
+    const typeName = `::sub-view::${position}::${vid}`;
+    dockViewTypeMap.set(vid, typeName);
 }
 
 // 示例
-dockViewTypeName('DEFAULT')          // → '::sub-view::DEFAULT'
-dockViewTypeName('my-custom-view')   // → '::sub-view::my-custom-view'
+registerDockViewTypeName('DEFAULT', 'RightBottom');  // → 存储 '::sub-view::RightBottom::DEFAULT'
+registerDockViewTypeName('my-custom-view', 'LeftTop'); // → 存储 '::sub-view::LeftTop::my-custom-view'
+```
+
+**调用时机**：在 `addDock()` 前调用，将 typename 存储到内部 map
+
+### getDockViewTypeName
+
+**作用**：获取已注册的 Dock 视图类型名
+
+```typescript
+export const getDockViewTypeName = (vid: TBookmarkSubViewId | 'DEFAULT'): string => {
+    return dockViewTypeMap.get(vid) ?? `::sub-view::${vid}`;
+}
+
+// 示例
+getDockViewTypeName('DEFAULT')        // → '::sub-view::RightBottom::DEFAULT'（已注册）
+getDockViewTypeName('unknown-view')   // → '::sub-view::unknown-view'（降级方案）
 ```
 
 **用途**：
 - 思源通过 `type` 识别不同的 Dock 面板
 - 插件内部通过 `type` 查找对应的 Dock 图标元素
+- `dockViewIconElement()` 使用此函数来定位 DOM 元素
 
 ### dockViewIconElement
 
@@ -154,7 +179,7 @@ dockViewTypeName('my-custom-view')   // → '::sub-view::my-custom-view'
 export const dockViewIconElement = (vid: TBookmarkSubViewId | 'DEFAULT') => {
     const plugin = thisPlugin();
     return document.querySelector(
-        `span[data-type="${plugin.name}${dockViewTypeName(vid)}"]`
+        `span[data-type="${plugin.name}${getDockViewTypeName(vid)}"]`
     ) as HTMLElement;
 }
 
