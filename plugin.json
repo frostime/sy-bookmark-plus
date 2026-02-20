@@ -2,7 +2,7 @@
   "name": "sy-bookmark-plus",
   "author": "frostime",
   "url": "https://github.com/frostime/sy-bookmark-plus",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "minAppVersion": "3.4.0",
   "backends": [
     "all"

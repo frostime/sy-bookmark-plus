@@ -149,6 +149,13 @@ interface I18n {
         confirm_delete_view: string;
         create_bookmark_view: string;
         current_view_bookmarks: string;
+        default_view_add_group: string;
+        default_view_desc: string;
+        default_view_edit: string;
+        default_view_empty: string;
+        default_view_fixed: string;
+        default_view_no_group_to_add: string;
+        default_view_title: string;
         delete_bookmark_view: string;
         enter_view_name: string;
         new_view: string;

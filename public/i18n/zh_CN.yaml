@@ -125,7 +125,7 @@ src_components_setting_indextsx:
   basic_settings: 🐤 基本设置
   refresh_bookmarks: 当切换文档的时候，自动刷新那些含有{{CurDocId}}模板变量的动态书签组
   refresh_groups: 切换文档时刷新相关组
-  subview_management: 🗜️ 子视图管理
+  subview_management: 🗜️ 视图管理
 src_components_setting_subviewlisttsx:
   bookmark_subview: 书签子视图列表
   bottom_left: 左下
@@ -133,6 +133,13 @@ src_components_setting_subviewlisttsx:
   confirm_delete_view: 确定要删除该视图吗？
   create_bookmark_view: 创建新的书签视图
   current_view_bookmarks: 当前视图包含的书签组
+  default_view_add_group: 添加书签组
+  default_view_desc: 默认视图固定存在；点击右侧编辑按钮后，可配置包含的书签组与顺序。
+  default_view_edit: 编辑默认视图
+  default_view_empty: 当前默认视图还没有书签组，请先添加。
+  default_view_fixed: 固定视图
+  default_view_no_group_to_add: 没有可添加的书签组
+  default_view_title: 默认视图
   delete_bookmark_view: 删除书签视图
   enter_view_name: 请输入视图名称
   new_view: 新建视图

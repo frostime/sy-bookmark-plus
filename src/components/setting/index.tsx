@@ -158,12 +158,12 @@ const App = () => {
 
     const groups = {
         [i18n.src_components_setting_indextsx.basic_settings]: PanelBasic,
-        [i18n.src_components_setting_indextsx.all_bookmark_groups]: PanelGroupList,
         [i18n.src_components_setting_indextsx.subview_management]: () => (
             <SettingPanel group="SubViewList">
                 <SubViewList></SubViewList>
             </SettingPanel>
-        )
+        ),
+        [i18n.src_components_setting_indextsx.all_bookmark_groups]: PanelGroupList,
     }
 
 

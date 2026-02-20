@@ -1,7 +1,7 @@
 ---
 name: 数据模型与存储
 description: sy-bookmark-plus 的数据结构设计、Store 管理、持久化策略、思源 API 集成和数据映射关系
-updated: 2026-02-10
+updated: 2026-02-21
 scope:
   - /src/model/**
   - /src/types/bookmark.d.ts
@@ -17,10 +17,10 @@ replacement: ""
 本文档描述 sy-bookmark-plus 的核心数据模型、状态管理机制、数据持久化策略，以及如何与思源笔记 API 集成，将思源的 Block 数据映射到书签的数据模型中。
 
 **核心内容**：
-- 数据结构设计（`IBookmarkGroup`、`IBookmarkItem`、`IBookmarkSubView`）
-- SolidJS Store 管理（`itemInfo`、`groups`、`subViews`、`configs`）
+- 数据结构设计（`IBookmarkGroup`、`IBookmarkItem`、`IBookmarkSubView`、`IBookmarkDefaultView`）
+- SolidJS Store 管理（`itemInfo`、`groups`、`defaultView`、`subViews`、`configs`）
 - BookmarkDataModel 类的职责
-- 数据持久化策略（Storage 文件、debounce 保存）
+- 数据持久化策略（`bookmarks.json` v2 schema、debounce 保存）
 - 思源 API 调用封装
 - Block 数据 → 书签数据的映射流程
 
@@ -39,7 +39,7 @@ interface IBookmarkGroup {
     id: TBookmarkGroupId;          // 唯一标识
     name: string;                  // 显示名称
     expand?: boolean;              // 展开/折叠状态（默认 true）
-    hidden?: boolean;              // 是否在列表中隐藏
+    hidden?: boolean;              // 兼容字段，不再作为 DEFAULT 成员来源
     items: IItemCore[];            // 书签项列表
     type?: TBookmarkGroupType;     // 'normal' | 'dynamic' | 'composed'
     rule?: IDynamicRule;           // 动态规则配置
@@ -59,6 +59,7 @@ type TBookmarkGroupType = 'normal' | 'dynamic' | 'composed';
   - `dynamic` - 动态组，通过规则自动更新
   - `composed` - 组合组（未来扩展）
 - **items**：只存储 `id` 和 `style`，详细信息在 `itemInfo` 中
+- **hidden**：保留为兼容字段，DEFAULT 成员关系已迁移到 `defaultView.groups`
 
 #### 2. IItemCore - 书签项核心数据
 
@@ -130,6 +131,25 @@ interface IDynamicRule {
 }
 ```
 
+#### 6. IBookmarkDefaultView / IBookmarkStorageV2
+
+```typescript
+interface IBookmarkDefaultView {
+    groups: TBookmarkGroupId[];
+}
+
+interface IBookmarkStorageV2 {
+    schema: string; // 当前为 '2.0'
+    groups: Record<TBookmarkGroupId, IBookmarkGroup>;
+    defaultView: IBookmarkDefaultView;
+}
+```
+
+**设计要点**：
+- `defaultView.groups` 显式定义 DEFAULT 视图包含的 group 及顺序
+- `bookmarks.json` 从旧 `Record<gid, group>` 升级为 v2 容器结构
+- 迁移逻辑位于 `src/model/migration.ts`，通过 schema 比较实现幂等升级
+
 ---
 
 ## Store 管理机制
@@ -157,7 +177,10 @@ export const subViews = createStoreRef<{
     [key: TBookmarkSubViewId]: IBookmarkSubView
 }>({});
 
-// 5. 插件配置
+// 5. 默认视图配置（显式 groups 列表）
+export const defaultView = createStoreRef<IBookmarkDefaultView>({ groups: [] });
+
+// 6. 插件配置
 export const [configs, setConfigs] = createStore<IConfig>({
     hideClosed: true,
     hideDeleted: true,
@@ -180,6 +203,7 @@ export const configRef = wrapStoreRef(configs, setConfigs);
 | `itemInfo` | 管理所有书签项的详细信息 | `itemInfo[blockId]` |
 | `groups` | 管理书签组列表（顺序、配置） | `groups[index]` 或 `groups.find(...)` |
 | `groupMap` | 提供快速的 ID → Group 查找 | `groupMap().get(groupId)` |
+| `defaultView` | 管理 DEFAULT 视图成员与顺序 | `defaultView().groups` |
 | `subViews` | 管理自定义子视图配置 | `subViews()[viewId]` |
 | `configs` | 管理插件全局配置 | `configs.viewMode` |
 

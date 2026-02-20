@@ -1,7 +1,7 @@
 ---
 name: Dock 视图系统
 description: sy-bookmark-plus 的 Dock 视图注册、多视图管理、Disposer 模式和生命周期管理
-updated: 2026-02-11
+updated: 2026-02-21
 scope:
   - /src/dock-views.ts
   - /src/index.ts
@@ -31,7 +31,7 @@ sy-bookmark-plus 支持多视图模式，可以在思源的 Dock 侧栏中注册
 
 **特点**：
 - 固定存在，无法删除
-- 显示所有未隐藏的书签组
+- 显示 `defaultView.groups` 中配置的书签组（顺序与配置一致）
 - 可以替换思源默认书签功能
 - 快捷键：Alt+3（可配置）
 

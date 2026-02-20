@@ -4,7 +4,7 @@
  * @Date         : 2024-12-15 23:01:47
  * @FilePath     : /src/types/bookmark.d.ts
  * @LastEditTime : 2025-02-21 22:53:37
- * @Description  : 
+ * @Description  :
  */
 /// <reference types="siyuan" />
 
@@ -69,6 +69,16 @@ interface IBookmarkSubView {
     groups: TBookmarkGroupId[];  //内部包含的 Group
     expand: Record<TBookmarkGroupId, boolean>;
     dockPosition?: 'RightTop' | 'RightBottom' | 'LeftTop' | 'LeftBottom';
+}
+
+interface IBookmarkDefaultView {
+    groups: TBookmarkGroupId[];
+}
+
+interface IBookmarkStorageV2 {
+    schema: string;
+    groups: Record<TBookmarkGroupId, IBookmarkGroup>;
+    defaultView: IBookmarkDefaultView;
 }
 
 

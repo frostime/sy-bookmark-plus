@@ -1,7 +1,8 @@
-import { Component, For, Show, createMemo, createSignal } from "solid-js";
+import { Component, For, createMemo, createSignal } from "solid-js";
 import Group from "./group";
 import { confirm, Menu, Plugin, showMessage } from "siyuan";
-import { configs, getModel, groups, subViews } from "../model";
+import { configs, defaultView, getModel, groups, subViews } from "../model";
+import { moveItem } from "@/libs/op";
 
 import { BookmarkContext } from "./context";
 
@@ -34,7 +35,13 @@ const BookmarkComponent: Component<{
 
     const shownGroups = createMemo(() => {
         if (props.sourceView === "DEFAULT") {
-            return groups.filter(group => !group.hidden);
+            const defaultGroupIds = defaultView().groups ?? [];
+            const result = [];
+            for (const gid of defaultGroupIds) {
+                const g = groups.find(g => g.id === gid);
+                if (g) result.push(g);
+            }
+            return result;
         } else {
             const view = subViews()[props.sourceView];
             if (!view) return [];
@@ -93,32 +100,31 @@ const BookmarkComponent: Component<{
             group: IBookmarkGroup;
         }
     ) => {
-        const srcIdx = groups.findIndex(
-            (g: IBookmarkGroup) => g.id === detail.group.id
-        );
+        const groupsInView = props.sourceView === "DEFAULT"
+            ? (defaultView().groups ?? [])
+            : (subViews()[props.sourceView]?.groups ?? []);
+
+        const srcIdx = groupsInView.findIndex((gid) => gid === detail.group.id);
+        if (srcIdx < 0) return;
+
         let targetIdx: number = -1;
         if (detail.to === "up") {
-            for (let i = srcIdx - 1; i >= 0; i--) {
-                if (!groups[i].hidden) {
-                    targetIdx = i;
-                    break;
-                }
-            }
+            targetIdx = srcIdx - 1;
         }
-        else if (detail.to === "down") {
-            for (let i = srcIdx + 1; i < groups.length; i++) {
-                if (!groups[i].hidden) {
-                    targetIdx = i;
-                    break;
-                }
-            }
-        }
+        else if (detail.to === "down") targetIdx = srcIdx + 1;
         else if (detail.to === "top") targetIdx = 0;
-        else if (detail.to === "bottom") targetIdx = groups.length - 1;
+        else if (detail.to === "bottom") targetIdx = groupsInView.length - 1;
         else return;
-        if (targetIdx < 0 || targetIdx >= groups.length) return;
+        if (targetIdx < 0 || targetIdx >= groupsInView.length || targetIdx === srcIdx) return;
 
-        model.moveGroup(srcIdx, targetIdx);
+        if (props.sourceView === "DEFAULT") {
+            model.moveDefaultViewGroup(srcIdx, targetIdx);
+        } else {
+            subViews.update(props.sourceView, 'groups', (gs: IBookmarkGroup['id'][]) => {
+                return moveItem(gs, srcIdx, targetIdx);
+            });
+            model.save();
+        }
     };
 
     const bookmarkContextMenu = (e: MouseEvent) => {

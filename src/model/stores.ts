@@ -6,7 +6,7 @@
  * @LastEditTime : 2026-02-10 22:14:32
  * @Description  :
  */
-import { createStore, unwrap } from "solid-js/store";
+import { createStore } from "solid-js/store";
 
 import { createMemo } from "solid-js";
 import { createStoreRef, wrapStoreRef } from "@frostime/solid-signal-ref";
@@ -30,6 +30,7 @@ export const groupMap = createMemo<Map<TBookmarkGroupId, IBookmarkGroup & { inde
 
 const StorageNameGroupViews = 'bookmark-sub-views';
 export const subViews = createStoreRef<{ [key: TBookmarkSubViewId]: IBookmarkSubView }>({});
+export const defaultView = createStoreRef<IBookmarkDefaultView>({ groups: [] });
 
 export const loadSubViews = async () => {
     let views: { [key: TBookmarkSubViewId]: IBookmarkSubView } = await thisPlugin().loadData(StorageNameGroupViews + '.json');
@@ -41,26 +42,6 @@ export const loadSubViews = async () => {
 export const saveSubViews = async () => {
     await thisPlugin().saveData(StorageNameGroupViews + '.json', subViews.unwrap());
 }
-
-const StorageNameBookmarks = 'bookmarks';  //书签
-const _saveGroupMap = async (fpath?: string) => {
-    let result: { [key: TBookmarkGroupId]: IBookmarkGroup } = {};
-
-    for (let [id, group] of groupMap()) {
-        result[id] = unwrap(group);
-        let items = unwrap(result[id].items);
-        if (group.type === 'dynamic') {
-            //如果是动态规则，就只保存一部分自定义过的 item
-            items = items.filter(item => item.style);
-        }
-        result[id].items = items;
-    }
-    fpath = fpath ?? StorageNameBookmarks + '.json';
-    await thisPlugin().saveData(fpath, result);
-    return result;
-}
-export const saveGroupMap = debounce(_saveGroupMap, 1000);
-
 
 interface IConfig {
     hideClosed: boolean;

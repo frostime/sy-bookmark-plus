@@ -136,7 +136,7 @@ src_components_setting_indextsx:
   refresh_bookmarks: When switching documents, automatically refresh dynamic bookmark
     groups that contain the {{CurDocId}} template variable
   refresh_groups: Refresh when switching documents
-  subview_management: 🗜️ Subviews
+  subview_management: 🗜️ View Management
 src_components_setting_subviewlisttsx:
   bookmark_subview: Bookmark Subview List
   bottom_left: Bottom Left
@@ -144,6 +144,13 @@ src_components_setting_subviewlisttsx:
   confirm_delete_view: Are you sure you want to delete this view?
   create_bookmark_view: Create new bookmark view
   current_view_bookmarks: Bookmark groups in this view
+  default_view_add_group: Add Bookmark Group
+  default_view_desc: Default view is fixed. Click the edit icon to configure groups and ordering.
+  default_view_edit: Edit Default View
+  default_view_empty: No bookmark groups in default view yet. Add one first.
+  default_view_fixed: Fixed View
+  default_view_no_group_to_add: No bookmark group available to add
+  default_view_title: Default View
   delete_bookmark_view: Delete bookmark view
   enter_view_name: Please enter the view name
   new_view: New View

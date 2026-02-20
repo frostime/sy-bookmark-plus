@@ -1,5 +1,5 @@
 import { createMemo, For } from "solid-js";
-import { groups, setGroups, itemInfo, getModel, subViews } from "../../model";
+import { groups, setGroups, itemInfo, getModel, subViews, defaultView } from "../../model";
 import { moveItem } from "../../libs/op";
 import { GroupIcon } from "../elements/group-icon";
 import { selectGroupIcon } from "../elements/select-icon";
@@ -7,7 +7,6 @@ import { confirm, showMessage } from "siyuan";
 import inputDialog from '@/libs/components/input-dialog';
 import { i18n } from "@/utils/i18n";
 import Icon from "../elements/icon";
-import { CheckboxInput } from "@/libs/components/Elements";
 import { createNewGroup } from "../new-group";
 
 const App = () => {
@@ -46,24 +45,34 @@ const App = () => {
         if (from === to) return;
 
         setGroups((groups) => moveItem(groups, from, to));
+        model.save();
     };
 
     const groupAdd = () => {
         createNewGroup((result: { group: {name: string, type?: TBookmarkGroupType }, rule: any, icon?: IBookmarkGroup['icon'] }) => {
-            // console.log(result);
             let { group, rule, icon } = result;
             if (group.name === "") {
                 showMessage(i18n.msg.groupNameEmpty, 3000, 'error');
                 return;
             }
-            model.newGroup(group.name, group.type, rule, icon, true);
+            model.newGroup(group.name, group.type, rule, icon);
         });
     };
 
-    // Find all subviews that contain the group
     const getSubviewInfos = (groupId: string): Array<{ name: string, icon?: { type: string, value: string } }> => {
         const views = subViews();
-        const result = [];
+        const result: Array<{ name: string, icon?: { type: string, value: string } }> = [];
+
+        if ((defaultView().groups ?? []).includes(groupId)) {
+            result.push({
+                name: "DEFAULT",
+                icon: {
+                    type: 'symbol',
+                    value: 'iconBookmark'
+                }
+            });
+        }
+
         for (const viewId in views) {
             if (views[viewId].groups.includes(groupId)) {
                 result.push({
@@ -192,14 +201,6 @@ const App = () => {
                                 {Counts()[group.id].deleted}
                             </span>
                             <span class="fn__space" />
-                            <span style={{ display: 'contents' }}>
-                                <CheckboxInput
-                                    checked={group.hidden === true ? false : true}
-                                    changed={() => {
-                                        setGroups((g) => g.id === group.id, 'hidden', (hidden) => !hidden);
-                                    }}
-                                />
-                            </span>
 
                             <span
                                 onClick={() => {
@@ -226,7 +227,6 @@ const App = () => {
                                         i18n_.delete,
                                         `Remove "${group.name}"?`,
                                         () => {
-                                            // model.removeGroup(group.id);
                                             model.delGroup(group.id);
                                         }
                                     );
