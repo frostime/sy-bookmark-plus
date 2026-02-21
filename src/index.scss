@@ -18,3 +18,29 @@ svg.rotate-90 {
 svg.rotate-180 {
     transform: rotate(180deg);
 }
+
+.view-group-config__list {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+}
+
+.view-group-config__list::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.view-group-config__list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.view-group-config__list::-webkit-scrollbar-thumb {
+    background: var(--b3-scroll-color);
+    border-radius: 999px;
+}
+
+.view-group-config__action {
+    padding: 0 8px;
+    min-height: 24px;
+    line-height: 22px;
+    font-size: 12px;
+}

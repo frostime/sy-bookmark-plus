@@ -1,23 +1,20 @@
 import { Component, For, Show, createMemo, createSignal } from "solid-js";
-import { subViews, saveSubViews, groups, defaultView } from "@/model/stores";
+import { subViews, saveSubViews } from "@/model/stores";
 import { confirmDialog } from "@/libs/dialog";
 import { showMessage } from "siyuan";
 import { inputDialog } from "@frostime/siyuan-plugin-kits";
-import { GroupIcon } from "../elements/group-icon";
 import Icon from "../elements/icon";
 import { selectGroupIcon } from "../elements/select-icon";
 import { SelectInput } from "@/libs/components/Elements";
 import { destroyBookmark } from "@/dock-views";
 import { i18n } from "@/utils/i18n";
-import { getModel } from "@/model";
+import ViewGroupConfig from "./view-group-config";
 
 
 const SubViewList: Component = () => {
-    const model = getModel();
     const i18nSubview = i18n.src_components_setting_subviewlisttsx as any;
     const [editingView, setEditingView] = createSignal<string | null>(null);
     const [editingDefault, setEditingDefault] = createSignal<boolean>(false);
-    const [draggingGroup, setDraggingGroup] = createSignal<string | null>(null);
 
     const viewList = createMemo(() => {
         let views = Object.values(subViews());
@@ -79,160 +76,6 @@ const SubViewList: Component = () => {
         if (!view) return;
         subViews.update(viewId, 'hidden', !view.hidden);
         await saveSubViews();
-    };
-
-    const toggleGroupInView = async (viewId: string, groupId: string) => {
-        let view = subViews()[viewId];
-        if (!view) return;
-
-        subViews.update(viewId, 'groups', (groups: IBookmarkGroup['id'][]) => {
-            if (groups.includes(groupId)) {
-                return groups.filter(id => id !== groupId);
-            } else {
-                return [...groups, groupId];
-            }
-        });
-        await saveSubViews();
-    };
-
-    const handleDragStart = (groupId: string, e: DragEvent) => {
-        setDraggingGroup(groupId);
-        e.dataTransfer.effectAllowed = "move";
-    };
-
-    const handleDragOver = (e: DragEvent) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
-    };
-
-    const handleDrop = async (viewId: string, targetGroupId: string, e: DragEvent) => {
-        e.preventDefault();
-        const sourceGroupId = draggingGroup();
-        if (!sourceGroupId) return;
-
-        const view = subViews()[viewId];
-        if (!view) return;
-
-        subViews.update(viewId, 'groups', (groups: IBookmarkGroup['id'][]) => {
-            const srcIdx = groups.indexOf(sourceGroupId);
-            const targetIdx = groups.indexOf(targetGroupId);
-            if (srcIdx === -1 || targetIdx === -1) return groups;
-            let newGroups = structuredClone(groups);
-            newGroups.splice(srcIdx, 1);
-            newGroups.splice(targetIdx, 0, sourceGroupId);
-            return newGroups;
-        });
-
-        await saveSubViews();
-        setDraggingGroup(null);
-    };
-
-    const handleDefaultDrop = (targetGroupId: string, e: DragEvent) => {
-        e.preventDefault();
-        const sourceGroupId = draggingGroup();
-        if (!sourceGroupId) return;
-
-        const groupIds = defaultView().groups ?? [];
-        const srcIdx = groupIds.indexOf(sourceGroupId);
-        const targetIdx = groupIds.indexOf(targetGroupId);
-        if (srcIdx === -1 || targetIdx === -1 || srcIdx === targetIdx) return;
-
-        model.moveDefaultViewGroup(srcIdx, targetIdx);
-        setDraggingGroup(null);
-    };
-
-    const toggleGroupInDefault = (groupId: string) => {
-        const groupIds = defaultView().groups ?? [];
-        if (groupIds.includes(groupId)) {
-            model.removeGroupFromDefaultView(groupId);
-        } else {
-            model.addGroupToDefaultView(groupId);
-        }
-    }
-
-    const defaultViewGroups = createMemo(() => {
-        const groupIds = defaultView().groups ?? [];
-        let inViews: IBookmarkGroup[] = [];
-        let notInView: IBookmarkGroup[] = [];
-
-        for (const group of groups) {
-            const gid = group.id;
-            if (groupIds.includes(gid)) {
-                inViews.push(group);
-            } else {
-                notInView.push(group);
-            }
-        }
-
-        inViews.sort((a, b) => groupIds.indexOf(a.id) - groupIds.indexOf(b.id));
-
-        return {
-            inViews,
-            notInView
-        }
-    });
-
-    const viewGroups = () => {
-        const viewId = editingView();
-        if (!viewId) return;
-        const view = subViews()[viewId];
-        if (!view) return;
-        let inViews: IBookmarkGroup[] = [];
-        let notInView: IBookmarkGroup[] = [];
-
-        for (const group of groups) {
-            const gid = group.id;
-            if (view.groups.includes(gid)) {
-                inViews.push(group);
-            } else {
-                notInView.push(group);
-            }
-        }
-
-        // sort inViews as view groups order
-        inViews.sort((a, b) => view.groups.indexOf(a.id) - view.groups.indexOf(b.id));
-
-        return {
-            inViews,
-            notInView
-        }
-    }
-
-    const BookmarkGroupItem: Component<{
-        group: IBookmarkGroup;
-        checked: boolean;
-        draggable?: boolean;
-        onToggle: () => void;
-        onDragStart?: (e: DragEvent) => void;
-        onDragOver?: (e: DragEvent) => void;
-        onDrop?: (e: DragEvent) => void;
-    }> = (props) => {
-        return (
-            <div
-                style={{
-                    display: "flex",
-                    "align-items": "center",
-                    padding: "8px",
-                    "border-radius": "4px",
-                    'border': '1px solid var(--b3-border-color)',
-                    cursor: props.draggable ? "move" : "default",
-                    gap: "4px"
-                }}
-                draggable={props.draggable}
-                onDragStart={props.onDragStart}
-                onDragOver={props.onDragOver}
-                onDrop={props.onDrop}
-            >
-                <input
-                    type="checkbox"
-                    checked={props.checked}
-                    onChange={props.onToggle}
-                    style={{ margin: "0 8px 0 0" }}
-                />
-                <GroupIcon group={props.group} />
-                <span>{props.group.name}</span>
-            </div>
-        );
     };
 
     return (
@@ -298,39 +141,7 @@ const SubViewList: Component = () => {
                 </div>
 
                 <Show when={editingDefault()}>
-                    <div style={{
-                        display: "flex",
-                        "flex-direction": "column",
-                        gap: "6px",
-                        "margin-top": "16px",
-                        "padding-top": "16px",
-                        "border-top": "1px solid var(--b3-theme-surface-lighter)"
-                    }}>
-                        <div style={{ "font-weight": "500" }}>{i18n.src_components_setting_subviewlisttsx.current_view_bookmarks}</div>
-                        <For each={defaultViewGroups().inViews}>
-                            {(group) => (
-                                <BookmarkGroupItem
-                                    group={group}
-                                    checked={true}
-                                    draggable={true}
-                                    onToggle={() => toggleGroupInDefault(group.id)}
-                                    onDragStart={(e) => handleDragStart(group.id, e)}
-                                    onDragOver={handleDragOver}
-                                    onDrop={(e) => handleDefaultDrop(group.id, e)}
-                                />
-                            )}
-                        </For>
-                        <div style={{ "font-weight": "500" }}>{i18n.src_components_setting_subviewlisttsx.other_bookmark_groups}</div>
-                        <For each={defaultViewGroups().notInView}>
-                            {(group) => (
-                                <BookmarkGroupItem
-                                    group={group}
-                                    checked={false}
-                                    onToggle={() => toggleGroupInDefault(group.id)}
-                                />
-                            )}
-                        </For>
-                    </div>
+                    <ViewGroupConfig sourceView="DEFAULT" maxHeight="360px" />
                 </Show>
             </div>
 
@@ -443,39 +254,7 @@ const SubViewList: Component = () => {
                         </div>
 
                         <Show when={editingView() === view.id}>
-                            <div style={{
-                                display: "flex",
-                                "flex-direction": "column",
-                                gap: "6px",
-                                "margin-top": "16px",
-                                "padding-top": "16px",
-                                "border-top": "1px solid var(--b3-theme-surface-lighter)"
-                            }}>
-                                <div style={{ "font-weight": "500" }}>{i18n.src_components_setting_subviewlisttsx.current_view_bookmarks}</div>
-                                <For each={viewGroups().inViews}>
-                                    {(group) => (
-                                        <BookmarkGroupItem
-                                            group={group}
-                                            checked={true}
-                                            draggable={true}
-                                            onToggle={() => toggleGroupInView(view.id, group.id)}
-                                            onDragStart={(e) => handleDragStart(group.id, e)}
-                                            onDragOver={handleDragOver}
-                                            onDrop={(e) => handleDrop(view.id, group.id, e)}
-                                        />
-                                    )}
-                                </For>
-                                <div style={{ "font-weight": "500" }}>{i18n.src_components_setting_subviewlisttsx.other_bookmark_groups}</div>
-                                <For each={viewGroups().notInView}>
-                                    {(group) => (
-                                        <BookmarkGroupItem
-                                            group={group}
-                                            checked={false}
-                                            onToggle={() => toggleGroupInView(view.id, group.id)}
-                                        />
-                                    )}
-                                </For>
-                            </div>
+                            <ViewGroupConfig sourceView={view.id} maxHeight="360px" />
                         </Show>
                     </div>
                 )}

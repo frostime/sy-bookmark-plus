@@ -9,6 +9,7 @@ import { BookmarkContext } from "./context";
 
 import { i18n, renderI18n } from "@/utils/i18n";
 import { createNewGroup } from "./new-group";
+import { openViewGroupDialog } from "./setting/view-group-dialog";
 
 
 /**
@@ -178,7 +179,12 @@ const BookmarkComponent: Component<{
                     data-type="setting"
                     class="block__icon ariaLabel"
                     aria-label={I18N.logo.setting}
-                    onClick={props.plugin.openSetting}
+                    onClick={() => {
+                        openViewGroupDialog({
+                            plugin: props.plugin,
+                            sourceView: props.sourceView
+                        });
+                    }}
                 >
                     <svg class="">
                         <use href="#iconSettings"></use>
