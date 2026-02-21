@@ -566,6 +566,38 @@ export class BookmarkDataModel {
         }
     }
 
+    async editGroup(
+        id: TBookmarkGroupId,
+        data: {
+            name?: string;
+            icon?: IBookmarkGroup['icon'];
+            rule?: IDynamicRule;
+        }
+    ) {
+        const group = groupMap().get(id);
+        if (!group) return false;
+
+        batch(() => {
+            if (data.name !== undefined) {
+                setGroups((g) => g.id === id, 'name', data.name);
+            }
+            if (data.icon !== undefined) {
+                setGroups((g) => g.id === id, 'icon', data.icon);
+            }
+            if (group.type === 'dynamic' && data.rule !== undefined) {
+                setGroups((g) => g.id === id, 'rule', data.rule);
+            }
+        });
+
+        if (group.type === 'dynamic' && data.rule !== undefined) {
+            const updatedGroup = groupMap().get(id);
+            await this.updateDynamicGroup(updatedGroup);
+        }
+
+        this.save();
+        return true;
+    }
+
     addItem(gid: TBookmarkGroupId, item: IBookmarkItem): boolean | 'exists' {
         let group = groupMap().get(gid);
         if (group) {

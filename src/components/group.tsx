@@ -5,7 +5,6 @@ import { Transition } from "solid-transition-group";
 import { Menu, Constants, confirm, showMessage } from "siyuan";
 
 import { getBlockByID } from "@/api";
-import inputDialog from '@/libs/components/input-dialog';
 import { ClassName } from "@/libs/dom";
 import { i18n, renderI18n } from "@/utils/i18n";
 
@@ -14,6 +13,7 @@ import { groups, setGroups, configs, itemInfo, subViews } from "../model";
 import { BookmarkContext, itemMoving, setItemMoving, groupDrop, setGroupDrop } from "./context";
 import { getActiveDoc } from "@/utils";
 import { parseEmoji } from "./elements/icon";
+import { createEditGroup } from "./edit-group";
 
 import { selectGroupIcon } from "./elements/select-icon";
 import { GroupIcon } from "./elements/group-icon";
@@ -234,54 +234,24 @@ const Group: Component<{
         }
         menu.addSeparator();
         menu.addItem({
-            label: i18n_.rename,
+            label: i18n_.edit,
             icon: "iconEdit",
             click: async () => {
-                inputDialog({
-                    title: i18n_.rename,
-                    defaultText: props.group.name,
-                    width: "500px",
-                    type: 'textline',
-                    confirm: (title: string) => {
-                        if (title) {
-                            model.renameGroup(props.group.id, title.trim());
-                        }
+                createEditGroup(props.group, async (result) => {
+                    const name = result?.group?.name?.trim();
+                    if (!name) {
+                        showMessage(i18n.msg.groupNameEmpty, 3000, 'error');
+                        return;
                     }
+
+                    await model.editGroup(props.group.id, {
+                        name,
+                        icon: result.icon,
+                        rule: isDynamicGroup() ? result.rule : undefined
+                    });
                 });
             },
         });
-        menu.addItem({
-            label: i18n.selecticon.title,
-            icon: "iconImage",
-            click: changeGroupIcon
-        });
-
-        if (isDynamicGroup()) {
-            let type: "textline" | "textarea" = 'textline';
-            let height = null;
-            if (props.group.rule.type === 'sql' || props.group.rule.type === 'js') {
-                type = 'textarea';
-                height = "300px";
-            }
-            menu.addItem({
-                label: i18n_.edit,
-                icon: "iconEdit",
-                click: async () => {
-                    inputDialog({
-                        title: i18n_.edit + `@${i18n.ruletype[props.group.rule.type]}`,
-                        defaultText: props.group.rule.input,
-                        width: "600px",
-                        height: height,
-                        type: type,
-                        confirm: (ruleinput: string) => {
-                            if (ruleinput) {
-                                model.updateGroupRule(props.group.id, ruleinput);
-                            }
-                        }
-                    });
-                },
-            });
-        }
         menu.addItem({
             label: i18n_.delete,
             icon: "iconTrashcan",

@@ -7,17 +7,17 @@ import Icon from "./elements/icon";
 
 import { i18n } from "@/utils/i18n";
 import { Transition } from "solid-transition-group";
+import { decodeDynamicRuleInput, encodeDynamicRuleInput } from "@/model/rules";
 
 import { RuleTemplate } from "@/utils/const";
 
 import { createContext, useContext } from "solid-js";
 
-import { Caret } from "@/utils/const";
 import { selectGroupIcon } from "./elements/select-icon";
 import { confirmDialog } from "@frostime/siyuan-plugin-kits";
 import { render } from "solid-js/web";
 
-const NewGroupContext = createContext<{
+export const NewGroupContext = createContext<{
     groupType: Accessor<TBookmarkGroupType>;
     setGroupType: Setter<TBookmarkGroupType>;
     ruleType: Accessor<TRuleType>;
@@ -59,24 +59,25 @@ const RuleInput = () => {
                 />
             );
         } else if (ruleType() === 'backlinks') {
-            let id = ruleInput();
-            let process = '';
-            const backlinkInput = () => {
-                if (process !== '') {
-                    return id + Caret + process;
-                } else {
-                    return id;
-                }
+            const decoded = createMemo(() => {
+                return decodeDynamicRuleInput('backlinks', ruleInput()) as { id: string; process: '' | 'fb2p' | 'b2doc' };
+            });
+            const updateBacklinksRule = (args: { id?: string; process?: '' | 'fb2p' | 'b2doc' }) => {
+                const current = decoded();
+                const next = {
+                    id: args.id ?? current.id,
+                    process: args.process ?? current.process,
+                };
+                setRule({ input: encodeDynamicRuleInput('backlinks', next) });
             }
             return (
                 <>
                     <Form.Input
                         key="ruleInput"
-                        value={id}
+                        value={decoded().id}
                         type='textinput'
                         changed={(v) => {
-                            id = v;
-                            setRule({ input: backlinkInput() });
+                            updateBacklinksRule({ id: v });
                         }}
                         style={{ 'flex': 1, 'width': '100%' }}
                     />
@@ -98,7 +99,7 @@ const RuleInput = () => {
                         <div class="b3-label__text fn__flex-1">{i18nPost.name}</div>
                         <Form.Input
                             key="ruleInput"
-                            value={process}
+                            value={decoded().process}
                             type='select'
                             options={{
                                 '': i18nPost.omit,
@@ -106,8 +107,7 @@ const RuleInput = () => {
                                 'b2doc': i18nPost.b2doc
                             }}
                             changed={(v) => {
-                                process = v;
-                                setRule({ input: backlinkInput() });
+                                updateBacklinksRule({ process: v as '' | 'fb2p' | 'b2doc' });
                             }}
                         />
                     </div>
@@ -122,7 +122,7 @@ const RuleInput = () => {
 }
 
 type TAbout = { desc: string; direction: "row" | "column"; };
-const RuleEditor = () => {
+export const RuleEditor = (props?: { lockRuleType?: boolean }) => {
     const i18n_ = i18n.newgroup;
 
     const { ruleType, setRuleType, setRuleInput, setRule } = useNewGroup();
@@ -187,22 +187,27 @@ const RuleEditor = () => {
                 title={i18n_.rtype[0]}
                 description={i18n_.rtype[1]}
             >
-                <Form.Input
-                    key="ruleType"
-                    value={ruleType()}
-                    type="select"
-                    options={{
-                        sql: i18n.ruletype.sql,
-                        backlinks: i18n.ruletype.backlinks,
-                        attr: i18n.ruletype.attr,
-                        js: 'JavaScript'
-                    }}
-                    changed={(v) => {
-                        setRule({ type: v, input: '' });
-                        setRuleType(v);
-                        setRuleInput('');
-                    }}
-                />
+                <Show
+                    when={!props?.lockRuleType}
+                    fallback={<span class="b3-label__text">{i18n.ruletype[ruleType()]}</span>}
+                >
+                    <Form.Input
+                        key="ruleType"
+                        value={ruleType()}
+                        type="select"
+                        options={{
+                            sql: i18n.ruletype.sql,
+                            backlinks: i18n.ruletype.backlinks,
+                            attr: i18n.ruletype.attr,
+                            js: 'JavaScript'
+                        }}
+                        changed={(v) => {
+                            setRule({ type: v, input: '' });
+                            setRuleType(v);
+                            setRuleInput('');
+                        }}
+                    />
+                </Show>
             </Form.Wrap>
             <Form.Wrap
                 title={i18n_.rinput}

@@ -1,3 +1,11 @@
+/*
+ * @Author       : frostime
+ * Copyright (c) 2026 by frostime. All Rights Reserved.
+ * @Date         : 2026-02-21 01:53:06
+ * @Description  :
+ * @FilePath     : /src/model/migration.ts
+ * @LastEditTime : 2026-02-21 14:33:40
+ */
 export const CURRENT_BOOKMARK_SCHEMA = '2.0';
 
 export const compareSchemaVersion = (a?: string, b?: string) => {
@@ -51,6 +59,7 @@ const asStorage = (raw: any): IBookmarkStorageV2 => {
         }
     }
 
+    //2.0 schema 更新前的老数据结构没有 groups 容器，直接把顶层属性当作 groups 来处理
     return {
         schema: '0',
         groups: rawObj as Record<TBookmarkGroupId, IBookmarkGroup>,

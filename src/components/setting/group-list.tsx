@@ -4,10 +4,10 @@ import { moveItem } from "../../libs/op";
 import { GroupIcon } from "../elements/group-icon";
 import { selectGroupIcon } from "../elements/select-icon";
 import { confirm, showMessage } from "siyuan";
-import inputDialog from '@/libs/components/input-dialog';
 import { i18n } from "@/utils/i18n";
 import Icon from "../elements/icon";
 import { createNewGroup } from "../new-group";
+import { createEditGroup } from "../edit-group";
 
 const App = () => {
 
@@ -204,16 +204,18 @@ const App = () => {
 
                             <span
                                 onClick={() => {
-                                    inputDialog({
-                                        title: i18n_.rename,
-                                        defaultText: group.name,
-                                        width: "500px",
-                                        type: 'textline',
-                                        confirm: (title: string) => {
-                                            if (title) {
-                                                model.renameGroup(group.id, title.trim());
-                                            }
+                                    createEditGroup(group, async (result) => {
+                                        const name = result?.group?.name?.trim();
+                                        if (!name) {
+                                            showMessage(i18n.msg.groupNameEmpty, 3000, 'error');
+                                            return;
                                         }
+
+                                        await model.editGroup(group.id, {
+                                            name,
+                                            icon: result.icon,
+                                            rule: group.type === 'dynamic' ? result.rule : undefined
+                                        });
                                     });
                                 }}
                                 style={{ cursor: "pointer", display: 'flex' }}

@@ -4,7 +4,7 @@
  * @Date         : 2023-07-29 15:17:15
  * @FilePath     : /src/model/rules.ts
  * @LastEditTime : 2025-05-07 12:37:57
- * @Description  : 
+ * @Description  :
  */
 import * as api from "@/api";
 import { fb2p } from "@/libs/query";
@@ -72,19 +72,51 @@ const matchIDFormat = (id: string) => {
 
 
 type TBacklinkProcess = '' | 'fb2p' | 'b2doc';
+export interface IBacklinksRuleInput {
+    id: string;
+    process: TBacklinkProcess;
+}
+
+export const decodeDynamicRuleInput = (type: TRuleType, raw: string) => {
+    if (type === 'backlinks') {
+        const text = (raw ?? '').toString();
+        const index = text.indexOf(Caret);
+        if (index >= 0) {
+            const id = text.slice(0, index);
+            const processRaw = text.slice(index + Caret.length);
+            const process: TBacklinkProcess = ['', 'fb2p', 'b2doc'].includes(processRaw) ? processRaw as TBacklinkProcess : '';
+            return { id, process } as IBacklinksRuleInput;
+        }
+        return { id: text, process: '' } as IBacklinksRuleInput;
+    }
+    return (raw ?? '').toString();
+}
+
+export const encodeDynamicRuleInput = (type: TRuleType, value: any) => {
+    if (type === 'backlinks') {
+        if (typeof value === 'string') {
+            return value;
+        }
+        const id = value?.id ?? '';
+        const process: TBacklinkProcess = ['', 'fb2p', 'b2doc'].includes(value?.process) ? value.process : '';
+        if (process !== '') {
+            return `${id}${Caret}${process}`;
+        }
+        return id;
+    }
+    return `${value ?? ''}`;
+}
+
 export class Backlinks extends MatchRule {
 
     id: string;
     process: TBacklinkProcess = '';
     constructor(input: string) {
         super("backlinks");
-        let parts = input.split(Caret);
-        if (parts.length === 2) {
-            this.id = parts[0];
-            this.process = parts[1] as TBacklinkProcess;
-        } else {
-            this.id = parts[0];
-        }
+        const decoded = decodeDynamicRuleInput('backlinks', input) as IBacklinksRuleInput;
+        this.id = decoded.id;
+        this.process = decoded.process;
+        this.input = encodeDynamicRuleInput('backlinks', decoded);
     }
 
     validateInput(): boolean {
@@ -100,11 +132,11 @@ export class Backlinks extends MatchRule {
             return [];
         }
         const sql = `
-            select blocks.* 
-            from blocks 
-            join refs on blocks.id = refs.block_id 
-            where refs.def_block_id = '${runtimeId}' 
-            order by blocks.updated desc 
+            select blocks.*
+            from blocks
+            join refs on blocks.id = refs.block_id
+            where refs.def_block_id = '${runtimeId}'
+            order by blocks.updated desc
             limit 999;
         `;
         let blocks: Block[] = await api.sql(sql);
@@ -175,7 +207,7 @@ class Attr extends MatchRule {
 
     /**
      * 检查 this._input 的格式是否正确
-     * @returns 
+     * @returns
      */
     validateInput(): boolean {
         const inputPattern = /^([\-\w\%\{\}]+)(?:\s*(=|like)\s*(.+))?$/;

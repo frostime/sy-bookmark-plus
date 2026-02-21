@@ -24,7 +24,7 @@ group:
   delete: 删除书签组
   docflow: 文档流
   down: 下移
-  edit: 更改规则值
+  edit: 更改当前组
   fromclipboard: 从剪贴板中插入块
   move: 移动
   msg404: '无法添加: 未找到 ID 为 [{0}] 的块'

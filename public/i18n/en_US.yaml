@@ -24,7 +24,7 @@ group:
   delete: Delete Bookmark Group
   docflow: Document Flow
   down: Move Down
-  edit: Edit Rule Value
+  edit: Edit Current Group
   fromclipboard: Insert Block from Clipboard
   move: Move
   msg404: 'Cannot add: Block with ID [{0}] not found'
