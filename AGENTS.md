@@ -20,216 +20,207 @@
 <!-- SSPEC:START -->
 # .sspec Agent Protocol
 
-SSPEC_SCHEMA::7.1
+SSPEC_SCHEMA::9.1
 
-## 0. Protocol Overview
+## 0. Overview
 
-SSPEC is a document-driven AI collaboration framework. All planning, tracking, and handover lives in `.sspec/`.
+SSPEC is a doc-driven collaboration workflow. Planning, tracking, and handover live in `.sspec/`.
 
-**Goal**: Any Agent resumes work within 30 seconds by reading `.sspec/` files.
+**Goal**: Any Agent resumes work in 30 seconds from `.sspec/`.
 
-**Folder Structure**:
 ```
 .sspec/
-├── project.md              # Identity, conventions, accumulated memory notes
-├── spec-docs/              # Formal specifications (architecture, APIs, standards)
-├── changes/<n>/            # Active change proposals
-│   ├── spec.md | tasks.md | handover.md  # Required
-│   └── reference/ | script/              # Optional
-├── requests/               # Lightweight proposals (user intent record)
-├── tmp/                    # Informal proposals, plans, scripts, etc., for user review.
-└── asks/                   # Human-in-the-loop Q&A records (decision evidence)
+├── project.md     # Identity, conventions, notes
+├── spec-docs/     # Formal specs (architecture, APIs)
+├── changes/<n>/   # spec.md | tasks.md | handover.md [+ reference/]
+├── requests/      # User intent records
+├── tmp/           # Informal drafts
+└── asks/          # Q&A decision records
 ```
 
 ---
 
-## 1. Cold Start
+## 1. Agent Procedure
 
-When entering project in new session:
+`read(project.md)` → classify → dispatch:
 
-1. Read `.sspec/project.md` — identity, conventions, accumulated notes
-2. Determine action:
+SSPEC activation signals (enter Change Workflow §2 if any is true):
+- User provides/references a request file (for example `.sspec/requests/...`)
+- User explicitly asks to start SSPEC/change workflow
+- User uses SSPEC directives (for example `@resume`, `@change`, `@handover`)
 
-| User Message | Action |
-|--------------|--------|
-| `@resume` or `@change` | Load that change's context |
-| Micro task (≤3 files, ≤30min, obvious) | Do directly, no change ceremony |
-| Vague request (idea/bug/feature) | Request → Change Workflow (Section 2.0) |
-| Simple task, no directive | Do directly |
+| Input | Action |
+|-------|--------|
+| Directive (`@resume`, `@handover`, etc.) | Execute → §5 Shortcuts |
+| Request (attached or described) | Assess scale → Change Workflow §2 |
+| Resume existing change | `read(handover→tasks→spec)` → continue |
+| Micro task (≤3 files, ≤30min, obvious) | Do directly, no change needed |
 
-If touching unfamiliar subsystem → check `spec-docs/` | `project.md` | `<change>/handover.md`
+**Background rules**:
+- Important discovery → write to `handover.md` immediately
+- Project-wide discovery (convention, gotcha, cross-cutting) → also append to `project.md` Notes
+- Long session (>30 exchanges) → checkpoint `handover.md`
+- Uncertain → `@ask` (30s question < hours of rework)
+- User rejects tool call → STOP → `@ask` reason
 
 ---
 
-## 2. SCOPE: Changes
+## 2. Change Workflow
 
-Changes live in `.sspec/changes/<n>/`.
+### Development Lifecycle
 
-| File/Dir | Contains | Required |
-|----------|----------|----------|
-| spec.md | Problem (A), Solution (B), Implementation (C), Blockers (D) | Yes |
-| tasks.md | Task list with `[ ]`/`[x]` markers + progress | Yes |
-| handover.md | Session context + agent working memory | Yes |
-| reference/ | Design/Research/Auxiliary documents | No |
+Each phase has a dedicated SKILL. Read it before starting.
 
-**Locate a change**: user offer path | `sspec change find <n>` | `sspec change list` | read .sspec/changes/ or .sspec/changes/archive
-**Change Dir Name**: `<time>_<change-name>` (e.g. `.sspec/changes/26-02-11T21-25_command-patch`)
+```text
+[Request]
+   |
+   v
+[Research]  (understand + clarify; @ask mid-research for ambiguities)
+   |
+   v
+[Design]    -- @ask gate (MANDATORY) --> "Align understanding + solution"
+   |
+   v
+[Plan]      -- @ask gate (LIGHTWEIGHT) --> "Confirm task breakdown"
+   |
+   v
+[Implement] -- @ask gate (MANDATORY) --> "Done for this round, please review"
+   |
+   v
+[Review]    -- user feedback --> (if not satisfied, return to Implement)
+   |
+   +-- satisfied --> [Handover]
+```
 
-### 2.0 Request → Change Workflow
+Flow rules:
+- Follow phase order from `Request` to `Handover`.
+- Any `@ask` gate is a hard checkpoint: ask user first (`question` if available, else `sspec ask`).
+- `@ask` is a closed loop: if not approved, return to the required phase, update, and ask again.
+- `Implement` and `Review` are coupled: deliver -> ask -> feedback -> implement -> ask again, until satisfied.
 
-Assess scale FIRST:
+**Handover** is lifecycle-critical. Trigger it:
+- At session end (MANDATORY)
+- Mid-session when context is long (>30 exchanges)
+- When switching between major phases
+- Before any context-losing event (compression, interruption)
 
-**Micro** (≤3 files, ≤30min, no design decisions):
-Track in request file (`## Plan` / `## Done`) or just do it. No change needed.
+### Phase → SKILL → Files
 
-**Normal+** (anything bigger):
+| Phase | SKILL | Reads | Writes | Checkpoint |
+|-------|-------|-------|--------|------------|
+| **Research** | `sspec-research` | code, project.md, spec-docs | reference/, handover.md | `question` for mid-research clarifications (no formal gate) |
+| **Design** | `sspec-design` | research findings, code | spec.md (A+B) | **@ask align** (MANDATORY) |
+| **Plan** | `sspec-plan` | spec.md B | tasks.md | @ask confirm breakdown (LIGHTWEIGHT) |
+| **Implement** | `sspec-implement` | spec.md B, tasks.md | code, tasks.md progress | **@ask "done for this round, please review"** (MANDATORY) |
+| **Review** | `sspec-review` | user feedback | tasks.md (feedback tasks) | feedback loop: not satisfied -> Implement; satisfied -> Handover |
+| **Handover** | `sspec-handover` | everything | handover.md, project.md | — |
 
-1. **Link**: `sspec change new --from <request>` | create then `sspec request link`
-2. **Understand**: First-principles — find the real problem, not the surface ask
-3. **Research**: Read project.md + relevant code. If unclear, **use `@ask`** (sspec ask)
-4. **Design**:
-   - Simple: Draft spec.md mentally
-   - Complex (>1 week / >15 files / >20 tasks): **`@ask`** about splitting → `sspec change new <n> --root`
-   - Finalize: Distill into spec.md A/B/C (B=Design: interfaces/data/logic; C=Plan: phases/files; avoid duplication)
-5. **Confirm**: **`@ask`** to present plan. Wait for approval.
-6. **Execute**: Update tasks.md after each task.
+### Scale Assessment (in Design phase)
 
-**Principle**: Understand before acting. Wrong direction costs more than extra questions.
+| Scale | Criteria | Path |
+|-------|----------|------|
+| Micro | ≤3 files, ≤30min, trivially reversible | Do directly |
+| Single | ≤1 week, ≤15 files, ≤20 tasks | `sspec change new <name>` |
+| Multi | >1 week OR >15 files OR >20 tasks | `sspec change new <name> --root` → sub-changes |
 
-**Memory**: In long sessions, proactively update handover.md "References & Memory" — context compression is silent and lossy.
-
-📚 Consult `sspec-change` SKILL for scale assessment, document standards, multi-change patterns
-📚 Consult `sspec-memory` SKILL for handover quality and memory management
-
-### 2.1 Status Transitions
+### Status Transitions
 
 | From | Trigger | To |
 |------|---------|-----|
-| PLANNING | user approves | DOING |
+| PLANNING | user approves design+plan | DOING |
 | DOING | all tasks `[x]` | REVIEW |
 | DOING | missing info | BLOCKED |
 | DOING | scope changed | PLANNING |
-| BLOCKED | resolved | DOING |
 | REVIEW | accepted | DONE |
 | REVIEW | needs changes | DOING |
 
-**FORBIDDEN**: PLANNING→DONE, DOING→DONE, BLOCKED→DONE
-
-### 2.2 User Directives
-
-#### `@change <n>`
-
-Existing change: Locate the change -> Read handover.md (especially References & Memory) → tasks.md → spec.md → check reference field → output status + progress + next 3 actions.
-
-New change: `sspec change new <n>` or `--from <request>`. Complex: `--root`. Follow 2.0 workflow. Fill docs per standards in `sspec-change` SKILL. Ask approval.
-
-#### `@resume`
-
-Same as `@change <current_active_change>`.
-
-#### `@handover`
-
-Update handover.md as agent memory. Two modes:
-
-**End-of-session** (mandatory): Update Accomplished, Next Steps, References & Memory; append to project.md Notes; verify tasks.md progress.
-
-**Mid-session** (proactive): Trigger on long session (>50 exchanges), important decisions, key discoveries. Update References & Memory only.
-
-**Principle**: If you'd struggle to reconstruct info after context compression, write it to handover NOW.
-
-📚 Consult `sspec-memory` SKILL for handover quality standards and memory checklists
-
-#### `@sync`
-
-After autonomous coding without tracking: identify changes → update tasks.md → all done? suggest REVIEW.
-
-#### `@argue`
-
-User disagrees. **STOP immediately**. Follow rejection protocol.
-
-📚 Consult `sspec-change` SKILL for rejection scope assessment and edge cases
-
-### 2.3 Template Markers
-
-- **@RULE**: `<!-- @RULE: ... -->` — inline standards reminders. Read and follow. DO NOT delete.
-- **@REPLACE**: `<!-- @REPLACE -->` — anchor for first edit.
-- **Task markers**: `[ ]` todo, `[x]` done
-
-**Authority**: SKILLs are source of truth. @RULE markers are quick reminders.
+**FORBIDDEN**: PLANNING→DONE, DOING→DONE — never skip REVIEW.
 
 ---
 
-## 3. SCOPE: Requests
+## 3. Consultation (@ask)
 
-Lightweight proposals created by user. Location: `.sspec/requests/`
+`@ask` means the Agent proactively asks the User a question, through:
+- Built-in tools such as `AskUserQuestion` (e.g. `vscode/askQuestion`, `opencode/question`)
+- The `sspec ask` CLI tool
 
-Request = "I want X" → Change = "Here's how we do X"
+**Choose by question type**:
 
-**Micro shortcut**: ≤3 files / ≤30min → track in request file directly. No change needed.
+| Question type | Tool |
+|---|---|
+| Simple, bounded — yes/no, pick from options, quick confirm | `question` tool |
+| Complex, open-ended — requires context, involves tradeoffs, or worth recording | `sspec ask` |
+| Phase gates (Design align, Implement review) | `sspec ask` (mandatory) |
+| Mid-research in-flight clarification | `question` tool |
 
----
+If no `question`-like tool is available → use `sspec ask` for all cases.
 
-## 4. SCOPE: Spec-Docs
+**For complex context**: If the question references a large design draft, research findings, or analysis → write that content to `.sspec/tmp/` and link it from the question body. Confirmed valuable materials can be moved to `change/reference/` later.
 
-Formal specifications (architecture, API contracts, standards). Location: `.sspec/spec-docs/`
+At phase gates: Design + Implement are mandatory, Plan is lightweight, Review loops until satisfied.
 
-For knowledge that is **too complex for project.md** and **surviving beyond any single change**.
-
-#### `@doc <n>`
-
-New: `sspec doc new "<n>" [--dir]` → follow write-spec-doc SKILL.
-Update: Read existing → apply changes → update `updated` field.
-
-📚 Consult `write-spec-doc` SKILL for guidelines
-
----
-
-## 5. SCOPE: sspec ask
-
-**USE ACTIVELY** — Don't hesitate to ask. Better to confirm than guess wrong.
-
-```
-sspec ask create <topic>     # Create ask template (.py)
-sspec ask prompt <file>      # Execute and collect answer → auto-converts to .md record
-```
-
-**NOTE**: Long reusable doc should not go in ASK file → write in `.sspec/tmp` and ref it in QUESTION.
-
-#### `@ask`
-
-**MUST** trigger when: confused, before session end, tool call rejected, plan needs approval.
-
-📚 Consult `sspec-ask` SKILL for triggers, workflow, patterns
+📚 Full workflow, patterns, and content rules: `sspec-ask` SKILL
 
 ---
 
-## 6. Behavior Summary
+## 4. Spec-Docs
 
-```
-ON user_message:
-    IF @directive              → Execute directive
-    IF micro (≤3 files)        → Do directly
-    IF active change DOING     → Continue tasks, update tasks.md
-    ELSE                       → Request → Change Workflow (2.0)
+Spec-docs store architecture knowledge that should outlive a single change.
 
-ON request_attached:
-    DO Request → Change Workflow
+Create/update spec-docs when:
+- A change produces architectural knowledge (interfaces, data models, patterns)
+- When the agent discovers knowledge too complex for `project.md` Notes
+- When user explicitly requests documentation
 
-ON need_user_input:
-    USE @ask                   → Persists record, saves cost
+Scenarios:
 
-ON important_discovery:
-    Route knowledge            → Consult sspec-memory SKILL
+| Scenario | Trigger | Action |
+|----------|---------|--------|
+| Post-change update | Change is DONE, with architecture impact | Agent proactively `@ask`: "Should I update/create spec-doc for X?" |
+| User-initiated | User requests spec-doc creation | If small → do directly; if large → may need its own change |
 
-ON session_getting_long:
-    Proactive memory save      → Update handover.md References & Memory
+📚 Full guidelines: `write-spec-doc` SKILL
 
-ON session_end:
-    MUST @handover             → No exceptions
-    IF project-level learning  → Append to project.md Notes
+---
 
-ON uncertainty:
-    Consult SKILL              → sspec-change, sspec-memory, sspec-ask, write-spec-doc
-    OR @ask
-```
+## 5. Reference
+
+### Directive Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `@change <n>` | Load `handover→tasks→spec`, continue; OR create if not exists `<n>` |
+| `@resume` | Same as `@change` for active change |
+| `@handover` | Execute `sspec-handover` |
+| `@sync` | Update tasks.md/handover.md to match reality |
+| `@argue` | **STOP** -> assess scope (§2 Review) |
+
+### CLI Quick Reference
+
+Run `sspec <command> --help` for full options.
+
+| Command | Use |
+|---------|-----|
+| `sspec change new <name>` | Create a change |
+| `sspec change new <name> --root` | Create a root change |
+| `sspec change new --from <path>` | Create change from request file |
+| `sspec change list` / `find <name>` | Locate active changes |
+| `sspec change archive <path>` | Archive completed change |
+| `sspec ask create <topic>` + `sspec ask prompt <path>` | Create and ask |
+| `sspec request list` / `sspec ask list` | List requests/asks |
+| `sspec doc new "<name>"` | Create spec-doc |
+| `sspec tool mdtoc <file>` | Pre-scan Markdown |
+
+### SKILL System
+
+Read the SKILL for the current phase (`sspec-research`, `sspec-design`, `sspec-plan`, `sspec-implement`, `sspec-review`, `sspec-handover`, `sspec-ask`, `sspec-mdtoc`, `write-spec-doc`).
+If a SKILL says "read [file](...)" -> **MUST** read it.
+
+### Template Markers
+
+| Marker | Meaning | Action |
+|--------|---------|--------|
+| `<!-- @RULE: ... -->` | Standards reminder | Read and follow. |
+| `<!-- @REPLACE -->` | Anchor for first edit | Replace with content |
+| `[ ]` / `[x]` | Task todo / done | Update as work progresses |
 <!-- SSPEC:END -->
