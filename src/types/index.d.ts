@@ -128,8 +128,10 @@ declare interface Window {
         emojis: any;
         dragElement?: HTMLDivElement;
     };
+    // `siyuan` 类型包没有导出 Lute，这里按插件实际用法声明最小面
     Lute: {
         Caret: string;
+        New(): { Md2HTML(markdown: string): string; };
     }
 }
 

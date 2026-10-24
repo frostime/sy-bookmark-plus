@@ -36,7 +36,7 @@ let disposer = () => { };
 export const enableAutoRefresh = () => {
     const plugin = thisPlugin();
 
-    disposer = plugin.registerEventbusHandler('switch-protyle', (detail) => {
+    disposer = plugin.registerEventbusHandler('switch-protyle', () => {
         refreshAllDynamicGroupWithDocTemplate();
     });
 }

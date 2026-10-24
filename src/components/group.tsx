@@ -64,7 +64,7 @@ const Group: Component<{
     const context = useContext(BookmarkContext);
     const { model, doAction } = context;
 
-    const { IconView, changeGroupIcon } = useGroupIcon(props);
+    const { IconView } = useGroupIcon(props);
 
     const isDynamicGroup = () => props.group.type === 'dynamic';
 
