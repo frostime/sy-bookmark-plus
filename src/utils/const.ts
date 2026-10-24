@@ -148,3 +148,6 @@ order by updated desc;`
 }
 
 export const Caret = '‸';
+
+/** 书签条目在 Dock 内部拖动时使用的 dataTransfer 类型 */
+export const ItemDragType = 'bookmark/item';

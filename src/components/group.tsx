@@ -7,6 +7,7 @@ import { Menu, Constants, confirm, showMessage } from "siyuan";
 import { getBlockByID } from "@/api";
 import { ClassName } from "@/libs/dom";
 import { i18n, renderI18n } from "@/utils/i18n";
+import { ItemDragType } from "@/utils/const";
 
 import Item from "./item";
 import { groups, setGroups, configs, itemInfo, subViews } from "../model";
@@ -17,6 +18,23 @@ import { createEditGroup } from "./edit-group";
 
 import { selectGroupIcon } from "./elements/select-icon";
 import { GroupIcon } from "./elements/group-icon";
+
+/**
+ * 拖块时思源会同时登记 `application/siyuan-block` 和 gutter 类型，两者顺序不保证
+ * （3.8.2 起 block 类型排在最前），所以必须遍历全部 types，不能取 types[0]。
+ */
+const findGutterDropType = (types: readonly string[]) =>
+    types.find(type => type.startsWith(Constants.SIYUAN_DROP_GUTTER));
+
+/**
+ * gutter 类型名里带着块数据：`<块类型>\u200b<子类型>\u200b<块id,...>\u200b<workspaceDir>`。
+ * 多选时块 id 用逗号分隔。
+ */
+const parseGutterBlockIds = (gutterType: string) => {
+    const payload = gutterType.replace(Constants.SIYUAN_DROP_GUTTER, "");
+    const blockIds = payload.split(Constants.ZWSP)[2] ?? "";
+    return blockIds.split(",").filter(Boolean);
+};
 
 const useGroupIcon = (props: {
     group: IBookmarkGroup;
@@ -362,22 +380,11 @@ const Group: Component<{
     };
 
     const onDragOver = (event: DragEvent) => {
-        const type = event.dataTransfer.types[0];
-        if (!type) return;
-        if (type.startsWith(Constants.SIYUAN_DROP_GUTTER)) {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "copy";
-            setIsDragOver(true);
-        } else if (type.startsWith(Constants.SIYUAN_DROP_FILE)) {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "copy";
-            setIsDragOver(true);
-        } else if (event.dataTransfer.types.includes(Constants.SIYUAN_DROP_TAB)) {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "copy";
-            setIsDragOver(true);
+        const types = event.dataTransfer.types;
+        if (types.length === 0) return;
 
-        } else if (type === 'bookmark/item') {
+        //Dock 内部条目拖动是移动，其余来源（块、文档、页签）都是复制一份进来
+        if (types.includes(ItemDragType)) {
             event.preventDefault();
             event.dataTransfer.dropEffect = "move";
             setIsDragOver(true);
@@ -385,8 +392,18 @@ const Group: Component<{
             if (!overedItem) return;
             setItemMoving((value) => {
                 return { ...value, targetGroup: props.group.id, afterItem: overedItem.id };
-            })
+            });
+            return;
         }
+
+        const isExternalCopy = findGutterDropType(types) !== undefined
+            || types.includes(Constants.SIYUAN_DROP_FILE)
+            || types.includes(Constants.SIYUAN_DROP_TAB);
+        if (!isExternalCopy) return;
+
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+        setIsDragOver(true);
     };
 
     const onDragLeave = (event: DragEvent) => {
@@ -396,14 +413,15 @@ const Group: Component<{
     };
 
     const onDrop = async (event: DragEvent) => {
-        const type = event.dataTransfer.types[0];
-        if (!type) return;
-        if (type.startsWith(Constants.SIYUAN_DROP_GUTTER)) {
-            const meta = type.replace(Constants.SIYUAN_DROP_GUTTER, "");
-            const info = meta.split(Constants.ZWSP);
-            const nodeId = info[2];
-            addItemByBlockId(nodeId);
-        } else if (type.startsWith(Constants.SIYUAN_DROP_FILE)) {
+        const types = event.dataTransfer.types;
+        if (types.length === 0) return;
+
+        const gutterType = findGutterDropType(types);
+        if (gutterType) {
+            for (const blockId of parseGutterBlockIds(gutterType)) {
+                await addItemByBlockId(blockId);
+            }
+        } else if (types.includes(Constants.SIYUAN_DROP_FILE)) {
             const ele: HTMLElement = window.siyuan.dragElement;
             if (ele && ele.innerText) {
                 const blockid = ele.innerText;
@@ -419,7 +437,7 @@ const Group: Component<{
                 window.siyuan.dragElement = undefined;
             }
 
-        } else if (event.dataTransfer.types.includes(Constants.SIYUAN_DROP_TAB)) {
+        } else if (types.includes(Constants.SIYUAN_DROP_TAB)) {
             const data = event.dataTransfer.getData(Constants.SIYUAN_DROP_TAB)
             const payload = JSON.parse(data);
             const rootId = payload?.children?.rootId;
@@ -430,7 +448,7 @@ const Group: Component<{
             if (tab) {
                 tab.style.opacity = 'unset';
             }
-        } else if (type === 'bookmark/item') {
+        } else if (types.includes(ItemDragType)) {
             model.moveItem(itemMoving());
         }
         setIsDragOver(false);

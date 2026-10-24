@@ -8,6 +8,7 @@ import { itemInfo, setGroups, groupMap, configs, configRef } from "../model";
 import { BookmarkContext, itemMoving, setItemMoving } from "./context";
 
 import { i18n, renderI18n } from "@/utils/i18n";
+import { ItemDragType } from "@/utils/const";
 // import { simpleDialog } from "@/libs/dialog";
 import { simpleDialog } from "@frostime/siyuan-plugin-kits";
 import Typography from "@/libs/components/typography";
@@ -289,7 +290,7 @@ const Item: Component<IProps> = (props) => {
 
     const onDragStart = (event: DragEvent) => {
         // console.log('Drag Start', item());
-        event.dataTransfer.setData("bookmark/item", JSON.stringify({ group: props.group, id: item().id }));
+        event.dataTransfer.setData(ItemDragType, JSON.stringify({ group: props.group, id: item().id }));
         event.dataTransfer.effectAllowed = "move";
         setOpacityStyle('opacity: 0.5;');
         setItemMoving({
