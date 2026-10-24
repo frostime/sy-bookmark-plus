@@ -27,7 +27,7 @@ export const disposers = {
         }
     },
     disposeAll: () => {
-        for (let [vid, fn] of Object.entries(disposers._disposer)) {
+        for (const vid of Object.keys(disposers._disposer)) {
             disposers.dispose(vid as TBookmarkSubViewId);
         }
     },
