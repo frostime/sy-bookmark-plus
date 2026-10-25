@@ -15,6 +15,8 @@
 
 ### Fixed
 
+- 修复页面刚加载、尚未打开文档时 `{{CurDocId}}` 被替换成 `undefined` 导致查询失效的问题 [#62](https://github.com/frostime/sy-bookmark-plus/issues/62)
+- 修复启动时插件偶尔完全不加载、需关闭再开启才恢复的问题（默认 Dock 改为在异步加载之前注册）[#67](https://github.com/frostime/sy-bookmark-plus/issues/67)
 - 修复思源 3.8.2 及以上版本无法从编辑器块图标拖入书签的问题：新版拖块会额外登记一个排在前面的拖拽类型，插件原先只检查第一个类型，导致拖放被浏览器直接拒绝 [#71](https://github.com/frostime/sy-bookmark-plus/issues/71)
 - 修复多选块拖入时把逗号分隔的块 id 当成单个 id、导致全部失败的问题
 
