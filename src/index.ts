@@ -86,12 +86,9 @@ export default class PluginBookmarkPlus extends Plugin {
 
         model = getModel(this);
 
-        await model.load();
-
-        if (configs.replaceDefault) {
-            this.replaceDefaultBookmark();
-        }
-
+        //默认 Dock 先注册：思源 3.7.0 之前 addDock 只在插件加载的同步阶段可靠生效，
+        //而 model.load() 是异步的，放在它之后会让 Dock 偶尔不出现（#67）。
+        //Dock 的 init() 是在首次显示时才调用，那时数据已经加载完毕。
         registerDockViewTypeName('DEFAULT', 'RightBottom');
         this.addDock({
             type: getDockViewTypeName('DEFAULT'),
@@ -114,6 +111,13 @@ export default class PluginBookmarkPlus extends Plugin {
             }
         });
 
+        await model.load();
+
+        if (configs.replaceDefault) {
+            this.replaceDefaultBookmark();
+        }
+
+        //子视图 Dock 依赖存档里的视图列表，只能在加载完成后注册
         for (let [vid, view] of Object.entries(subViews())) {
             if (view.hidden === true) continue;
             let icon = 'iconEmoji';
