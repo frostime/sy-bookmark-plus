@@ -230,7 +230,7 @@ class Attr extends MatchRule {
     async fetch() {
         let name = renderTemplate(this.attrname);
         let value = this.attrval ? renderTemplate(this.attrval) : '';
-        // if (!name || !value) return [];
+        if (!name) return [];
         let query = `
         SELECT B.*
         FROM blocks AS B
@@ -268,6 +268,9 @@ class JSQuery extends MatchRule {
             return [];
         }
         let inputCode = renderTemplate(this.input);
+        if (!inputCode) {
+            return [];
+        }
         const code = `
         async function main(){
             ${inputCode}

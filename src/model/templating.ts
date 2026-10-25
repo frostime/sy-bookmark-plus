@@ -39,13 +39,22 @@ const renderString = (template: string, data: { [key: string]: string }) => {
     return template;
 }
 
+const DOC_VARS = [VAR_NAMES.CurDocId, VAR_NAMES.CurRootId];
+
+const usesDocVar = (template: string) =>
+    DOC_VARS.some(name => template.includes(`{{${name}}}`));
+
 /**
  * 动态渲染模板字符串
- * @param text 
- * @returns 
+ *
+ * 页面刚加载、还没打开任何文档时无法解析当前文档变量，此时返回 null 让调用方
+ * 跳过这次查询，避免把 `undefined` 当成文档 id 拼进 SQL。
  */
-export const renderTemplate = (text: string) => {
+export const renderTemplate = (text: string): string | null => {
     let docId = getActiveDoc();
+    if (!docId && usesDocVar(text)) {
+        return null;
+    }
     let now = new Date();
     let year = now.getFullYear();
     let month = now.getMonth() + 1;
