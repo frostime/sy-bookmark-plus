@@ -12,6 +12,9 @@ export const GroupIcon = (props: {
             <Match when={props.group.icon?.type === 'emoji'}>
                 <Icon emojiCode={props.group.icon.value} />
             </Match>
+            <Match when={props.group.icon?.type === 'img'}>
+                <Icon img={props.group.icon.value} width="14px" height="14px" />
+            </Match>
         </Switch>
     );
 }

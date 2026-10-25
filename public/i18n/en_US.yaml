@@ -98,6 +98,12 @@ selecticon:
   h3: Please select an icon
   reset: Reset
   title: Change Group Icon
+  dynamic: Dynamic Icon
+  dynamictext: Text
+  dynamictexthint: Text to display
+  image: Image
+  imagehint: Network image URL, or a SiYuan dynamic icon URL
+  confirm: Confirm
 setting:
   ariaLabel:
     description: Display full title of the bookmark item in a hover box when the mouse
