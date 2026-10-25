@@ -2,7 +2,7 @@ import { Accessor, Show, createSignal } from "solid-js";
 import { render } from "solid-js/web";
 
 import Form from "@/libs/components/Form";
-import Icon from "./elements/icon";
+import { GroupIcon } from "./elements/group-icon";
 import { RuleEditor, NewGroupContext } from "./new-group";
 import { selectGroupIcon } from "./elements/select-icon";
 import { i18n } from "@/utils/i18n";
@@ -67,15 +67,7 @@ export const EditGroup = (props: {
                 description={i18n_.icondesc}
             >
                 <div style={{ display: 'flex', "align-items": 'center' }} onClick={changeGroupIcon}>
-                    {(() => {
-                        if (!props.icon()) {
-                            return <Icon symbol={groupType() === 'normal' ? 'iconFolder' : 'iconSearch'} />;
-                        } else if (props.icon()?.type === 'symbol') {
-                            return <Icon symbol={props.icon()?.value} />;
-                        } else {
-                            return <Icon emojiCode={props.icon()?.value} />;
-                        }
-                    })()}
+                    <GroupIcon group={{ type: groupType(), icon: props.icon() }} />
                 </div>
             </Form.Wrap>
 

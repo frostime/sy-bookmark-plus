@@ -230,7 +230,7 @@ class Attr extends MatchRule {
     async fetch() {
         let name = renderTemplate(this.attrname);
         let value = this.attrval ? renderTemplate(this.attrval) : '';
-        if (!name) return [];
+        if (!name || value === null) return [];
         let query = `
         SELECT B.*
         FROM blocks AS B

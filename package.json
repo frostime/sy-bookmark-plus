@@ -14,6 +14,7 @@
   "scripts": {
     "dev": "pnpm run clean && cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
     "check": "pnpm run check:types",
+    "test": "node --test tests/*.test.cjs",
     "check:types": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "clean": "node ./scripts/clean.js",
     "build": "pnpm run clean && pnpm run build:app",
