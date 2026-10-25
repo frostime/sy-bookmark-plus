@@ -2,7 +2,7 @@ import { Match, Switch } from "solid-js";
 import Icon from "./icon";
 
 export const GroupIcon = (props: {
-    group: IBookmarkGroup;
+    group: Pick<IBookmarkGroup, 'type' | 'icon'>;
 }) => {
     return (
         <Switch fallback={<Icon symbol={(!props.group.type || props.group.type === 'normal') ? 'iconFolder' : 'iconSearch'} />}>

@@ -14,6 +14,7 @@ import { RuleTemplate } from "@/utils/const";
 import { createContext, useContext } from "solid-js";
 
 import { selectGroupIcon } from "./elements/select-icon";
+import { GroupIcon } from "./elements/group-icon";
 import { confirmDialog } from "@frostime/siyuan-plugin-kits";
 import { render } from "solid-js/web";
 
@@ -326,15 +327,7 @@ export const NewGroup = (props: {
                     description={i18n_.icondesc}
                 >
                     <div style={{ display: 'flex', "align-items": 'center' }} onClick={changeGroupIcon}>
-                        {(() => {
-                            if (!props.icon()) {
-                                return  <Icon symbol={groupType() === 'normal' ? 'iconFolder' : 'iconSearch'} />
-                            } else if (props.icon()?.type === 'symbol') {
-                                return <Icon symbol={props.icon()?.value} />
-                            } else {
-                                return <Icon emojiCode={props.icon()?.value} />
-                            }
-                        })()}
+                        <GroupIcon group={{ type: groupType(), icon: props.icon() }} />
                     </div>
                 </Form.Wrap>
             </div>

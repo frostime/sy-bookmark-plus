@@ -50,7 +50,9 @@ const useGroupIcon = (props: {
             },
             onUpdate: (icon) => {
                 model.setGroups(props.group.id, 'icon', icon);
-                showMessage((icon.type === 'symbol' ? icon.value : parseEmoji(icon.value)));
+                if (icon.type !== 'img') {
+                    showMessage(icon.type === 'symbol' ? icon.value : parseEmoji(icon.value));
+                }
             }
         });
     }

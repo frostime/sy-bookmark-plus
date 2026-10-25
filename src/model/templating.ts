@@ -47,8 +47,8 @@ const usesDocVar = (template: string) =>
 /**
  * 动态渲染模板字符串
  *
- * 页面刚加载、还没打开任何文档时无法解析当前文档变量，此时返回 null 让调用方
- * 跳过这次查询，避免把 `undefined` 当成文档 id 拼进 SQL。
+ * 无活动文档时，含当前文档变量的模板返回 null，避免把 `undefined` 拼进查询。
+ * 调用方将其作为空结果处理；这里不保留旧条目，也不安排文档就绪后的重试。
  */
 export const renderTemplate = (text: string): string | null => {
     let docId = getActiveDoc();
