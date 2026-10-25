@@ -97,6 +97,12 @@ interface I18n {
         h3: string;
         reset: string;
         title: string;
+        dynamic: string;
+        dynamictext: string;
+        dynamictexthint: string;
+        image: string;
+        imagehint: string;
+        confirm: string;
     };
     setting: {
         ariaLabel: {

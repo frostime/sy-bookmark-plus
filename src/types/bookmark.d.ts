@@ -50,7 +50,7 @@ interface IBookmarkGroup {
     type?: TBookmarkGroupType;
     rule?: IDynamicRule;
     icon?: {
-        type: 'symbol' | 'emoji' | '';
+        type: 'symbol' | 'emoji' | 'img' | '';
         value: string;
     }
 }

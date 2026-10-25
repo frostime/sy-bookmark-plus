@@ -5,6 +5,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- 书签组图标支持思源的动态图标（7 种日期图标、自定义文字图标）与自定义图片 [#41](https://github.com/frostime/sy-bookmark-plus/issues/41)
+
 ### Changed
 
 - 开发与构建工具链升级至 vite 8、TypeScript 6、SolidJS 1.9，构建环境要求 Node >= 24 与 pnpm 11；发布流程新增版本一致性校验与类型检查。

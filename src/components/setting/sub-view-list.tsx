@@ -192,7 +192,9 @@ const SubViewList: Component = () => {
                                         show: 'symbols',
                                         onReset: () => {},
                                         onUpdate: (icon) => {
-                                            subViews.update(view.id, 'icon', icon);
+                                            //Dock 图标只支持 SVG 符号，图片图标无法显示
+                                            if (icon.type === 'img') return;
+                                            subViews.update(view.id, 'icon', { type: icon.type, value: icon.value });
                                         }
                                     })
                                 }}>
