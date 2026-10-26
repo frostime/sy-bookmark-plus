@@ -190,7 +190,9 @@ const SubViewList: Component = () => {
                                     e.preventDefault();
                                     selectGroupIcon({
                                         show: 'symbols',
-                                        onReset: () => {},
+                                        current: view.icon,
+                                        name: view.name,
+                                        defaultSymbol: 'iconBookmark',
                                         onUpdate: (icon) => {
                                             //Dock 图标只支持 SVG 符号，图片图标无法显示
                                             if (icon.type === 'img') return;

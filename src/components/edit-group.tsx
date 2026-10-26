@@ -10,6 +10,7 @@ import { confirmDialog } from "@frostime/siyuan-plugin-kits";
 
 export const EditGroup = (props: {
     group: IBookmarkGroup;
+    groupName: Accessor<string>;
     setGroup: (arg: { name?: string }) => void;
     setRule: (arg: { type?: string, input?: string }) => void;
     icon: Accessor<IBookmarkGroup['icon']>;
@@ -24,6 +25,9 @@ export const EditGroup = (props: {
     const changeGroupIcon = () => {
         selectGroupIcon({
             show: 'all',
+            current: props.icon(),
+            name: props.groupName(),
+            defaultSymbol: groupType() === 'dynamic' ? 'iconSearch' : 'iconFolder',
             onReset: () => {
                 props.setIcon(null);
             },
@@ -107,6 +111,7 @@ export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
 
     render(() => EditGroup({
         group,
+        groupName: () => groupInfo().name,
         setGroup: (args) => {
             const current = groupInfo();
             const newval = { ...current, ...args };

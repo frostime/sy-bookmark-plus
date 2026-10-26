@@ -44,6 +44,9 @@ const useGroupIcon = (props: {
     const changeGroupIcon = () => {
         selectGroupIcon({
             show: 'all',
+            current: props.group.icon,
+            name: props.group.name,
+            defaultSymbol: props.group.type === 'dynamic' ? 'iconSearch' : 'iconFolder',
             onReset: () => {
                 model.setGroups(props.group.id, 'icon', null);
                 showMessage('Reset!');

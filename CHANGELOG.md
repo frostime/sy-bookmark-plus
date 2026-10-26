@@ -7,17 +7,13 @@
 
 ### Added
 
-- 书签组列表图标支持思源的动态图标（7 种日期图标、自定义文字图标）与图片地址，新建和编辑组时可预览；Dock 图标与图片上传尚未包含在内 [#41](https://github.com/frostime/sy-bookmark-plus/issues/41)
-
-### Changed
-
-- 开发与构建工具链升级至 vite 8、TypeScript 6、SolidJS 1.9，构建环境要求 Node >= 24 与 pnpm 11；发布流程新增版本一致性校验与类型检查。
+- 书签组列表图标支持思源的动态图标（7 种日期图标、自定义文字图标）、图片地址和本地图片（最大 1 MB，随书签配置保存）；Dock 图标尚未包含在内 [#41](https://github.com/frostime/sy-bookmark-plus/issues/41)
 
 ### Fixed
 
-- 无活动文档时，含 `{{CurDocId}}` / `{{CurRootId}}` 的规则不再执行未解析的查询，属性值条件也不会被意外移除。此时组返回空结果，文档就绪后仍需手动刷新或使用已开启的随页签切换刷新功能；页面初始化时的恢复问题尚待验证 [#62](https://github.com/frostime/sy-bookmark-plus/issues/62)
-- 修复思源 3.8.2 及以上版本无法从编辑器块图标拖入书签的问题：新版拖块会额外登记一个排在前面的拖拽类型，插件原先只检查第一个类型，导致拖放被浏览器直接拒绝 [#71](https://github.com/frostime/sy-bookmark-plus/issues/71)
-- 修复多选块拖入时把逗号分隔的块 id 当成单个 id、导致全部失败的问题
+- 无活动文档时，依赖 `{{CurDocId}}` / `{{CurRootId}}` 的动态组暂不查询 [#62](https://github.com/frostime/sy-bookmark-plus/issues/62)
+- 修复思源 3.8.2 及以上版本无法从编辑器拖入块加入书签的问题 [#71](https://github.com/frostime/sy-bookmark-plus/issues/71)
+- 修复多选块拖入书签组时添加失败的问题
 
 ## [2.1.1] - 2025-05-14
 

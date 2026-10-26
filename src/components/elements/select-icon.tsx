@@ -1,242 +1,310 @@
-import { createSignal, For, Show } from "solid-js";
-import Icon from "./icon";
-// import { inject } from "@/libs/inject";
+import { createEffect, createMemo, createSignal, For, JSX, onCleanup, Show } from "solid-js";
 import { solidDialog } from "@/libs/dialog";
+import { i18n, renderI18n } from "@/utils/i18n";
+import Icon from "./icon";
+import { GroupIcon } from "./group-icon";
+import { buildDynamicIcon, DEFAULT_ICON_COLOR, GroupIconValue, MAX_ICON_FILE_BYTES, readDynamicIcon } from "./group-icon-value";
+import "./select-icon.scss";
 
-import { i18n } from "@/utils/i18n";
-
-type ImojiGroup = {
-    id: string;
-    items: {
-        unicode: string;
-    }[]
+type PickerTab = 'symbols' | 'emojis' | 'dynamic' | 'image';
+type DynamicKind = 'date' | 'text';
+type PickerMode = 'symbols' | 'emojis' | 'all';
+interface PickerProps {
+    show: PickerMode;
+    current?: GroupIconValue | null;
+    name?: string;
+    defaultSymbol?: string;
+    allowReset?: boolean;
+    onApply: (icon: GroupIconValue | null) => void;
+    onCancel: () => void;
 }
 
-type TGroupIcon = { type: 'symbol' | 'emoji' | 'img' | ''; value: string };
-type TTab = 'symbols' | 'emojis' | 'dynamic' | 'image';
+const COLORS = ['#d23f31', '#3575f0', '#f3a92f', '#65b84d', '#e099ff', '#ea5d97', '#93627f', '#5f6368'];
+const DATE_TYPES = ['1', '2', '3', '4', '5', '6', '7'];
+const EMOJI_GROUPS = ['activity', 'travel', 'people', 'nature', 'food', 'symbols', 'object', 'flags'];
 
-/**
- * 思源动态图标由内核按参数实时渲染 SVG，返回的地址可以直接当图片用。
- * type 1~7 为日期类图标，type 8 渲染自定义文字。
- */
-const DYNAMIC_ICON_API = 'api/icon/getDynamicIcon';
-const DYNAMIC_ICON_TYPES = ['1', '2', '3', '4', '5', '6', '7'];
-const DYNAMIC_ICON_COLORS = ['#d23f31', '#3575f0', '#f3a92f', '#65b84d', '#e099ff', '#ea5d97', '#93627f', '#5f6368'];
-const ICON_SIZE = '20px';
-
-const chooseStyle = () => ({
-    display: 'inline-block', cursor: 'pointer', margin: '5px'
-});
-
-const IconItem = (props: { choose: () => void; children: any; selected?: boolean }) => (
-    <div style={{
-        ...chooseStyle(),
-        outline: props.selected ? '2px solid var(--b3-theme-primary)' : 'none',
-        'border-radius': '4px',
-    }} onClick={() => props.choose()}>
+const IconChoice = (props: { selected: boolean; label: string; onClick: () => void; children: JSX.Element }) => (
+    <button type="button" class="bookmark-icon-picker__choice" classList={{ 'is-selected': props.selected }}
+        aria-pressed={props.selected} title={props.label} onClick={props.onClick}>
         {props.children}
-    </div>
+    </button>
 );
 
-const SymbolIcons = (props: { choose: (icon: TGroupIcon) => void }) => {
-    const symbols = Array.from(document.querySelectorAll('symbol'));
-    return (
-        <div class="icons">
-            <For each={symbols}>
-                {(symbol) => (
-                    <IconItem choose={() => props.choose({ type: 'symbol', value: symbol.id })}>
-                        <Icon symbol={symbol.id} width={ICON_SIZE} height={ICON_SIZE} />
-                    </IconItem>
-                )}
-            </For>
-        </div>
-    );
-};
+const SelectIcons = (props: PickerProps) => {
+    const labels = i18n.selecticon;
+    const original = readDynamicIcon(props.current);
+    const initialTab: PickerTab = props.show !== 'all' ? props.show
+        : original ? 'dynamic' : props.current?.type === 'img' ? 'image'
+            : props.current?.type === 'emoji' ? 'emojis' : 'symbols';
+    const [activeTab, setActiveTab] = createSignal<PickerTab>(initialTab);
+    const [reset, setReset] = createSignal(!props.current?.value);
+    const [symbol, setSymbol] = createSignal(props.current?.type === 'symbol' ? props.current.value : (props.defaultSymbol ?? 'iconFolder'));
+    const [emoji, setEmoji] = createSignal(props.current?.type === 'emoji' ? props.current.value : '1f4cc');
+    const [dynamicKind, setDynamicKind] = createSignal<DynamicKind>(original?.get('type') === '8' ? 'text' : 'date');
+    const [dateType, setDateType] = createSignal(original?.get('type') === '8' ? '1' : (original?.get('type') ?? '1'));
+    const [color, setColor] = createSignal(original?.get('color') || DEFAULT_ICON_COLOR);
+    const [text, setText] = createSignal(original?.get('content') ?? '');
+    const [date, setDate] = createSignal(original?.get('date') ?? '');
+    const initialImage = !original && props.current?.type === 'img' ? props.current.value : '';
+    const [imageSource, setImageSource] = createSignal(initialImage);
+    const [imageAddress, setImageAddress] = createSignal(initialImage.startsWith('data:') ? '' : initialImage);
+    const [fileName, setFileName] = createSignal('');
+    const [fileError, setFileError] = createSignal('');
+    const [readingFile, setReadingFile] = createSignal(false);
+    const [imageStatus, setImageStatus] = createSignal<'idle' | 'loading' | 'ready' | 'error'>('idle');
+    const [imageRetry, setImageRetry] = createSignal(0);
+    let reader: FileReader | undefined;
+    let fileInput!: HTMLInputElement;
+    let disposed = false;
+    onCleanup(() => { disposed = true; reader?.abort(); });
 
-const EmojiIcons = (props: { choose: (icon: TGroupIcon) => void }) => {
-    const ALLOWED_EMOJI_GROUP = ['activity', 'travel', 'people', 'nature', 'food', 'symbols', 'object', 'flags'];
-    let EmojisGroups = (window.siyuan.emojis as ImojiGroup[]).filter(emoji => ALLOWED_EMOJI_GROUP.includes(emoji.id));
-    EmojisGroups.sort((a, b) => ALLOWED_EMOJI_GROUP.indexOf(a.id) - ALLOWED_EMOJI_GROUP.indexOf(b.id))
-    const emojiUnicodes = EmojisGroups.map(group => group.items.map(item => item.unicode)).flat();
-
-    return (
-        <div class="icons">
-            <For each={emojiUnicodes}>
-                {(unicode) => (
-                    <IconItem choose={() => props.choose({ type: 'emoji', value: unicode })}>
-                        <Icon emojiCode={unicode} width={ICON_SIZE} height={ICON_SIZE} fontSize={ICON_SIZE} />
-                    </IconItem>
-                )}
-            </For>
-        </div>
-    );
-};
-
-const DynamicIcons = (props: { choose: (icon: TGroupIcon) => void }) => {
-    const [color, setColor] = createSignal(DYNAMIC_ICON_COLORS[1]);
-    const [text, setText] = createSignal('');
-
-    const dynamicIconUrl = (query: Record<string, string>) => {
-        const params = new URLSearchParams({ ...query, color: color() });
-        return `${DYNAMIC_ICON_API}?${params.toString()}`;
+    const symbols = Array.from(new Set(Array.from(document.querySelectorAll('symbol[id]')).map(element => element.id)));
+    const emojis = EMOJI_GROUPS.flatMap(id => {
+        const group = (window.siyuan.emojis as { id: string; items: { unicode: string }[] }[]).find(group => group.id === id);
+        return group?.items.map(item => item.unicode) ?? [];
+    });
+    const tabs = [
+        { id: 'symbols' as const, label: labels.symbols },
+        { id: 'emojis' as const, label: labels.emojis },
+        { id: 'dynamic' as const, label: labels.dynamic },
+        { id: 'image' as const, label: labels.image },
+    ].filter(tab => props.show === 'all' || tab.id === props.show);
+    const select = (action: () => void) => { setReset(false); action(); };
+    const stopReadingFile = () => {
+        const previous = reader;
+        reader = undefined;
+        previous?.abort();
+        setReadingFile(false);
     };
-    const dateIconUrl = (type: string) => dynamicIconUrl({ type });
-    const textIconUrl = () => dynamicIconUrl({ type: '8', content: text() });
+    const dynamicIcon = (type: string) => buildDynamicIcon(original, { type, color: color(), text: text(), date: date() });
+    // null means restore the group's default; undefined means the draft is incomplete.
+    const selectedIcon = createMemo<GroupIconValue | null | undefined>(() => {
+        if (reset()) return null;
+        switch (activeTab()) {
+            case 'symbols': return { type: 'symbol', value: symbol() };
+            case 'emojis': return { type: 'emoji', value: emoji() };
+            case 'dynamic':
+                if (dynamicKind() === 'text') return text().trim() ? dynamicIcon('8') : undefined;
+                return dateType() === '7' && !date() ? undefined : dynamicIcon(dateType());
+            case 'image': return imageSource() ? { type: 'img', value: imageSource() } : undefined;
+        }
+    });
+    const previewSource = createMemo(() => selectedIcon()?.type === 'img' ? selectedIcon()!.value : '');
+    createEffect(() => {
+        imageRetry();
+        const source = previewSource();
+        if (!source) { setImageStatus('idle'); return; }
+        setImageStatus('loading');
+        const image = new Image();
+        image.onload = () => setImageStatus('ready');
+        image.onerror = () => setImageStatus('error');
+        onCleanup(() => { image.onload = null; image.onerror = null; });
+        image.src = source;
+    });
+    const canApply = () => selectedIcon() !== undefined
+        && (reset() || activeTab() !== 'image' || (!readingFile() && !fileError()))
+        && (selectedIcon()?.type !== 'img' || imageStatus() === 'ready');
+    const changeTab = (tab: PickerTab) => {
+        stopReadingFile();
+        select(() => setActiveTab(tab));
+    };
+    const chooseAddress = (value: string) => {
+        stopReadingFile();
+        setFileError('');
+        setFileName('');
+        select(() => { setImageAddress(value); setImageSource(value.trim()); });
+    };
+    const chooseFile = (file?: File) => {
+        if (!file) return;
+        stopReadingFile();
+        setFileError('');
+        if (!file.type.startsWith('image/')) { setFileError(labels.invalidfile); return; }
+        if (file.size > MAX_ICON_FILE_BYTES) { setFileError(labels.filetoolarge); return; }
+        setReadingFile(true);
+        const currentReader = new FileReader();
+        reader = currentReader;
+        currentReader.onload = () => {
+            if (disposed || reader !== currentReader) return;
+            setReadingFile(false);
+            select(() => {
+                setImageAddress('');
+                setFileName(file.name);
+                setImageSource(String(currentReader.result));
+            });
+        };
+        currentReader.onerror = () => {
+            if (disposed || reader !== currentReader) return;
+            setReadingFile(false);
+            setFileError(labels.filereaderror);
+        };
+        currentReader.readAsDataURL(file);
+    };
+    const preview = (size: string) => (
+        // A retry must also replace failed preview images, even when their URL is unchanged.
+        <Show when={{ icon: selectedIcon(), revision: imageRetry() }} keyed>
+            {draft => <Show when={draft.icon !== undefined} fallback={<span class="bookmark-icon-picker__empty">—</span>}>
+                <GroupIcon group={{ icon: draft.icon, type: 'normal' }} size={size} defaultSymbol={props.defaultSymbol} />
+            </Show>}
+        </Show>
+    );
 
     return (
-        <div>
-            <div class="fn__flex" style={{ 'align-items': 'center', gap: '8px', 'flex-wrap': 'wrap' }}>
-                <span class="ft__on-surface">{window.siyuan.languages.colorFont}</span>
-                <For each={DYNAMIC_ICON_COLORS}>
-                    {(preset) => (
-                        <div
-                            class="fn__pointer"
-                            style={{
-                                width: '16px', height: '16px', 'border-radius': '2px', 'background-color': preset,
-                                outline: color() === preset ? '2px solid var(--b3-theme-primary)' : 'none'
-                            }}
-                            onClick={() => setColor(preset)}
-                        />
-                    )}
-                </For>
-                <input
-                    type="color" class="b3-text-field fn__flex-center" value={color()}
-                    onInput={(e) => setColor(e.currentTarget.value)}
-                />
-            </div>
-
-            <div class="fn__hr" />
-            <div class="icons">
-                <For each={DYNAMIC_ICON_TYPES}>
-                    {(type) => (
-                        <IconItem choose={() => props.choose({ type: 'img', value: dateIconUrl(type) })}>
-                            <img src={dateIconUrl(type)} alt="" style={{ width: '32px', height: '32px' }} />
-                        </IconItem>
-                    )}
-                </For>
-            </div>
-
-            <div class="fn__hr" />
-            <div class="fn__flex" style={{ 'align-items': 'center', gap: '8px' }}>
-                <span class="ft__on-surface">{i18n.selecticon.dynamictext}</span>
-                <input
-                    class="b3-text-field fn__flex-1" value={text()} placeholder={i18n.selecticon.dynamictexthint}
-                    onInput={(e) => setText(e.currentTarget.value)}
-                />
-                <button
-                    class="b3-button b3-button--text" disabled={!text().trim()}
-                    onClick={() => props.choose({ type: 'img', value: textIconUrl() })}
-                >
-                    {i18n.selecticon.confirm}
-                </button>
-            </div>
-            <Show when={text().trim()}>
-                <div style={{ margin: '8px 0' }}>
-                    <img src={textIconUrl()} alt="" style={{ width: '32px', height: '32px' }} />
-                </div>
+        <div class="bookmark-icon-picker">
+            <Show when={props.name}>
+                <p class="bookmark-icon-picker__subtitle">{renderI18n(labels.subtitle, props.name)}</p>
             </Show>
+            <nav class="bookmark-icon-picker__tabs" role="tablist" aria-label={labels.h3}>
+                <For each={tabs}>{tab => (
+                    <button type="button" role="tab" aria-selected={activeTab() === tab.id}
+                        data-tab={tab.id} onClick={() => changeTab(tab.id)}>{tab.label}</button>
+                )}</For>
+            </nav>
+            <div class="bookmark-icon-picker__body">
+                <div class="bookmark-icon-picker__controls">
+                    <Show when={activeTab() === 'symbols'}>
+                        <div class="bookmark-icon-picker__grid">
+                            <For each={symbols}>{id => (
+                                <IconChoice label={id} selected={!reset() && symbol() === id}
+                                    onClick={() => select(() => setSymbol(id))}>
+                                    <Icon symbol={id} width="24px" height="24px" />
+                                </IconChoice>
+                            )}</For>
+                        </div>
+                    </Show>
+                    <Show when={activeTab() === 'emojis'}>
+                        <div class="bookmark-icon-picker__grid">
+                            <For each={emojis}>{code => (
+                                <IconChoice label={code} selected={!reset() && emoji() === code}
+                                    onClick={() => select(() => setEmoji(code))}>
+                                    <Icon emojiCode={code} width="24px" height="24px" fontSize="24px" />
+                                </IconChoice>
+                            )}</For>
+                        </div>
+                    </Show>
+                    <Show when={activeTab() === 'dynamic'}>
+                        <div class="bookmark-icon-picker__segment">
+                            <For each={['date', 'text'] as const}>{kind => (
+                                <button type="button" data-kind={kind} aria-pressed={dynamicKind() === kind}
+                                    onClick={() => select(() => setDynamicKind(kind))}>
+                                    {kind === 'date' ? labels.dateicons : labels.texticons}
+                                </button>
+                            )}</For>
+                        </div>
+                        <Show when={dynamicKind() === 'date'} fallback={
+                            <label class="bookmark-icon-picker__field">
+                                <span>{labels.dynamictext}</span>
+                                <input class="b3-text-field" data-field="text" value={text()} placeholder={labels.dynamictexthint}
+                                    onInput={event => select(() => setText(event.currentTarget.value))} />
+                                <small>{labels.texthelp}</small>
+                            </label>
+                        }>
+                            <div class="bookmark-icon-picker__grid bookmark-icon-picker__dates">
+                                <For each={DATE_TYPES}>{type => (
+                                    <IconChoice label={labels.datestyles[Number(type) - 1]}
+                                        selected={!reset() && dateType() === type} onClick={() => select(() => setDateType(type))}>
+                                        <Icon img={dynamicIcon(type).value} width="32px" height="32px" />
+                                        <span>{labels.datestyles[Number(type) - 1]}</span>
+                                    </IconChoice>
+                                )}</For>
+                            </div>
+                            <label class="bookmark-icon-picker__field bookmark-icon-picker__date">
+                                <span>{dateType() === '7' ? labels.targetdate : labels.date}</span>
+                                <input class="b3-text-field" type="date" value={date()} data-field="date"
+                                    onInput={event => select(() => setDate(event.currentTarget.value))} />
+                                <small>{dateType() === '7' ? labels.countdownhelp : labels.datehelp}</small>
+                            </label>
+                        </Show>
+                        <div class="bookmark-icon-picker__colors">
+                            <span>{labels.color}</span>
+                            <For each={COLORS}>{preset => (
+                                <button type="button" class="bookmark-icon-picker__swatch" title={preset}
+                                    aria-label={preset} aria-pressed={color() === preset} style={{ background: preset }}
+                                    onClick={() => select(() => setColor(preset))} />
+                            )}</For>
+                            <label class="bookmark-icon-picker__custom-color" title={labels.customcolor}>
+                                +<input type="color" value={color()} aria-label={labels.customcolor}
+                                    onInput={event => select(() => setColor(event.currentTarget.value))} />
+                            </label>
+                        </div>
+                    </Show>
+                    <Show when={activeTab() === 'image'}>
+                        <div class="bookmark-icon-picker__upload">
+                            <input ref={fileInput} type="file" accept="image/*" hidden onChange={event => {
+                                chooseFile(event.currentTarget.files?.[0]);
+                                event.currentTarget.value = '';
+                            }} />
+                            <button type="button" class="b3-button b3-button--outline" onClick={() => fileInput.click()}>{labels.choosefile}</button>
+                            <p>{labels.filehint}</p>
+                        </div>
+                        <div class="bookmark-icon-picker__divider">{labels.oraddress}</div>
+                        <label class="bookmark-icon-picker__field">
+                            <span>{labels.imageaddress}</span>
+                            <input class="b3-text-field" data-field="image" value={imageAddress()} placeholder={labels.imagehint}
+                                onInput={event => chooseAddress(event.currentTarget.value)} />
+                        </label>
+                        <p class="bookmark-icon-picker__status" aria-live="polite">
+                            {fileName() || (imageSource().startsWith('data:') ? labels.savedfile : '')}
+                        </p>
+                        <Show when={fileError()}><p class="bookmark-icon-picker__error" role="alert">{fileError()}</p></Show>
+                    </Show>
+                </div>
+                <aside class="bookmark-icon-picker__preview">
+                    <p>{labels.largepreview}</p>
+                    <div class="bookmark-icon-picker__large">{preview('48px')}</div>
+                    <p>{labels.actualpreview}</p>
+                    <div class="bookmark-icon-picker__row"><span class="bookmark-icon-picker__arrow">⌄</span><Icon symbol="iconFolder" />{labels.referencegroup}</div>
+                    <div class="bookmark-icon-picker__row" data-preview="actual"><span class="bookmark-icon-picker__arrow">⌄</span>{preview('16px')}<span>{props.name || labels.previewgroup}</span></div>
+                    <div class="bookmark-icon-picker__row"><span class="bookmark-icon-picker__arrow">⌄</span><Icon emojiCode="1f4cc" />{labels.referenceemoji}</div>
+                    <small>{labels.previewhelp}</small>
+                    <p class="bookmark-icon-picker__status" aria-live="polite">
+                        {readingFile() ? labels.reading : imageStatus() === 'loading' ? labels.loading : ''}
+                    </p>
+                    <Show when={imageStatus() === 'error'}>
+                        <p class="bookmark-icon-picker__error" role="alert">{labels.imageerror}</p>
+                        <button type="button" class="b3-button b3-button--outline" data-action="retry"
+                            onClick={() => setImageRetry(value => value + 1)}>{labels.retry}</button>
+                    </Show>
+                </aside>
+            </div>
+            <footer class="bookmark-icon-picker__footer">
+                <div><Show when={props.allowReset}>
+                    <button type="button" class="bookmark-icon-picker__reset" onClick={() => {
+                        stopReadingFile(); setFileError('');
+                        setActiveTab(props.show === 'emojis' ? 'emojis' : 'symbols'); setReset(true);
+                    }}>{labels.reset}</button>
+                </Show></div>
+                <div class="bookmark-icon-picker__actions">
+                    <button type="button" class="b3-button b3-button--outline" onClick={props.onCancel}>{labels.cancel}</button>
+                    <button type="button" class="b3-button" data-action="apply" disabled={!canApply()} onClick={() => {
+                        const icon = selectedIcon();
+                        if (icon !== undefined && canApply()) props.onApply(icon);
+                    }}>{labels.apply}</button>
+                </div>
+            </footer>
         </div>
     );
 };
-
-const ImageIcons = (props: { choose: (icon: TGroupIcon) => void }) => {
-    const [url, setUrl] = createSignal('');
-    const validUrl = () => url().trim();
-    const chooseUrl = () => props.choose({ type: 'img', value: validUrl() });
-
-    return (
-        <div>
-            <div class="fn__flex" style={{ 'align-items': 'center', gap: '8px' }}>
-                <input
-                    class="b3-text-field fn__flex-1" value={url()} placeholder={i18n.selecticon.imagehint}
-                    onInput={(e) => setUrl(e.currentTarget.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && validUrl()) chooseUrl();
-                    }}
-                />
-                <button class="b3-button b3-button--text" disabled={!validUrl()} onClick={chooseUrl}>
-                    {i18n.selecticon.confirm}
-                </button>
-            </div>
-            <Show when={validUrl()}>
-                <div style={{ margin: '12px 0' }}>
-                    <img src={url()} alt="" style={{ 'max-width': '100%', 'max-height': '160px' }} />
-                </div>
-            </Show>
-        </div>
-    );
-};
-
-const SelectIcons = (props: {
-    show: 'symbols' | 'emojis' | 'all';
-    choose: (args: TGroupIcon) => void;
-}) => {
-    const [activeTab, setActiveTab] = createSignal<TTab>('symbols');
-
-    const tabs = () => [
-        { id: 'symbols' as TTab, label: 'Symbols', visible: props.show === 'all' || props.show === 'symbols' },
-        { id: 'emojis' as TTab, label: 'Emojis', visible: props.show === 'all' || props.show === 'emojis' },
-        { id: 'dynamic' as TTab, label: i18n.selecticon.dynamic, visible: props.show === 'all' },
-        { id: 'image' as TTab, label: i18n.selecticon.image, visible: props.show === 'all' },
-    ];
-
-    return (
-        <div style={{ margin: '10px 24px' }}>
-            <div style={{ display: 'flex', 'align-items': 'center', gap: '15px' }}>
-                <h3>{i18n.selecticon.h3}</h3>
-                <div style={{ display: 'flex', gap: '10px', flex: 1 }}>
-                    <For each={tabs().filter(tab => tab.visible)}>
-                        {(tab) => (
-                            <button
-                                class={`b3-button ${activeTab() === tab.id ? 'b3-button--text' : ''}`}
-                                onClick={() => setActiveTab(tab.id)}
-                            >
-                                {tab.label}
-                            </button>
-                        )}
-                    </For>
-                </div>
-                <button class="b3-button" onClick={() => props.choose({ type: '', value: '' })}>{i18n.selecticon.reset}</button>
-            </div>
-
-            <br />
-
-            <Show when={activeTab() === 'symbols'}>
-                <SymbolIcons choose={props.choose} />
-            </Show>
-            <Show when={activeTab() === 'emojis'}>
-                <EmojiIcons choose={props.choose} />
-            </Show>
-            <Show when={activeTab() === 'dynamic'}>
-                <DynamicIcons choose={props.choose} />
-            </Show>
-            <Show when={activeTab() === 'image'}>
-                <ImageIcons choose={props.choose} />
-            </Show>
-        </div>
-    );
-}
 
 export const selectGroupIcon = (param: {
-    show: 'symbols' | 'emojis' | 'all';
-    onReset: () => void;
-    onUpdate: (icon: TGroupIcon) => void;
+    show: PickerMode;
+    current?: GroupIconValue | null;
+    name?: string;
+    defaultSymbol?: string;
+    onReset?: () => void;
+    onUpdate: (icon: GroupIconValue) => void;
 }) => {
-    const chooseIcon = (icon: TGroupIcon) => {
-        close();
-        if (icon.type === '' && icon.value === '') {
-            param.onReset();
-        } else {
-            param.onUpdate(icon);
-        }
-    }
-
     const { close } = solidDialog({
         title: i18n.selecticon.title,
-        loader: () => <SelectIcons choose={chooseIcon} show={param.show} />,
+        loader: () => <SelectIcons {...param} allowReset={!!param.onReset} onCancel={() => close()}
+            onApply={(icon) => {
+                if (icon) param.onUpdate(icon);
+                else param.onReset?.();
+                close();
+            }} />,
         width: '800px',
-        height: '600px'
+        maxWidth: '95vw',
+        maxHeight: '90vh',
     });
-}
+};
 
 export default SelectIcons;

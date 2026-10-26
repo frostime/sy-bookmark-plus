@@ -56,6 +56,38 @@ function ruleEnvironment() {
     return { queries, getRule: rules.getRule, setActiveDoc: (id) => { activeDoc = id; } };
 }
 
+const iconValues = loadSource('src/components/elements/group-icon-value.ts', {}, { URLSearchParams });
+
+test('editing a dynamic text icon preserves kernel parameters and encoded text', () => {
+    const original = iconValues.readDynamicIcon({ type: 'img', value:
+        'api/icon/getDynamicIcon?type=8&content=old?text&color=%233575f0&lang=zh-CN&id=block-id&_fontRefresh=1' });
+    assert.equal(original.get('content'), 'old?text');
+    const icon = iconValues.buildDynamicIcon(original, { type: '8', color: '#d23f31', text: '工 & TODO?' });
+    const restored = iconValues.readDynamicIcon(icon);
+    assert.equal(restored.get('content'), '工 & TODO?');
+    assert.equal(restored.get('color'), '#d23f31');
+    assert.equal(restored.get('lang'), 'zh-CN');
+    assert.equal(restored.get('id'), 'block-id');
+    assert.equal(restored.has('_fontRefresh'), false);
+});
+
+test('a fixed date survives editing unless the user clears it to follow today', () => {
+    const original = iconValues.readDynamicIcon({ type: 'img', value:
+        '/api/icon/getDynamicIcon?type=7&date=2030-01-02&weekdayType=3' });
+    const options = { type: '1', color: '#3575f0', text: '' };
+    const unchangedDate = iconValues.readDynamicIcon(iconValues.buildDynamicIcon(original, options));
+    assert.equal(unchangedDate.get('date'), '2030-01-02');
+    assert.equal(unchangedDate.get('weekdayType'), '3');
+    const today = iconValues.readDynamicIcon(iconValues.buildDynamicIcon(original, { ...options, date: '' }));
+    assert.equal(today.has('date'), false);
+});
+
+test('ordinary images and unknown dynamic types are not reinterpreted as editable date icons', () => {
+    for (const value of ['https://example.com/icon.png', 'data:image/png;base64,AA==', 'api/icon/getDynamicIcon?type=9']) {
+        assert.equal(iconValues.readDynamicIcon({ type: 'img', value }), null);
+    }
+});
+
 const documentRules = [
     ['sql', "select * from blocks where root_id = '{{CurDocId}}'"],
     ['backlinks', '{{CurRootId}}'],
