@@ -152,6 +152,9 @@ const App = () => {
                                 e.preventDefault();
                                 selectGroupIcon({
                                     show: 'all',
+                                    current: group.icon,
+                                    name: group.name,
+                                    defaultSymbol: group.type === 'dynamic' ? 'iconSearch' : 'iconFolder',
                                     onReset: () => {
                                         model.setGroups(group.id, 'icon', null);
                                     },

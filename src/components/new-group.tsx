@@ -249,6 +249,7 @@ export const RuleEditor = (props?: { lockRuleType?: boolean }) => {
 
 
 export const NewGroup = (props: {
+    groupName: Accessor<string>;
     setGroup: (arg: { name?: string, type?: TBookmarkGroupType }) => void;
     setRule: (arg: { type?: string, input?: string }) => void;
     icon: Accessor<IBookmarkGroup['icon']>;
@@ -269,6 +270,9 @@ export const NewGroup = (props: {
     const changeGroupIcon = () => {
         selectGroupIcon({
             show: 'all',
+            current: props.icon(),
+            name: props.groupName(),
+            defaultSymbol: groupType() === 'dynamic' ? 'iconSearch' : 'iconFolder',
             onReset: () => {
                 props.setIcon(null);
             },
@@ -372,6 +376,7 @@ export const createNewGroup = (confirmCb: (data: any) => void) => {
     const [icon, setIcon] = createSignal<IBookmarkGroup['icon'] | null>(null);
 
     render(() => NewGroup({
+        groupName: () => group().name,
         setGroup: (args) => {
             let current = group();
             let newval = { ...current, ...args };
