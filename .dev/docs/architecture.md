@@ -1,7 +1,7 @@
 ---
 name: 整体架构
 description: sy-bookmark-plus 插件的整体架构、核心模块关系、数据流和生命周期
-updated: 2026-02-10
+updated: 2026-10-29
 scope:
   - /src/index.ts
   - /src/dock-views.ts
@@ -211,32 +211,9 @@ Context Provider → Bookmark → Group → Item
 
 ### 启动流程
 
-```mermaid
-sequenceDiagram
-    participant P as Plugin (index.ts)
-    participant M as BookmarkDataModel
-    participant S as Stores
-    participant D as Dock Views
-    participant C as SolidJS Components
+`src/index.ts` 创建 Model 后，通过 `src/storage-refresh.ts` 的 `StorageRefresh` 读入存档。读入与提交尝试完成后才注册 Dock，避免恢复的 Dock 提前对空数据发起查询；读取失败时提供错误和重试视图。
 
-    P->>+M: new BookmarkDataModel(plugin)
-    P->>M: model.load()
-    M->>S: loadConfig()
-    M->>S: loadSubViews()
-    M->>M: 读取 Storage 文件
-    M->>S: setGroups(...)
-    M->>S: setItemInfo(...)
-    M-->>-P: 加载完成
-
-    P->>+D: addDock('DEFAULT')
-    D->>C: render(Bookmark, element)
-    C->>S: 访问 groups, itemInfo
-    C-->>D: 组件挂载
-    D-->>-P: Dock 注册完成
-
-    P->>P: loadSdk()
-    P->>P: replaceDefaultBookmark()
-```
+首次读入和 `onDataChanged` 共用刷新路径。模块职责、交叠编辑边界和恢复约束见[数据同步维护规范](./data-sync.md)，不在入口或普通组件另建一套同步协议。
 
 ### 用户交互流程（添加书签项）
 
@@ -291,27 +268,23 @@ sequenceDiagram
 2. **设置国际化**：`setI18n(this.i18n)`
 3. **添加图标**：`this.addIcons(...)`
 4. **创建 Model**：`model = getModel(this)`
-5. **加载数据**：`await model.load()`
-   - 从 Storage 读取 bookmarks、configs、sub-views、item-snapshot
-   - 初始化 Stores（`groups`, `itemInfo`, `configs`, `subViews`）
-6. **替换默认书签**（可选）：
-   - 隐藏思源默认书签按钮
-   - 绑定快捷键到自定义书签视图
+5. **读入存档**：创建 `StorageRefresh` 并等待 `request()`，完整读入后提交；失败则进入错误/重试路径
+6. **应用设置**：成功提交后由 `applySettings()` 统一处理原生书签接管、命令快捷键和文档切换刷新开关
 7. **注册 Dock 视图**：
    - 默认视图（DEFAULT）
    - 所有未隐藏的 Sub Views
 8. **挂载 SDK**：`loadSdk()` - 挂载 `window.BookmarkPlusSDK`
-9. **启用自动刷新**（可选）：监听文档切换事件
+设置应用与本地设置面板共用同一入口；不能因刷新而重复注册命令或累积监听。
 
 ### onunload() 阶段
 
-1. **卸载 SDK**：`unloadSdk()`
-2. **移除 Model**：`rmModel()`
-3. **销毁所有视图**：`destroyAllBookmark()`
-   - 调用所有 disposers
-   - 移除 Dock 图标
-   - 清理 DOM
-4. **恢复默认书签**：`bookmarkKeymap.restoreDefault()`
+1. **停止刷新**：`StorageRefresh.dispose()` 暂停保存、取消延迟工作、关闭自有弹窗并解除自动刷新监听
+2. **卸载 SDK**：`unloadSdk()`
+3. **移除 Model**：`rmModel()`
+4. **销毁所有视图**：`destroyAllBookmark()`
+   - 调用所有 disposers，释放插件拥有的内容根
+   - 宿主负责插件卸载时的 Dock 注册与布局清理
+5. **恢复默认书签**：`bookmarkKeymap.restoreDefault()`
    - 恢复快捷键
    - 显示思源默认书签
 
@@ -320,7 +293,7 @@ sequenceDiagram
 1. **打开设置对话框**：`solidDialog(...)`
    - 使用 SolidJS 渲染设置面板
    - 提供书签组管理、视图管理、配置选项
-2. **保存配置**：对话框关闭时自动保存
+2. **保存配置**：正常关闭时保存；刷新丢弃时只清理，不执行关闭保存回调
 
 ---
 
@@ -332,17 +305,15 @@ sequenceDiagram
 |--------|------|----------|
 | `bookmarks.json` | 所有书签组数据 | debounce 2000ms |
 | `bookmark-configs.json` | 插件配置 | debounce 750ms |
-| `bookmark-sub-views.json` | 子视图定义 | debounce 1000ms |
+| `bookmark-sub-views.json` | 子视图定义 | 直接保存，或随书签保存 |
 | `bookmark-items-snapshot.json` | 书签项快照（区分笔记本关闭 vs 块删除） | debounce 2000ms |
 
 ### Debounce 策略
 
 - **目的**：避免频繁写入磁盘
-- **实现**：使用 `@frostime/siyuan-plugin-kits` 的 `debounce` 工具
-- **时长**：
-  - `saveGroupMap`: 1000ms（后又改为 2000ms）
-  - `saveConfig`: 750ms
-  - `saveSubViews`: 1000ms
+- **实现**：书签和配置使用 `bookmarkStorage.deferSave()`，刷新可通过存储拥有者统一取消待保存
+- **时长**：书签 2000ms、配置 750ms；子视图没有独立 debounce
+- **维护约束**：读写统一经过 `src/model/storage.ts`，新增入口前阅读[数据同步维护规范](./data-sync.md)
 
 ### 数据一致性
 

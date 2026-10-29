@@ -6,7 +6,9 @@ import { showMessage } from "siyuan";
 import { batch } from "solid-js";
 import { unwrap } from "solid-js/store";
 
-import { debounce, PromiseLimitPool } from "@frostime/siyuan-plugin-kits";
+import { PromiseLimitPool } from "@frostime/siyuan-plugin-kits";
+import { debounce } from "@/utils";
+import { bookmarkStorage } from "./storage";
 
 import { i18n, renderI18n } from "@/utils/i18n";
 
@@ -16,8 +18,10 @@ import {
     clearItemInfo,
     setGroups,
     groupMap,
-    loadConfig,
-    loadSubViews,
+    readConfig,
+    readSubViews,
+    replaceConfig,
+    replaceSubViews,
     saveSubViews,
     subViews,
     defaultView
@@ -43,7 +47,7 @@ export class BookmarkDataModel {
         let result: Record<TBookmarkGroupId, IBookmarkGroup> = {};
 
         for (let [id, group] of groupMap()) {
-            result[id] = unwrap(group);
+            result[id] = unwrap({ ...group });
             let items = unwrap(result[id].items);
             if (group.type === 'dynamic') {
                 items = items.filter(item => item.style);
@@ -68,88 +72,68 @@ export class BookmarkDataModel {
         };
     }
 
-    async load() {
-        let bookmarksRaw = await this.plugin.loadData(StorageNameBookmarks + '.json');
-        // let configs_ = await this.plugin.loadData(StorageFileConfigs);
-        await loadConfig();
-        await loadSubViews();
-        let snapshot: { [key: BlockId]: IBookmarkItemInfo } = await this.plugin.loadData(StorageFileItemSnapshot);
+    /** Read and assemble without changing the displayed data; apply only after all files succeed. */
+    async readStorage() {
+        const [bookmarksRaw, configValues, views, snapshot] = await Promise.all([
+            bookmarkStorage.read(StorageNameBookmarks + '.json'),
+            readConfig(),
+            readSubViews(),
+            bookmarkStorage.read(StorageFileItemSnapshot)
+        ]);
+        if (bookmarksRaw?.groups !== undefined && (!bookmarksRaw.groups || typeof bookmarksRaw.groups !== 'object' || Array.isArray(bookmarksRaw.groups))) {
+            throw new Error('Invalid bookmark groups');
+        }
+        if (bookmarksRaw?.defaultView?.groups !== undefined && !Array.isArray(bookmarksRaw.defaultView.groups)) {
+            throw new Error('Invalid default bookmark view');
+        }
         const { storage, migrated } = migrateBookmarkStorage(bookmarksRaw);
-
-        // if (configs_) {
-        //     setConfigs({ ...configs, ...configs_ });
-        // }
-
-        // this.plugin.data.bookmarks = bookmarks ?? {};
-        snapshot = snapshot ?? {};
-
-        const allGroups = [];
-        for (let [_, group] of Object.entries(storage.groups ?? {})) {
-            let items: IItemCore[] = group.items.map(item => ({ id: item.id, style: item?.style }));
-
-            let groupV2: IBookmarkGroup = { ...group, items };
-            allGroups.push(groupV2);
-            group.items.map(item => {
-                if (itemInfo[item.id] !== undefined) {
-                    setItemInfo(item.id, 'ref', (ref) => ref + 1);
-                    return;
+        const allGroups: IBookmarkGroup[] = [];
+        const loadedItems: Record<BlockId, IBookmarkItemInfo> = {};
+        for (const group of Object.values(storage.groups)) {
+            allGroups.push({ ...group, items: group.items.map(item => ({ id: item.id, style: item.style })) });
+            for (const item of group.items) {
+                if (loadedItems[item.id]) {
+                    loadedItems[item.id].ref++;
+                } else {
+                    loadedItems[item.id] = {
+                        id: item.id,
+                        title: snapshot?.[item.id]?.title ?? '',
+                        type: snapshot?.[item.id]?.type ?? 'p',
+                        box: snapshot?.[item.id]?.box ?? '',
+                        subtype: snapshot?.[item.id]?.subtype ?? '',
+                        icon: snapshot?.[item.id]?.icon ?? '',
+                        ref: 1
+                    };
                 }
-                let iteminfo: IBookmarkItemInfo = {
-                    id: item.id,
-                    title: snapshot[item.id]?.title ?? '',
-                    type: snapshot[item.id]?.type ?? 'p',
-                    box: snapshot[item.id]?.box ?? '',
-                    subtype: snapshot[item.id]?.subtype ?? '',
-                    icon: snapshot[item.id]?.icon ?? '',
-                    ref: 1
-                };
-                setItemInfo(item.id, iteminfo);
-            });
+            }
         }
-        batch(() => {
-            allGroups.forEach((groupV2) => {
-                setGroups((gs) => [...gs, groupV2])
+        const loadedViews: Record<TBookmarkSubViewId, IBookmarkSubView> = {};
+        for (const [id, view] of Object.entries(views ?? {})) {
+            if (!view || !Array.isArray(view.groups)) throw new Error('Invalid bookmark subview');
+            loadedViews[id] = { ...view, expand: view.expand ?? {} };
+        }
+        return {
+            migrated: migrated && bookmarksRaw !== undefined,
+            apply: () => batch(() => {
+                clearItemInfo();
+                setItemInfo(loadedItems);
+                setGroups(allGroups);
+                replaceConfig(configValues);
+                replaceSubViews(loadedViews);
+                defaultView.update({ groups: [...storage.defaultView.groups] });
             })
-            defaultView.update({
-                groups: [...(storage.defaultView?.groups ?? [])]
-            });
-        })
-
-        if (migrated) {
-            await this.saveCore();
-        }
-    }
-
-    /**
-     * 重新加载数据（清空后重新加载）
-     * 用于 onDataChanged 回调，处理云端数据同步变化
-     * - 清空现有数据（groups + itemInfo）
-     * - 重新从存储加载
-     * - 更新所有动态规则和静态项目元数据
-     * 注意：不会重新加载/注销 dock，仅更新底层数据
-     */
-    async reload() {
-        // 清空现有数据
-        setGroups(() => []);
-        clearItemInfo();
-
-        // 重新加载数据
-        await this.load();
-
-        // 刷新所有视图的动态规则和静态项目元数据
-        await this.updateViews();
+        };
     }
 
     private async saveCore(fpath?: string) {
         // console.debug('save bookmarks');
         const bookmarks = this.makeBookmarkStorage();
-        await this.plugin.saveData(fpath ?? StorageNameBookmarks + '.json', bookmarks);
+        await bookmarkStorage.write(fpath ?? StorageNameBookmarks + '.json', bookmarks);
         await saveSubViews();
-        await this.plugin.saveData(StorageFileItemSnapshot, itemInfo);
+        await bookmarkStorage.write(StorageFileItemSnapshot, itemInfo);
     }
 
-    // save = debounce(this.saveCore.bind(this), 1000);
-    save = debounce(this.saveCore.bind(this) as typeof this.saveCore, 2000);
+    save = bookmarkStorage.deferSave(this.saveCore.bind(this) as typeof this.saveCore, 2000);
 
     setGroups(gid: TBookmarkGroupId, key: keyof IBookmarkGroup, value: IBookmarkGroup[keyof IBookmarkGroup]) {
         setGroups((gs) => gs.id === gid, key, value);
@@ -207,12 +191,10 @@ export class BookmarkDataModel {
 
 
         // Pools
-        const groupToUpdate = [];
         let toUpdated: Promise<any>[] = [];
         gidForUpdate.forEach(g => {
             const group = groupMap().get(g);
             if (!group) return;
-            groupToUpdate.push(group);
             toUpdated.push(this.updateDynamicGroup(group));
         })
         // groups.forEach(group => {
@@ -227,10 +209,8 @@ export class BookmarkDataModel {
         // await this.updateStaticItems();
         // let groupsToUpdate = groups.filter(g => g.hidden !== true);
         let allIdsSet = new Set<BlockId>();
-        groupToUpdate.forEach(group => {
-            group.items.forEach(item => {
-                allIdsSet.add(item.id);
-            });
+        gidForUpdate.forEach(id => {
+            groupMap().get(id)?.items.forEach(item => allIdsSet.add(item.id));
         });
         await this.updateStaticItems(allIdsSet);
     }
@@ -327,9 +307,8 @@ export class BookmarkDataModel {
         await this.updateStaticItems(allIdsSet);
     }
 
-    // updateGroupStaticItemsDebounced = debounce(this.updateGroupStaticItems.bind(this), 1000);
     updateGroupStaticItemsDebounced = debounce(
-        this.updateGroupStaticItems.bind(this) as typeof this.updateGroupStaticItems,
+        (group: IBookmarkGroup) => this.updateGroupStaticItems(group),
         1000
     );
 

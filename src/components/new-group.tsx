@@ -15,7 +15,7 @@ import { createContext, useContext } from "solid-js";
 
 import { selectGroupIcon } from "./elements/select-icon";
 import { GroupIcon } from "./elements/group-icon";
-import { confirmDialog } from "@frostime/siyuan-plugin-kits";
+import { confirmDialog } from "@/libs/dialog";
 import { render } from "solid-js/web";
 
 export const NewGroupContext = createContext<{
@@ -375,7 +375,7 @@ export const createNewGroup = (confirmCb: (data: any) => void) => {
     const [rule, setRule] = createSignal({ type: "", input: "" });
     const [icon, setIcon] = createSignal<IBookmarkGroup['icon'] | null>(null);
 
-    render(() => NewGroup({
+    const dispose = render(() => NewGroup({
         groupName: () => group().name,
         setGroup: (args) => {
             let current = group();
@@ -393,6 +393,7 @@ export const createNewGroup = (confirmCb: (data: any) => void) => {
     confirmDialog({
         title: i18n.bookmark.new,
         content: container,
+        destroyCallback: dispose,
         width: '800px',
         confirm: () => {
             confirmCb({ group: group(), rule: rule(), icon: icon() });

@@ -126,49 +126,17 @@ test('attribute rule without a value still queries by name when no document is o
 });
 
 test('restored Dock cannot initialize until saved bookmark data has loaded', async () => {
-    let finishLoad;
-    let loaded = false;
-    const loadBarrier = new Promise((resolve) => { finishLoad = resolve; });
-    const initializedWithData = [];
-    class HostPlugin {
-        addIcons() {}
-        addDock(options) {
-            // SiYuan may immediately restore a previously open Dock.
-            options.init.call({ data: options.data, element: {} });
-        }
-    }
-    const model = {
-        async load() {
-            await loadBarrier;
-            loaded = true;
-        }
-    };
-    const pluginModule = loadSource('src/index.ts', {
-        siyuan: { Plugin: HostPlugin },
-        './libs/dialog': {},
-        './model': { getModel: () => model, configs: { replaceDefault: false }, subViews: () => ({}), configRef: () => ({}) },
-        './components/setting': {},
-        '@/utils/style': {},
-        '@/utils/const': { Svg: {} },
-        '@/utils/i18n': { setI18n() {} },
-        '@/index.scss': {},
-        './utils': {},
-        './sdk': { loadSdk() {} },
-        '@frostime/siyuan-plugin-kits': { registerPlugin() {} },
-        './model/auto-refresh': {},
-        './dock-views': {
-            registerDockViewTypeName() {},
-            getDockViewTypeName: (id) => id,
-            initBookmark() { initializedWithData.push(loaded); }
-        }
-    }, { window: { siyuan: { config: { keymap: { general: { bookmark: {} } } } } } });
-    const plugin = new pluginModule.default();
-    const pendingLoad = plugin.onload();
-    try {
-        assert.equal(initializedWithData.length, 0);
-    } finally {
-        finishLoad();
-        await pendingLoad;
-    }
-    assert.deepEqual(initializedWithData, [true]);
+    const { environment, group, barrier } = require('./storage-refresh-environment.cjs');
+    const env = environment({ mount: true });
+    env.disk['bookmarks.json'] = { schema: '2.0', groups: { g: group('g') }, defaultView: { groups: ['g'] } };
+    const read = barrier();
+    env.beforeRead(() => read.promise);
+    const pendingLoad = env.plugin.onload();
+    await env.settle();
+    assert.deepEqual(Object.keys(env.plugin.docks), []);
+    assert.deepEqual(Object.keys(env.dockModule.disposers._disposer), []);
+    read.release();
+    await pendingLoad;
+    assert.equal(env.stores.groups[0].id, 'g');
+    assert.deepEqual(Object.keys(env.dockModule.disposers._disposer), ['DEFAULT']);
 });

@@ -1,3 +1,10 @@
+sync:
+  loading: 正在读取 Bookmark+ 存档，请稍候。
+  readFailed: Bookmark+ 存档刷新失败，已暂停保存。请重试。
+  retry: 重试
+  conflictTitle: 请勿同时在多台设备编辑 Bookmark+
+  conflictBody: 收到存档变更时，本机仍有待保存的修改或打开的编辑窗口。Bookmark+ 不支持多端编辑的细粒度合并，同时操作可能导致修改被覆盖。本次将采用思源落盘后的存档，本机未保存的编辑将被丢弃。请在一台设备完成编辑并等待同步完成后，再切换设备。
+  acknowledge: 我已了解
 bookmark:
   cache: 缓存当前书签
   delete:

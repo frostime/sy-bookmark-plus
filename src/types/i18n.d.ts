@@ -1,4 +1,12 @@
 interface I18n {
+    sync: {
+        loading: string;
+        readFailed: string;
+        retry: string;
+        conflictTitle: string;
+        conflictBody: string;
+        acknowledge: string;
+    };
     bookmark: {
         cache: string;
         delete: {

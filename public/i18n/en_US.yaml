@@ -1,3 +1,10 @@
+sync:
+  loading: Reading Bookmark+ storage. Please wait.
+  readFailed: Bookmark+ could not refresh its storage. Saving is paused. Please retry.
+  retry: Retry
+  conflictTitle: Do not edit Bookmark+ on multiple devices at once
+  conflictBody: Storage changed while this window still had pending saves or open editors. Bookmark+ does not merge concurrent edits across devices. Simultaneous editing may overwrite changes. This refresh will use the files stored by SiYuan and discard unsaved local edits. Finish editing on one device and wait for sync to complete before switching devices.
+  acknowledge: I understand
 bookmark:
   cache: Cache Current Bookmarks
   delete:

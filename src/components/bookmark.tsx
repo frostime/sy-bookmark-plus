@@ -1,6 +1,7 @@
 import { Component, For, createMemo, createSignal } from "solid-js";
 import Group from "./group";
-import { confirm, Menu, Plugin, showMessage } from "siyuan";
+import { Menu, Plugin, showMessage } from "siyuan";
+import { confirm } from "@/libs/dialog";
 import { configs, defaultView, getModel, groups, subViews } from "../model";
 import { moveItem } from "@/libs/op";
 

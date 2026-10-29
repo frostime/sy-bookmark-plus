@@ -6,8 +6,8 @@ import { i18n } from "@/utils/i18n";
 import { children, Component, For, JSXElement } from "solid-js";
 import { useSignalRef } from "@frostime/solid-signal-ref";
 import { Dynamic } from "solid-js/web";
-import { bookmarkKeymap } from "@/index";
-import { disableAutoRefresh, enableAutoRefresh } from "@/model/auto-refresh";
+import type PluginBookmarkPlus from "@/index";
+import { thisPlugin } from "@frostime/siyuan-plugin-kits";
 import SubViewList from "./sub-view-list";
 
 interface SettingPanelProps {
@@ -126,20 +126,8 @@ const App = () => {
                     //@ts-ignore
                     setConfigs(key, value);
                     saveConfig();
-                    if (key === 'replaceDefault') {
-                        if (value) {
-                            bookmarkKeymap.replaceDefault();
-                        }
-                        else {
-                            bookmarkKeymap.restoreDefault();
-                        }
-                    } else if (key === 'autoRefreshTemplatingRuleOnSwitchProtyle') {
-                        if (value) {
-                            enableAutoRefresh();
-                        }
-                        else {
-                            disableAutoRefresh();
-                        }
+                    if (key === 'replaceDefault' || key === 'autoRefreshTemplatingRuleOnSwitchProtyle') {
+                        thisPlugin<PluginBookmarkPlus>().applySettings();
                     }
                 }}
             />

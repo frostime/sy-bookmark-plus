@@ -2,7 +2,8 @@ import { Component, createEffect, createMemo, createSignal, useContext, Show } f
 import { For } from "solid-js";
 import { Transition } from "solid-transition-group";
 
-import { Menu, Constants, confirm, showMessage } from "siyuan";
+import { Menu, Constants, showMessage } from "siyuan";
+import { confirm } from "@/libs/dialog";
 
 import { getBlockByID } from "@/api";
 import { ClassName } from "@/libs/dom";
