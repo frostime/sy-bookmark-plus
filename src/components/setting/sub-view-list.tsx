@@ -1,8 +1,7 @@
 import { Component, For, Show, createMemo, createSignal } from "solid-js";
 import { subViews, saveSubViews } from "@/model/stores";
-import { confirmDialog } from "@/libs/dialog";
+import { confirmDialog, inputDialog } from "@/libs/dialog";
 import { showMessage } from "siyuan";
-import { inputDialog } from "@frostime/siyuan-plugin-kits";
 import Icon from "../elements/icon";
 import { selectGroupIcon } from "../elements/select-icon";
 import { SelectInput } from "@/libs/components/Elements";

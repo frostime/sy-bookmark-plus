@@ -92,6 +92,12 @@
 
 ---
 
+### [5. 数据同步维护规范 (data-sync.md)](./data-sync.md)
+
+修改存档读写、`onDataChanged`、异步查询或 Dock/弹窗生命周期前阅读。定义单端轮流使用的责任边界、交叠警告、同步复杂度归属和跨模块验证要求，避免把并发编辑保障扩散到普通组件。
+
+---
+
 ## 阅读建议
 
 1. **architecture.md** - 理解整体架构
@@ -105,6 +111,7 @@
 |---------|---------|
 | 修改 UI 组件 | solidjs-components.md |
 | 修改数据结构 | data-model.md |
+| 修改存档读写、刷新或异步生命周期 | [data-sync.md](./data-sync.md)；再按需查阅数据模型与 Dock 文档 |
 | 添加新的书签组类型 | data-model.md + architecture.md |
 | 优化性能 | solidjs-components.md + architecture.md |
 | 添加新视图 | dock-views.md |

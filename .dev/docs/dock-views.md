@@ -1,7 +1,7 @@
 ---
 name: Dock 视图系统
 description: sy-bookmark-plus 的 Dock 视图注册、多视图管理、Disposer 模式和生命周期管理
-updated: 2026-02-21
+updated: 2026-10-29
 scope:
   - /src/dock-views.ts
   - /src/index.ts
@@ -13,7 +13,7 @@ replacement: ""
 
 ## 概述
 
-sy-bookmark-plus 支持多视图模式，可以在思源的 Dock 侧栏中注册多个独立的书签视图。本文档描述 Dock 视图的注册机制、多视图管理、Disposer 模式以及视图生命周期管理。
+sy-bookmark-plus 支持多视图模式，可以在思源的 Dock 侧栏中注册多个独立的书签视图。本文档描述 Dock 视图的注册机制、多视图管理、Disposer 模式以及视图生命周期管理。修改存档刷新引起的增删、布局或根重建时，先读[数据同步维护规范](./data-sync.md)。
 
 **核心特点**：
 - **默认视图（DEFAULT）**：插件自带的主书签视图
@@ -101,56 +101,17 @@ for (let [vid, view] of Object.entries(subViews())) {
 
 ## Dock 注册流程
 
-### 注册时序图
+### 注册顺序与宿主边界
 
-```mermaid
-sequenceDiagram
-    participant P as Plugin (index.ts)
-    participant S as Store (subViews)
-    participant DV as dock-views.ts
-    participant SI as SiYuan Dock
-    participant SJ as SolidJS
+初始存档读入尝试完成后，`src/index.ts` 注册默认 Dock，并由 `src/dock-views.ts` 的 `syncSubViewDocks()` 对齐可见子视图。后续存档通知也复用该对齐入口；宿主可能在 `addDock()` 时立即调用 `initBookmark()`，也可能合法地不注册 Dock。
 
-    P->>P: onload()
-    P->>S: 读取 subViews
-
-    P->>DV: registerDockViewTypeName('DEFAULT', 'RightBottom')
-    DV->>DV: 保存 typename 到 map
-    P->>SI: addDock(getDockViewTypeName('DEFAULT'))
-    SI->>DV: init() → initBookmark(ele, 'DEFAULT')
-    DV->>SJ: render(Bookmark)
-    SJ-->>DV: dispose function
-    DV->>DV: disposers.add('DEFAULT', dispose, ele)
-
-    P->>P: For each subView
-    P->>DV: registerDockViewTypeName(vid, position)
-    DV->>DV: 保存 typename 到 map
-    P->>SI: addDock(getDockViewTypeName(vid))
-    SI->>DV: init() → initBookmark(ele, vid)
-    DV->>SJ: render(Bookmark)
-    SJ-->>DV: dispose function
-    DV->>DV: disposers.add(vid, dispose, ele)
-
-    DV->>DV: lazyUpdateModel.update()
-    Note over DV: 首次加载时刷新所有动态组
-```
+`initBookmark()` 拥有内容根和独立状态区；`rebuildBookmarkViews()` 在存档成功替换时重建已挂载内容，宿主 Dock identity 不随内容根重建而改变。暂停、重试和按需查询约束见[数据同步维护规范](./data-sync.md)。
 
 ### registerDockViewTypeName
 
-**作用**：注册并生成唯一的 Dock 视图类型名（包含 position 信息）
+在 `addDock()` 前确定包含 position 的 Dock identity。`src/dock-views.ts` 的实现优先保留本机已登记、布局或缓存中的 identity；只有首次出现且没有本机 identity 时才使用传入位置。
 
-```typescript
-export const registerDockViewTypeName = (vid: TBookmarkSubViewId | 'DEFAULT', position: string): void => {
-    const typeName = `::sub-view::${position}::${vid}`;
-    dockViewTypeMap.set(vid, typeName);
-}
-
-// 示例
-registerDockViewTypeName('DEFAULT', 'RightBottom');  // → 存储 '::sub-view::RightBottom::DEFAULT'
-registerDockViewTypeName('my-custom-view', 'LeftTop'); // → 存储 '::sub-view::LeftTop::my-custom-view'
-```
-
-**调用时机**：在 `addDock()` 前调用，将 typename 存储到内部 map
+不要简化为每次按远端 `dockPosition` 覆盖 map。宿主以 type 识别布局，改变 type 会绕过已有的本机布局。保留 identity 不影响同步更新名称和 symbol 图标。
 
 ### getDockViewTypeName
 

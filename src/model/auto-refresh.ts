@@ -32,16 +32,16 @@ export const refreshAllDynamicGroupWithDocTemplate = () => {
 }
 
 
-let disposer = () => { };
+let listeningPlugin: ReturnType<typeof thisPlugin> | undefined;
 export const enableAutoRefresh = () => {
     const plugin = thisPlugin();
-
-    disposer = plugin.registerEventbusHandler('switch-protyle', () => {
-        refreshAllDynamicGroupWithDocTemplate();
-    });
-}
+    if (listeningPlugin === plugin) return;
+    disableAutoRefresh();
+    plugin.eventBus.on('switch-protyle', refreshAllDynamicGroupWithDocTemplate);
+    listeningPlugin = plugin;
+};
 
 export const disableAutoRefresh = () => {
-    disposer();
-    disposer = () => { };
-}
+    listeningPlugin?.eventBus.off('switch-protyle', refreshAllDynamicGroupWithDocTemplate);
+    listeningPlugin = undefined;
+};

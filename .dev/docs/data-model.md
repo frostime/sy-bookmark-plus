@@ -1,7 +1,7 @@
 ---
 name: 数据模型与存储
 description: sy-bookmark-plus 的数据结构设计、Store 管理、持久化策略、思源 API 集成和数据映射关系
-updated: 2026-02-21
+updated: 2026-10-29
 scope:
   - /src/model/**
   - /src/types/bookmark.d.ts
@@ -14,7 +14,7 @@ replacement: ""
 
 ## 概述
 
-本文档描述 sy-bookmark-plus 的核心数据模型、状态管理机制、数据持久化策略，以及如何与思源笔记 API 集成，将思源的 Block 数据映射到书签的数据模型中。
+本文档描述 sy-bookmark-plus 的核心数据模型、状态管理机制、数据持久化策略，以及如何与思源笔记 API 集成，将思源的 Block 数据映射到书签的数据模型中。修改存档读写或异步刷新前，先读[数据同步维护规范](./data-sync.md)，确认责任和复杂度边界。
 
 **核心内容**：
 - 数据结构设计（`IBookmarkGroup`、`IBookmarkItem`、`IBookmarkSubView`、`IBookmarkDefaultView`）
@@ -256,7 +256,7 @@ export class BookmarkDataModel {
     }
 
     // 核心方法
-    async load();                          // 加载所有数据
+    async readStorage();                   // 完整读入，返回待提交的 apply 和迁移标记
     save(fpath?: string);                  // 保存数据（debounced）
 
     // 书签组操作
@@ -284,66 +284,15 @@ export class BookmarkDataModel {
 
 ### 关键方法详解
 
-#### 1. load() - 数据加载
+#### 1. readStorage() - 读入与提交分离
 
-```typescript
-async load() {
-    // 1. 加载书签组
-    let bookmarks = await this.plugin.loadData('bookmarks.json');
+`src/model/index.ts` 的 `readStorage()` 完整读取四份存档，执行迁移并在局部组装分组、快照和 ref，返回待提交的 `apply()`。读取本身不改变当前 Store；由 `src/storage-refresh.ts` 的专用路径决定何时批量提交和重建视图。
 
-    // 2. 加载配置
-    await loadConfig();
-    await loadSubViews();
-
-    // 3. 加载快照（防止笔记本关闭时误删）
-    let snapshot = await this.plugin.loadData('bookmark-items-snapshot.json');
-
-    // 4. 初始化 Store
-    for (let [_, group] of Object.entries(bookmarks)) {
-        // 转换为 V2 格式（items 只存 IItemCore）
-        let items = group.items.map(item => ({id: item.id, style: item?.style}));
-
-        // 添加到 groups Store
-        setGroups((gs) => [...gs, {...group, items}]);
-
-        // 初始化 itemInfo（优先使用 snapshot）
-        group.items.forEach(item => {
-            if (!itemInfo[item.id]) {
-                setItemInfo(item.id, {
-                    id: item.id,
-                    title: snapshot[item.id]?.title ?? '',
-                    type: snapshot[item.id]?.type ?? 'p',
-                    box: snapshot[item.id]?.box ?? '',
-                    subtype: snapshot[item.id]?.subtype ?? '',
-                    icon: snapshot[item.id]?.icon ?? '',
-                    ref: 1
-                });
-            } else {
-                // 已存在，引用计数 +1
-                setItemInfo(item.id, 'ref', (ref) => ref + 1);
-            }
-        });
-    }
-}
-```
+不要恢复为 `loadData` 逐份读取、先清空或追加分组的方式。失败处理、删除替换及保存暂停的跨模块约束见[数据同步维护规范](./data-sync.md)。
 
 #### 2. save() - 数据保存
 
-```typescript
-private async saveCore(fpath?: string) {
-    // 1. 保存书签组
-    await saveGroupMap(fpath);  // → bookmarks.json
-
-    // 2. 保存子视图
-    await saveSubViews();       // → bookmark-sub-views.json
-
-    // 3. 保存快照
-    await this.plugin.saveData('bookmark-items-snapshot.json', itemInfo);
-}
-
-// Debounced 版本（2000ms）
-save = debounce(this.saveCore.bind(this), 2000);
-```
+`src/model/index.ts` 的 `save()` 通过 `bookmarkStorage.deferSave()` 延迟保存。实际序列化与写入顺序以 `saveCore()` 为准；书签、子视图和快照都经过 `src/model/storage.ts` 的保存门，不直接绕过它调用 `Plugin.saveData`。
 
 **快照机制**：
 - 保存 `itemInfo` 的完整副本
@@ -411,34 +360,14 @@ async updateDynamicGroup(group: IBookmarkGroup) {
 
 | 文件 | 内容 | 保存时机 | Debounce |
 |------|------|----------|----------|
-| `bookmarks.json` | 书签组数据（`{[gid]: IBookmarkGroup}`） | 修改书签组/项时 | 2000ms |
+| `bookmarks.json` | schema 2.0 存档（分组和默认视图成员） | 修改书签组/项时 | 2000ms |
 | `bookmark-configs.json` | 插件配置 | 修改配置时 | 750ms |
-| `bookmark-sub-views.json` | 子视图定义 | 修改视图时 | 1000ms |
+| `bookmark-sub-views.json` | 子视图定义 | 修改视图时直接保存，或随书签保存 | 无独立 debounce |
 | `bookmark-items-snapshot.json` | 书签项快照 | 保存书签组时 | 2000ms |
 
 ### Debounce 实现
 
-**文件**：`src/model/stores.ts`
-
-```typescript
-const _saveGroupMap = async (fpath?: string) => {
-    let result: {[key: TBookmarkGroupId]: IBookmarkGroup} = {};
-
-    for (let [id, group] of groupMap()) {
-        result[id] = unwrap(group);  // 解除响应式
-
-        // 动态组优化：只保存有自定义样式的 item
-        if (group.type === 'dynamic') {
-            result[id].items = group.items.filter(item => item.style);
-        }
-    }
-
-    fpath = fpath ?? 'bookmarks.json';
-    await thisPlugin().saveData(fpath, result);
-};
-
-export const saveGroupMap = debounce(_saveGroupMap, 1000);
-```
+书签与配置分别在 `src/model/index.ts`、`src/model/stores.ts` 使用 `bookmarkStorage.deferSave()`。它复用 `src/utils/index.ts` 的可取消 debounce，并把待保存登记到存储拥有者，使刷新能够统一取消。新增延迟保存也应走这个入口，不能另起不可取消的定时器。
 
 **为何使用 Debounce？**
 - **性能优化**：拖拽操作频繁，避免每次都写文件
@@ -653,18 +582,7 @@ for (let id of allIds) {
 
 **方案**：保存 `itemInfo` 快照
 
-```typescript
-// 保存时
-await this.plugin.saveData('bookmark-items-snapshot.json', itemInfo);
-
-// 加载时
-let snapshot = await this.plugin.loadData('bookmark-items-snapshot.json');
-
-// 如果块不存在，使用快照数据
-if (!block) {
-    itemInfo[id] = snapshot[id] ?? {id, title: 'Unknown', ...};
-}
-```
+`readStorage()` 用快照组装初始 `itemInfo`；后续块查询根据快照保留的 box 和笔记本状态区分 `BoxClosed` 与 `BlockDeleted`。写入随 `saveCore()` 经过统一保存门。快照参与存档刷新，不能在读取失败时用空值替代，详见[数据同步维护规范](./data-sync.md)。
 
 ### 2. 引用计数
 

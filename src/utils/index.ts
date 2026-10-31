@@ -15,12 +15,16 @@ export const isMobile = () => {
 }
 
 
-export function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
-    let timeout: NodeJS.Timeout;
-    return function(...args: Parameters<T>) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), wait);
-    } as T;
+export function debounce<T extends (...args: any[]) => unknown>(func: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const cancel = () => { clearTimeout(timeout); timeout = undefined; };
+    return Object.assign((...args: Parameters<T>) => {
+        cancel();
+        timeout = setTimeout(() => {
+            timeout = undefined;
+            func(...args);
+        }, wait);
+    }, { cancel, pending: () => timeout !== undefined });
 }
 
 

@@ -3,7 +3,8 @@ import { groups, setGroups, itemInfo, getModel, subViews, defaultView } from "..
 import { moveItem } from "../../libs/op";
 import { GroupIcon } from "../elements/group-icon";
 import { selectGroupIcon } from "../elements/select-icon";
-import { confirm, showMessage } from "siyuan";
+import { showMessage } from "siyuan";
+import { confirm } from "@/libs/dialog";
 import { i18n } from "@/utils/i18n";
 import Icon from "../elements/icon";
 import { createNewGroup } from "../new-group";

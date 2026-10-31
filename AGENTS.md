@@ -28,4 +28,5 @@
 
 - `siyuan` 在构建时是 external，运行期由思源提供；因此 `Constants` 等取值跟随**用户实际运行的思源版本**，不要假设与 `siyuan` 类型包一致。
 - 组件用 SolidJS，弹窗/设置面板通过 [src/libs/dialog.ts](src/libs/dialog.ts) 的 `solidDialog` 挂载。
-- 数据持久化走 `plugin.saveData/loadData`，存储在 `data/storage/petal/sy-bookmark-plus/`。
+- 插件存档位于 `data/storage/petal/sy-bookmark-plus/`。读写统一走 [src/model/storage.ts](src/model/storage.ts) 的 `bookmarkStorage`；写入使用 `plugin.saveData`，刷新读取不能退回 `loadData` 的旧实例缓存。
+- 修改存档读写、`onDataChanged`、异步查询或 Dock/弹窗生命周期前，先读[数据同步维护规范](.dev/docs/data-sync.md)。同步复杂度集中在专用刷新路径，普通组件不增加同步轮次或有效性检查。

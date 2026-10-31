@@ -6,7 +6,7 @@ import { GroupIcon } from "./elements/group-icon";
 import { RuleEditor, NewGroupContext } from "./new-group";
 import { selectGroupIcon } from "./elements/select-icon";
 import { i18n } from "@/utils/i18n";
-import { confirmDialog } from "@frostime/siyuan-plugin-kits";
+import { confirmDialog } from "@/libs/dialog";
 
 export const EditGroup = (props: {
     group: IBookmarkGroup;
@@ -109,7 +109,7 @@ export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
     });
     const [icon, setIcon] = createSignal<IBookmarkGroup['icon']>(group.icon ?? null);
 
-    render(() => EditGroup({
+    const dispose = render(() => EditGroup({
         group,
         groupName: () => groupInfo().name,
         setGroup: (args) => {
@@ -133,6 +133,7 @@ export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
     confirmDialog({
         title: i18n.group.edit,
         content: container,
+        destroyCallback: dispose,
         width: '800px',
         confirm: () => {
             confirmCb({

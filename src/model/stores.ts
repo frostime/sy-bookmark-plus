@@ -6,11 +6,11 @@
  * @LastEditTime : 2026-02-10 22:14:32
  * @Description  :
  */
-import { createStore } from "solid-js/store";
+import { createStore, reconcile } from "solid-js/store";
 
-import { createMemo } from "solid-js";
+import { batch, createMemo } from "solid-js";
 import { createStoreRef, wrapStoreRef } from "@frostime/solid-signal-ref";
-import { debounce, thisPlugin } from "@frostime/siyuan-plugin-kits";
+import { bookmarkStorage } from "./storage";
 
 export const [itemInfo, setItemInfo] = createStore<{ [key: BlockId]: IBookmarkItemInfo }>({});
 
@@ -32,15 +32,19 @@ const StorageNameGroupViews = 'bookmark-sub-views';
 export const subViews = createStoreRef<{ [key: TBookmarkSubViewId]: IBookmarkSubView }>({});
 export const defaultView = createStoreRef<IBookmarkDefaultView>({ groups: [] });
 
-export const loadSubViews = async () => {
-    let views: { [key: TBookmarkSubViewId]: IBookmarkSubView } = await thisPlugin().loadData(StorageNameGroupViews + '.json');
-    if (views) {
+export const readSubViews = async () => {
+    return await bookmarkStorage.read(StorageNameGroupViews + '.json') as Record<TBookmarkSubViewId, IBookmarkSubView>;
+};
+
+export const replaceSubViews = (views: Record<TBookmarkSubViewId, IBookmarkSubView>) => {
+    batch(() => {
+        for (const id of Object.keys(subViews())) subViews.update(id, undefined!);
         subViews.update(views);
-    }
-}
+    });
+};
 
 export const saveSubViews = async () => {
-    await thisPlugin().saveData(StorageNameGroupViews + '.json', subViews.unwrap());
+    await bookmarkStorage.write(StorageNameGroupViews + '.json', subViews.unwrap());
 }
 
 interface IConfig {
@@ -54,7 +58,7 @@ interface IConfig {
     autoRefreshTemplatingRuleOnSwitchProtyle: boolean;
 }
 
-export const [configs, setConfigs] = createStore<IConfig>({
+const defaultConfigs: IConfig = {
     hideClosed: true,
     hideDeleted: true,
     viewMode: 'bookmark',
@@ -63,7 +67,8 @@ export const [configs, setConfigs] = createStore<IConfig>({
     ariaLabel: false,
     zoomInWhenClick: true,
     autoRefreshTemplatingRuleOnSwitchProtyle: false
-});
+};
+export const [configs, setConfigs] = createStore<IConfig>({ ...defaultConfigs });
 export const configRef = wrapStoreRef(configs, setConfigs);
 
 
@@ -71,16 +76,11 @@ const StorageFileConfigs = 'bookmark-configs.json';  //书签插件相关的配�
 const _saveConfig = async () => {
     const data = configRef.unwrap();
     // console.debug('save config', data);
-    const plugin = thisPlugin();
-    await plugin.saveData(StorageFileConfigs, data);
+    await bookmarkStorage.write(StorageFileConfigs, data);
 }
-export const saveConfig = debounce(_saveConfig, 750);
+export const saveConfig = bookmarkStorage.deferSave(_saveConfig, 750);
 
-export const loadConfig = async () => {
-    const plugin = thisPlugin();
-    let configs_ = await plugin.loadData(StorageFileConfigs) as IConfig;
-    // setConfigs(configs_);
-    if (configs_) {
-        setConfigs({ ...configs, ...configs_ });
-    }
-}
+export const readConfig = () => bookmarkStorage.read(StorageFileConfigs);
+export const replaceConfig = (values: Partial<IConfig> = {}) => {
+    setConfigs(reconcile({ ...defaultConfigs, ...values }));
+};
