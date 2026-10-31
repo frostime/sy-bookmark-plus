@@ -3,6 +3,7 @@ import { render } from "solid-js/web";
 
 import Form from "@/libs/components/Form";
 import { GroupIcon } from "./elements/group-icon";
+import { defaultGroupSymbol } from "./elements/group-icon-value";
 import { RuleEditor, NewGroupContext } from "./new-group";
 import { selectGroupIcon } from "./elements/select-icon";
 import { i18n } from "@/utils/i18n";
@@ -27,7 +28,7 @@ export const EditGroup = (props: {
             show: 'all',
             current: props.icon(),
             name: props.groupName(),
-            defaultSymbol: groupType() === 'dynamic' ? 'iconSearch' : 'iconFolder',
+            defaultSymbol: defaultGroupSymbol(groupType()),
             onReset: () => {
                 props.setIcon(null);
             },

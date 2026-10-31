@@ -10,3 +10,4 @@ build
 tmp
 .worktrees
 *.tsbuildinfo
+/.pi-input.md

@@ -19,6 +19,7 @@ import { createEditGroup } from "./edit-group";
 
 import { selectGroupIcon } from "./elements/select-icon";
 import { GroupIcon } from "./elements/group-icon";
+import { defaultGroupSymbol } from "./elements/group-icon-value";
 
 /**
  * 拖块时思源会同时登记 `application/siyuan-block` 和 gutter 类型，两者顺序不保证
@@ -47,7 +48,7 @@ const useGroupIcon = (props: {
             show: 'all',
             current: props.group.icon,
             name: props.group.name,
-            defaultSymbol: props.group.type === 'dynamic' ? 'iconSearch' : 'iconFolder',
+            defaultSymbol: defaultGroupSymbol(props.group.type),
             onReset: () => {
                 model.setGroups(props.group.id, 'icon', null);
                 showMessage('Reset!');
