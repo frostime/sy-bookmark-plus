@@ -1,81 +1,59 @@
 /*
  * Copyright (c) 2024 by frostime. All Rights Reserved.
- * @Author       : frostime
- * @Date         : 2024-03-23 21:37:33
- * @FilePath     : /src/libs/dialog.ts
- * @LastEditTime : 2024-12-29 20:30:34
- * @Description  : 对话框相关工具
+ * @Description: Plugin-owned dialogs. Discarding releases content without submitting drafts.
  */
-import { Dialog } from "siyuan";
-import { JSXElement } from "solid-js";
-import { render } from "solid-js/web";
+import { Dialog } from 'siyuan';
+import { JSXElement } from 'solid-js';
+import { render } from 'solid-js/web';
+import { simpleDialog, confirmDialog as kitConfirmDialog, inputDialog as kitInputDialog } from '@frostime/siyuan-plugin-kits';
 
-import { simpleDialog } from "@frostime/siyuan-plugin-kits";
+const openDialogs = new Map<Dialog, () => void>();
 
-export const solidDialog = (args: {
-    title: string, loader: () => JSXElement,
-    width?: string, height?: string,
-    maxWidth?: string, maxHeight?: string,
-    callback?: () => void;
-}) => {
-    let container = document.createElement('div')
-    container.style.display = 'contents';
-    let disposer = render(args.loader, container);
-    const {dialog, close} = simpleDialog({...args, ele: container, callback: () => {
-        disposer();
-        if (args.callback) args.callback();;
-    }});
-    return {
-        dialog,
-        close,
-        container
-    }
+function trackDialog<T extends { dialog: Dialog }>(
+    create: (closed: () => void) => T,
+    cleanup?: () => void,
+    onClose?: () => void
+): T {
+    let discarded = false;
+    const result = create(() => {
+        openDialogs.delete(result.dialog);
+        cleanup?.();
+        if (!discarded) onClose?.();
+    });
+    openDialogs.set(result.dialog, () => {
+        discarded = true;
+        result.dialog.destroy();
+    });
+    return result;
 }
 
+export const openDialogCount = () => openDialogs.size;
+export const discardAllDialogs = () => {
+    for (const discard of [...openDialogs.values()]) discard();
+};
 
-export const confirmDialog = (args: {
-    title: string;
-    content: string | HTMLElement;
-    confirm?: (ele?: HTMLElement) => void;
-    cancel?: (ele?: HTMLElement) => void;
-    width?: string;
-    height?: string;
+export const solidDialog = (args: {
+    title: string; loader: () => JSXElement;
+    width?: string; height?: string;
+    maxWidth?: string; maxHeight?: string;
+    callback?: () => void;
 }) => {
-    const { title, content, confirm, cancel, width, height } = args;
+    const container = document.createElement('div');
+    container.style.display = 'contents';
+    const dispose = render(args.loader, container);
+    const result = trackDialog(closed => simpleDialog({ ...args, ele: container, callback: closed }), dispose, args.callback);
+    return { ...result, container };
+};
 
-    const dialog = new Dialog({
-        title,
-        content: `<div class="b3-dialog__content">
-    <div class="ft__breakword">
-    </div>
-</div>
-<div class="b3-dialog__action">
-    <button class="b3-button b3-button--cancel">${window.siyuan.languages.cancel}</button><div class="fn__space"></div>
-    <button class="b3-button b3-button--text" id="confirmDialogConfirmBtn">${window.siyuan.languages.confirm}</button>
-</div>`,
-        width: width,
-        height: height
-    });
+export const confirmDialog = (args: Parameters<typeof kitConfirmDialog>[0]): Dialog => {
+    return trackDialog(closed => kitConfirmDialog({ ...args, destroyCallback: closed }), args.destroyCallback).dialog;
+};
 
-    const target: HTMLElement = dialog.element.querySelector(".b3-dialog__content>div.ft__breakword");
-    if (typeof content === "string") {
-        target.innerHTML = content;
-    } else {
-        target.appendChild(content);
-    }
+export const inputDialog = (args: Omit<Parameters<typeof kitInputDialog>[0], 'destroyCallback'>) => {
+    return trackDialog(closed => kitInputDialog({ ...args, destroyCallback: closed }));
+};
 
-    const btnsElement = dialog.element.querySelectorAll(".b3-button");
-    btnsElement[0].addEventListener("click", () => {
-        if (cancel) {
-            cancel(target);
-        }
-        dialog.destroy();
-    });
-    btnsElement[1].addEventListener("click", () => {
-        if (confirm) {
-            confirm(target);
-        }
-        dialog.destroy();
-    });
-    return dialog;
+/** Same call shape as the host confirm, but the dialog belongs to this plugin. */
+export const confirm = (title: string, content: string, accept: () => void, cancel?: () => void) => {
+    confirmDialog({ title, content, confirm: accept, cancel });
 };

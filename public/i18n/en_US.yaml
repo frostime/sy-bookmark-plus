@@ -1,3 +1,10 @@
+sync:
+  loading: Reading Bookmark+ storage. Please wait.
+  readFailed: Bookmark+ could not refresh its storage. Saving is paused. Please retry.
+  retry: Retry
+  conflictTitle: Do not edit Bookmark+ on multiple devices at once
+  conflictBody: Storage changed while this window still had pending saves or open editors. Bookmark+ does not merge concurrent edits across devices. Simultaneous editing may overwrite changes. This refresh will use the files stored by SiYuan and discard unsaved local edits. Finish editing on one device and wait for sync to complete before switching devices.
+  acknowledge: I understand
 bookmark:
   cache: Cache Current Bookmarks
   delete:
@@ -95,9 +102,47 @@ ruletype:
   js: Javascript
   sql: SQL
 selecticon:
-  h3: Please select an icon
-  reset: Reset
+  h3: Icon source
+  reset: Restore default icon
   title: Change Group Icon
+  subtitle: Choose an icon for “{0}”
+  symbols: Symbols
+  emojis: Emojis
+  dynamic: Dynamic
+  dateicons: Date icon
+  texticons: Text icon
+  datestyles: [Calendar, Day, Month, Year, Week number, Weekday, Countdown]
+  date: Date
+  targetdate: Target date
+  datehelp: Leave empty to follow today's date, or select a fixed date.
+  countdownhelp: Select the target date to show the number of days until or since it.
+  dynamictext: Icon text
+  dynamictexthint: e.g. W, R, TODO
+  texthelp: This text becomes the icon, not the group name. Use a short label and check the actual-size preview.
+  color: Icon color
+  customcolor: Custom color
+  image: Image
+  imageaddress: Image address
+  imagehint: https://…, assets/…, or a SiYuan dynamic icon URL
+  choosefile: Choose local image
+  filehint: Up to 128 KB, stored and synced with bookmark settings. Group settings change only after Apply.
+  oraddress: Or use an image address
+  savedfile: Using a saved local image. Choose a file or enter an address to replace it.
+  invalidfile: Please choose an image file.
+  filetoolarge: Image exceeds 128 KB. Reduce the file size first.
+  filereaderror: Unable to read this file. Please choose it again.
+  reading: Reading image…
+  loading: Loading icon…
+  imageerror: Unable to load the icon. Check the address or choose another file.
+  retry: Retry loading
+  largepreview: Enlarged preview
+  actualpreview: Actual list size · 16 px
+  referencegroup: Normal group
+  referenceemoji: Emoji group
+  previewgroup: New group
+  previewhelp: All icons share the same space. Judge readability and alignment here.
+  apply: Apply
+  cancel: Cancel
 setting:
   ariaLabel:
     description: Display full title of the bookmark item in a hover box when the mouse

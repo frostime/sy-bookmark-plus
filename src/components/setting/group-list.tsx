@@ -2,8 +2,10 @@ import { createMemo, For } from "solid-js";
 import { groups, setGroups, itemInfo, getModel, subViews, defaultView } from "../../model";
 import { moveItem } from "../../libs/op";
 import { GroupIcon } from "../elements/group-icon";
+import { defaultGroupSymbol } from "../elements/group-icon-value";
 import { selectGroupIcon } from "../elements/select-icon";
-import { confirm, showMessage } from "siyuan";
+import { showMessage } from "siyuan";
+import { confirm } from "@/libs/dialog";
 import { i18n } from "@/utils/i18n";
 import Icon from "../elements/icon";
 import { createNewGroup } from "../new-group";
@@ -152,6 +154,9 @@ const App = () => {
                                 e.preventDefault();
                                 selectGroupIcon({
                                     show: 'all',
+                                    current: group.icon,
+                                    name: group.name,
+                                    defaultSymbol: defaultGroupSymbol(group.type),
                                     onReset: () => {
                                         model.setGroups(group.id, 'icon', null);
                                     },

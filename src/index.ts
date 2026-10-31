@@ -7,13 +7,13 @@
  * @Description  :
  */
 import {
-    Plugin,
+    Plugin, type ICommand,
 } from "siyuan";
 
 
 import { solidDialog } from "./libs/dialog";
 
-import { configRef, getModel, rmModel, saveConfig, subViews, type BookmarkDataModel } from "./model";
+import { getModel, rmModel, saveConfig, type BookmarkDataModel } from "./model";
 import { configs } from "./model";
 
 import Setting from './components/setting';
@@ -28,9 +28,14 @@ import { isMobile } from "./utils";
 import { loadSdk, unloadSdk } from "./sdk";
 
 import { registerPlugin } from "@frostime/siyuan-plugin-kits";
-import { enableAutoRefresh } from "./model/auto-refresh";
+import { disableAutoRefresh, enableAutoRefresh } from "./model/auto-refresh";
 
-import { destroyAllBookmark, dockViewIconElement, registerDockViewTypeName, getDockViewTypeName, initBookmark } from "./dock-views";
+import { destroyAllBookmark, disposeBookmarkContent, dockViewIconElement, registerDockViewTypeName, getDockViewTypeName, initBookmark, syncSubViewDocks } from "./dock-views";
+import { StorageRefresh } from "./storage-refresh";
+
+// SiYuan uses '' to disable a shortcut; undefined means no preference has been captured.
+const DISABLED_HOTKEY = '';
+const HOTKEY_NOT_CAPTURED: undefined = undefined;
 
 let model: BookmarkDataModel;
 
@@ -38,12 +43,15 @@ let model: BookmarkDataModel;
 const useSiyuanBookmark = () => {
     const bookmarkKeymap = window.siyuan.config.keymap.general.bookmark;
     const initial = bookmarkKeymap.custom || bookmarkKeymap.default;
+    let replaced = false;
 
     return {
         initial,
         replaceDefault: () => {
+            if (replaced) return;
+            replaced = true;
             // 替换默认的快捷键
-            bookmarkKeymap.custom = '';
+            bookmarkKeymap.custom = DISABLED_HOTKEY;
 
             updateStyleDom('hide-bookmark', `
                 .dock span[data-type="bookmark"] {
@@ -55,6 +63,8 @@ const useSiyuanBookmark = () => {
         },
         // 恢复
         restoreDefault: () => {
+            if (!replaced) return;
+            replaced = false;
             // 恢复默认的快捷键
             bookmarkKeymap.custom = initial;
             removeStyleDom('hide-bookmark');
@@ -76,6 +86,11 @@ export default class PluginBookmarkPlus extends Plugin {
     //@ts-ignore
     declare readonly i18n: I18n;
 
+    private storageRefresh?: StorageRefresh;
+    private bookmarkCommand?: ICommand;
+    private bookmarkHotkeyBeforeDisable: string | undefined = HOTKEY_NOT_CAPTURED;
+    private unloaded = false;
+
     async onload() {
         //@ts-ignore
         registerPlugin(this);
@@ -86,11 +101,10 @@ export default class PluginBookmarkPlus extends Plugin {
 
         model = getModel(this);
 
-        await model.load();
-
-        if (configs.replaceDefault) {
-            this.replaceDefaultBookmark();
-        }
+        this.storageRefresh = new StorageRefresh(this, model);
+        // Initial load shares the refresh/read-failure path, before Dock restoration can query data.
+        await this.storageRefresh.request();
+        if (this.unloaded) return;
 
         registerDockViewTypeName('DEFAULT', 'RightBottom');
         this.addDock({
@@ -111,44 +125,13 @@ export default class PluginBookmarkPlus extends Plugin {
             init() {
                 //@ts-ignore
                 this.data.initBookmark(this.element, 'DEFAULT');
-            }
+            },
+            destroy() { disposeBookmarkContent('DEFAULT'); }
         });
 
-        for (let [vid, view] of Object.entries(subViews())) {
-            if (view.hidden === true) continue;
-            let icon = 'iconEmoji';
-            if (view.icon?.type === 'symbol') {
-                icon = view.icon.value;
-            }
-            const position = view.dockPosition ?? 'RightBottom';
-            registerDockViewTypeName(vid as TBookmarkSubViewId, position);
-            this.addDock({
-                type: getDockViewTypeName(vid),
-                config: {
-                    position: view.dockPosition ?? 'RightBottom',
-                    size: {
-                        width: 200,
-                        height: 200,
-                    },
-                    icon: icon,
-                    title: view.name || 'Bookmark+'
-                },
-                data: {
-                    plugin: this,
-                    initBookmark: initBookmark,
-                },
-                init() {
-                    //@ts-ignore
-                    this.data.initBookmark(this.element, vid);
-                }
-            });
-        }
-
-        // useSdk(this);
+        syncSubViewDocks(this);
+        this.storageRefresh.activateDocks();
         loadSdk();
-        if (configRef().autoRefreshTemplatingRuleOnSwitchProtyle) {
-            enableAutoRefresh();
-        }
     }
 
     /**
@@ -156,27 +139,41 @@ export default class PluginBookmarkPlus extends Plugin {
      * 思源默认的行为是 disable 这个插件再启用，相当于会再次走插件初始化过程
      * 如果集成并重写这个方法，则会覆盖默认行为
      */
-    onDataChanged(): void {
-        console.debug(`[Bookmark+] onDataChanged called, reloading model`);
-        model.reload();
+    onDataChanged(): Promise<void> {
+        return this.storageRefresh?.request() ?? Promise.resolve();
     }
 
-    private replaceDefaultBookmark() {
-        bookmarkKeymap.replaceDefault();
-
-        // 添加自定义的快捷键打开我们的默认视图
-        this.addCommand({
-            langKey: 'F-Misc::Bookmark',
-            langText: 'F-misc Bookmark',
-            hotkey: bookmarkKeymap.initial,
-            callback: () => {
-                const ele = dockViewIconElement('DEFAULT');
-                ele?.click();
+    applySettings() {
+        if (configs.replaceDefault) {
+            bookmarkKeymap.replaceDefault();
+            if (!this.bookmarkCommand) {
+                const command: ICommand = {
+                    langKey: 'F-Misc::Bookmark',
+                    langText: 'F-misc Bookmark',
+                    hotkey: bookmarkKeymap.initial,
+                    callback: () => dockViewIconElement('DEFAULT')?.click()
+                };
+                this.addCommand(command);
+                this.bookmarkCommand = command;
+            } else if (!this.bookmarkCommand.hotkey && !this.bookmarkCommand.customHotkey) {
+                this.bookmarkCommand.hotkey = this.bookmarkHotkeyBeforeDisable ?? bookmarkKeymap.initial;
+                this.bookmarkCommand.customHotkey = this.bookmarkCommand.hotkey;
             }
-        });
+        } else {
+            bookmarkKeymap.restoreDefault();
+            if (this.bookmarkCommand?.hotkey || this.bookmarkCommand?.customHotkey) {
+                this.bookmarkHotkeyBeforeDisable = this.bookmarkCommand.customHotkey ?? this.bookmarkCommand.hotkey;
+                this.bookmarkCommand.hotkey = DISABLED_HOTKEY;
+                this.bookmarkCommand.customHotkey = DISABLED_HOTKEY;
+            }
+        }
+        if (configs.autoRefreshTemplatingRuleOnSwitchProtyle) enableAutoRefresh();
+        else disableAutoRefresh();
     }
 
     onunload(): void {
+        this.unloaded = true;
+        this.storageRefresh?.dispose();
         unloadSdk();
         rmModel();
         destroyAllBookmark();

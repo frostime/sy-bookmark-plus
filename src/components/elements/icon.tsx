@@ -1,11 +1,11 @@
-import { Component, JSX } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { Component, createMemo, JSX, Match, Switch } from "solid-js";
+import "./icon.scss";
 
 export const parseEmoji = (code: string) => {
-    let codePoint = parseInt(code, 16);
+    const codePoint = parseInt(code, 16);
     if (Number.isNaN(codePoint)) return '📄';
     return String.fromCodePoint(codePoint);
-}
+};
 
 interface CommonProps {
     fontSize?: string;
@@ -32,45 +32,30 @@ interface ImgProps extends CommonProps {
     img: string;
 }
 
-type IProps = SymbolProps | EmojiCodeProps | ImgProps;
+type IconProps = SymbolProps | EmojiCodeProps | ImgProps;
 
-
-const Icon: Component<IProps> = (props) => {
-
-    let style: JSX.CSSProperties = {
-        "font-size": props?.fontSize ?? '14px',
-        "height": props?.height,
-        "width": props?.width,
-    }
-
-    if (props.style) {
-        style = {...style, ...props.style};
-    }
-
-    const Symbol = () => (
-        <svg class="b3-list-item__graphic" style={style}>
-            <use href={`#${props.symbol}`}></use>
-        </svg>
-    );
-
-    const Emoji = () => (
-        <span class="b3-list-item__graphic" style={style}>
-            {parseEmoji(props.emojiCode)}
-        </span>
-    );
-
-    const Img = () => (
-        <img alt="" class="emoji" src={props.img} title="" style={style}></img>
-    );
-
-    const createIcon = () => {
-        if (props.symbol) return Symbol;
-        else if (props.emojiCode) return Emoji;
-        else if (props.img) return Img;
-    }
+const Icon: Component<IconProps> = (props) => {
+    const style = createMemo<JSX.CSSProperties>(() => ({
+        width: props.width ?? '16px',
+        height: props.height ?? '16px',
+        'font-size': props.fontSize ?? '16px',
+        ...props.style,
+    }));
 
     return (
-        <Dynamic component={createIcon()} />
+        <span class="b3-list-item__graphic bookmark-plus-icon" style={style()}>
+            <Switch>
+                <Match when={props.symbol}>
+                    <svg aria-hidden="true"><use href={`#${props.symbol}`} /></svg>
+                </Match>
+                <Match when={props.emojiCode}>
+                    {parseEmoji(props.emojiCode)}
+                </Match>
+                <Match when={props.img}>
+                    <img alt="" src={props.img} />
+                </Match>
+            </Switch>
+        </span>
     );
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "sy-bookmark-plus",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "type": "module",
   "description": "A more powerful bookmark",
   "repository": "https://github.com/frostime/sy-bookmark-plus",
@@ -14,6 +14,7 @@
   "scripts": {
     "dev": "pnpm run clean && cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
     "check": "pnpm run check:types",
+    "test": "node --conditions=browser --test tests/*.test.cjs",
     "check:types": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "clean": "node ./scripts/clean.js",
     "build": "pnpm run clean && pnpm run build:app",

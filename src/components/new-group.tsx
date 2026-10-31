@@ -14,7 +14,9 @@ import { RuleTemplate } from "@/utils/const";
 import { createContext, useContext } from "solid-js";
 
 import { selectGroupIcon } from "./elements/select-icon";
-import { confirmDialog } from "@frostime/siyuan-plugin-kits";
+import { GroupIcon } from "./elements/group-icon";
+import { defaultGroupSymbol } from "./elements/group-icon-value";
+import { confirmDialog } from "@/libs/dialog";
 import { render } from "solid-js/web";
 
 export const NewGroupContext = createContext<{
@@ -248,6 +250,7 @@ export const RuleEditor = (props?: { lockRuleType?: boolean }) => {
 
 
 export const NewGroup = (props: {
+    groupName: Accessor<string>;
     setGroup: (arg: { name?: string, type?: TBookmarkGroupType }) => void;
     setRule: (arg: { type?: string, input?: string }) => void;
     icon: Accessor<IBookmarkGroup['icon']>;
@@ -268,6 +271,9 @@ export const NewGroup = (props: {
     const changeGroupIcon = () => {
         selectGroupIcon({
             show: 'all',
+            current: props.icon(),
+            name: props.groupName(),
+            defaultSymbol: defaultGroupSymbol(groupType()),
             onReset: () => {
                 props.setIcon(null);
             },
@@ -326,15 +332,7 @@ export const NewGroup = (props: {
                     description={i18n_.icondesc}
                 >
                     <div style={{ display: 'flex', "align-items": 'center' }} onClick={changeGroupIcon}>
-                        {(() => {
-                            if (!props.icon()) {
-                                return  <Icon symbol={groupType() === 'normal' ? 'iconFolder' : 'iconSearch'} />
-                            } else if (props.icon()?.type === 'symbol') {
-                                return <Icon symbol={props.icon()?.value} />
-                            } else {
-                                return <Icon emojiCode={props.icon()?.value} />
-                            }
-                        })()}
+                        <GroupIcon group={{ type: groupType(), icon: props.icon() }} />
                     </div>
                 </Form.Wrap>
             </div>
@@ -378,7 +376,8 @@ export const createNewGroup = (confirmCb: (data: any) => void) => {
     const [rule, setRule] = createSignal({ type: "", input: "" });
     const [icon, setIcon] = createSignal<IBookmarkGroup['icon'] | null>(null);
 
-    render(() => NewGroup({
+    const dispose = render(() => NewGroup({
+        groupName: () => group().name,
         setGroup: (args) => {
             let current = group();
             let newval = { ...current, ...args };
@@ -395,6 +394,7 @@ export const createNewGroup = (confirmCb: (data: any) => void) => {
     confirmDialog({
         title: i18n.bookmark.new,
         content: container,
+        destroyCallback: dispose,
         width: '800px',
         confirm: () => {
             confirmCb({ group: group(), rule: rule(), icon: icon() });

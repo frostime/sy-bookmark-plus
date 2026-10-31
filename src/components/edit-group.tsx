@@ -2,14 +2,16 @@ import { Accessor, Show, createSignal } from "solid-js";
 import { render } from "solid-js/web";
 
 import Form from "@/libs/components/Form";
-import Icon from "./elements/icon";
+import { GroupIcon } from "./elements/group-icon";
+import { defaultGroupSymbol } from "./elements/group-icon-value";
 import { RuleEditor, NewGroupContext } from "./new-group";
 import { selectGroupIcon } from "./elements/select-icon";
 import { i18n } from "@/utils/i18n";
-import { confirmDialog } from "@frostime/siyuan-plugin-kits";
+import { confirmDialog } from "@/libs/dialog";
 
 export const EditGroup = (props: {
     group: IBookmarkGroup;
+    groupName: Accessor<string>;
     setGroup: (arg: { name?: string }) => void;
     setRule: (arg: { type?: string, input?: string }) => void;
     icon: Accessor<IBookmarkGroup['icon']>;
@@ -24,6 +26,9 @@ export const EditGroup = (props: {
     const changeGroupIcon = () => {
         selectGroupIcon({
             show: 'all',
+            current: props.icon(),
+            name: props.groupName(),
+            defaultSymbol: defaultGroupSymbol(groupType()),
             onReset: () => {
                 props.setIcon(null);
             },
@@ -67,15 +72,7 @@ export const EditGroup = (props: {
                 description={i18n_.icondesc}
             >
                 <div style={{ display: 'flex', "align-items": 'center' }} onClick={changeGroupIcon}>
-                    {(() => {
-                        if (!props.icon()) {
-                            return <Icon symbol={groupType() === 'normal' ? 'iconFolder' : 'iconSearch'} />;
-                        } else if (props.icon()?.type === 'symbol') {
-                            return <Icon symbol={props.icon()?.value} />;
-                        } else {
-                            return <Icon emojiCode={props.icon()?.value} />;
-                        }
-                    })()}
+                    <GroupIcon group={{ type: groupType(), icon: props.icon() }} />
                 </div>
             </Form.Wrap>
 
@@ -113,8 +110,9 @@ export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
     });
     const [icon, setIcon] = createSignal<IBookmarkGroup['icon']>(group.icon ?? null);
 
-    render(() => EditGroup({
+    const dispose = render(() => EditGroup({
         group,
+        groupName: () => groupInfo().name,
         setGroup: (args) => {
             const current = groupInfo();
             const newval = { ...current, ...args };
@@ -136,6 +134,7 @@ export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
     confirmDialog({
         title: i18n.group.edit,
         content: container,
+        destroyCallback: dispose,
         width: '800px',
         confirm: () => {
             confirmCb({

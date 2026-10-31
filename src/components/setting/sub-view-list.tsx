@@ -1,8 +1,7 @@
 import { Component, For, Show, createMemo, createSignal } from "solid-js";
 import { subViews, saveSubViews } from "@/model/stores";
-import { confirmDialog } from "@/libs/dialog";
+import { confirmDialog, inputDialog } from "@/libs/dialog";
 import { showMessage } from "siyuan";
-import { inputDialog } from "@frostime/siyuan-plugin-kits";
 import Icon from "../elements/icon";
 import { selectGroupIcon } from "../elements/select-icon";
 import { SelectInput } from "@/libs/components/Elements";
@@ -190,9 +189,13 @@ const SubViewList: Component = () => {
                                     e.preventDefault();
                                     selectGroupIcon({
                                         show: 'symbols',
-                                        onReset: () => {},
+                                        current: view.icon,
+                                        name: view.name,
+                                        defaultSymbol: 'iconBookmark',
                                         onUpdate: (icon) => {
-                                            subViews.update(view.id, 'icon', icon);
+                                            //Dock 图标只支持 SVG 符号，图片图标无法显示
+                                            if (icon.type === 'img') return;
+                                            subViews.update(view.id, 'icon', { type: icon.type, value: icon.value });
                                         }
                                     })
                                 }}>

@@ -1,3 +1,10 @@
+sync:
+  loading: 正在读取 Bookmark+ 存档，请稍候。
+  readFailed: Bookmark+ 存档刷新失败，已暂停保存。请重试。
+  retry: 重试
+  conflictTitle: 请勿同时在多台设备编辑 Bookmark+
+  conflictBody: 收到存档变更时，本机仍有待保存的修改或打开的编辑窗口。Bookmark+ 不支持多端编辑的细粒度合并，同时操作可能导致修改被覆盖。本次将采用思源落盘后的存档，本机未保存的编辑将被丢弃。请在一台设备完成编辑并等待同步完成后，再切换设备。
+  acknowledge: 我已了解
 bookmark:
   cache: 缓存当前书签
   delete:
@@ -90,9 +97,47 @@ ruletype:
   js: Javascript
   sql: SQL
 selecticon:
-  h3: 请选择图标
-  reset: 重置
+  h3: 图标来源
+  reset: 恢复默认图标
   title: 更改组图标
+  subtitle: 为「{0}」选择图标
+  symbols: 符号
+  emojis: 表情
+  dynamic: 动态图标
+  dateicons: 日期图标
+  texticons: 文字图标
+  datestyles: [日历, 日期, 月份, 年份, 周数, 星期, 倒计时]
+  date: 日期
+  targetdate: 目标日期
+  datehelp: 留空时随当天日期变化；填写后固定显示指定日期。
+  countdownhelp: 请选择目标日期，显示距离该日期的天数。
+  dynamictext: 图标文字
+  dynamictexthint: 例如：工、读、TODO
+  texthelp: 文字本身就是图标，不会修改组名。建议使用一个汉字或少量字母，并查看右侧实际大小。
+  color: 图标颜色
+  customcolor: 自定义颜色
+  image: 图片
+  imageaddress: 图片地址
+  imagehint: https://…、assets/… 或思源动态图标地址
+  choosefile: 选择本地图片
+  filehint: 图片最大 128 KB，将随书签配置保存和同步。点击“应用”前不会修改组配置。
+  oraddress: 或使用图片地址
+  savedfile: 当前使用已保存的本地图片，可选择文件或输入地址替换。
+  invalidfile: 请选择图片文件。
+  filetoolarge: 图片超过 128 KB，请先缩小文件后再选择。
+  filereaderror: 无法读取此文件，请重新选择。
+  reading: 正在读取图片…
+  loading: 正在加载图标…
+  imageerror: 图标无法加载，请检查图片地址或重新选择文件。
+  retry: 重试加载
+  largepreview: 放大预览
+  actualpreview: 列表实际大小 · 16 px
+  referencegroup: 普通分组
+  referenceemoji: 表情分组
+  previewgroup: 新建书签组
+  previewhelp: 所有图标使用同一占位框。请以这里的可读性和对齐为准。
+  apply: 应用
+  cancel: 取消
 setting:
   ariaLabel:
     description: 鼠标悬停在书签项目上时，在悬浮框中显示书签项目的完整标题

@@ -1,4 +1,12 @@
 interface I18n {
+    sync: {
+        loading: string;
+        readFailed: string;
+        retry: string;
+        conflictTitle: string;
+        conflictBody: string;
+        acknowledge: string;
+    };
     bookmark: {
         cache: string;
         delete: {
@@ -97,6 +105,44 @@ interface I18n {
         h3: string;
         reset: string;
         title: string;
+        subtitle: string;
+        symbols: string;
+        emojis: string;
+        dynamic: string;
+        dateicons: string;
+        texticons: string;
+        datestyles: string[];
+        date: string;
+        targetdate: string;
+        datehelp: string;
+        countdownhelp: string;
+        dynamictext: string;
+        dynamictexthint: string;
+        texthelp: string;
+        color: string;
+        customcolor: string;
+        image: string;
+        imageaddress: string;
+        imagehint: string;
+        choosefile: string;
+        filehint: string;
+        oraddress: string;
+        savedfile: string;
+        invalidfile: string;
+        filetoolarge: string;
+        filereaderror: string;
+        reading: string;
+        loading: string;
+        imageerror: string;
+        retry: string;
+        largepreview: string;
+        actualpreview: string;
+        referencegroup: string;
+        referenceemoji: string;
+        previewgroup: string;
+        previewhelp: string;
+        apply: string;
+        cancel: string;
     };
     setting: {
         ariaLabel: {
