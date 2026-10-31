@@ -15,6 +15,7 @@ import { createContext, useContext } from "solid-js";
 
 import { selectGroupIcon } from "./elements/select-icon";
 import { GroupIcon } from "./elements/group-icon";
+import { defaultGroupSymbol } from "./elements/group-icon-value";
 import { confirmDialog } from "@/libs/dialog";
 import { render } from "solid-js/web";
 
@@ -272,7 +273,7 @@ export const NewGroup = (props: {
             show: 'all',
             current: props.icon(),
             name: props.groupName(),
-            defaultSymbol: groupType() === 'dynamic' ? 'iconSearch' : 'iconFolder',
+            defaultSymbol: defaultGroupSymbol(groupType()),
             onReset: () => {
                 props.setIcon(null);
             },

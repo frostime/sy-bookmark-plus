@@ -33,6 +33,10 @@ import { disableAutoRefresh, enableAutoRefresh } from "./model/auto-refresh";
 import { destroyAllBookmark, disposeBookmarkContent, dockViewIconElement, registerDockViewTypeName, getDockViewTypeName, initBookmark, syncSubViewDocks } from "./dock-views";
 import { StorageRefresh } from "./storage-refresh";
 
+// SiYuan uses '' to disable a shortcut; undefined means no preference has been captured.
+const DISABLED_HOTKEY = '';
+const HOTKEY_NOT_CAPTURED: undefined = undefined;
+
 let model: BookmarkDataModel;
 
 
@@ -47,7 +51,7 @@ const useSiyuanBookmark = () => {
             if (replaced) return;
             replaced = true;
             // 替换默认的快捷键
-            bookmarkKeymap.custom = '';
+            bookmarkKeymap.custom = DISABLED_HOTKEY;
 
             updateStyleDom('hide-bookmark', `
                 .dock span[data-type="bookmark"] {
@@ -84,7 +88,7 @@ export default class PluginBookmarkPlus extends Plugin {
 
     private storageRefresh?: StorageRefresh;
     private bookmarkCommand?: ICommand;
-    private bookmarkCommandHotkey = '';
+    private bookmarkHotkeyBeforeDisable: string | undefined = HOTKEY_NOT_CAPTURED;
     private unloaded = false;
 
     async onload() {
@@ -152,15 +156,15 @@ export default class PluginBookmarkPlus extends Plugin {
                 this.addCommand(command);
                 this.bookmarkCommand = command;
             } else if (!this.bookmarkCommand.hotkey && !this.bookmarkCommand.customHotkey) {
-                this.bookmarkCommand.hotkey = this.bookmarkCommandHotkey || bookmarkKeymap.initial;
+                this.bookmarkCommand.hotkey = this.bookmarkHotkeyBeforeDisable ?? bookmarkKeymap.initial;
                 this.bookmarkCommand.customHotkey = this.bookmarkCommand.hotkey;
             }
         } else {
             bookmarkKeymap.restoreDefault();
             if (this.bookmarkCommand?.hotkey || this.bookmarkCommand?.customHotkey) {
-                this.bookmarkCommandHotkey = this.bookmarkCommand.customHotkey ?? this.bookmarkCommand.hotkey;
-                this.bookmarkCommand.hotkey = '';
-                this.bookmarkCommand.customHotkey = '';
+                this.bookmarkHotkeyBeforeDisable = this.bookmarkCommand.customHotkey ?? this.bookmarkCommand.hotkey;
+                this.bookmarkCommand.hotkey = DISABLED_HOTKEY;
+                this.bookmarkCommand.customHotkey = DISABLED_HOTKEY;
             }
         }
         if (configs.autoRefreshTemplatingRuleOnSwitchProtyle) enableAutoRefresh();

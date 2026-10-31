@@ -293,6 +293,23 @@ test('settings reapply without duplicate commands/listeners and preserve user co
     assert.equal(env.events.on, env.events.off);
 });
 
+test('an explicitly cleared shortcut stays disabled after toggling bookmark replacement and reapplying settings', async () => {
+    const env = environment();
+    env.disk['bookmark-configs.json'] = { replaceDefault: true };
+    await env.plugin.onload();
+    const command = env.plugin.commands[0];
+    command.customHotkey = ''; // SiYuan uses an empty string for a user-disabled shortcut.
+    env.stores.setConfigs('replaceDefault', false);
+    env.plugin.applySettings();
+    env.stores.setConfigs('replaceDefault', true);
+    env.plugin.applySettings();
+    assert.equal(command.customHotkey, '');
+    await env.plugin.onDataChanged();
+    assert.equal(command.customHotkey, '');
+    assert.equal(env.plugin.commands.length, 1);
+    env.plugin.onunload();
+});
+
 test('legacy mobile can reopen a removed and recreated view with the same identity', async () => {
     const env = environment({ mobile: true, legacy: true });
     archive(env, [], { v: view('View') });

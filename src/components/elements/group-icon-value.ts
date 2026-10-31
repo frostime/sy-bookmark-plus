@@ -4,6 +4,9 @@ export const DYNAMIC_ICON_API = 'api/icon/getDynamicIcon';
 export const DEFAULT_ICON_COLOR = '#3575f0';
 export const MAX_ICON_FILE_BYTES = 1024 * 1024;
 
+export const defaultGroupSymbol = (type?: TBookmarkGroupType): string =>
+    !type || type === 'normal' ? 'iconFolder' : 'iconSearch';
+
 /** Preserve date, language and other kernel parameters when editing an existing dynamic icon. */
 export const readDynamicIcon = (icon?: GroupIconValue | null): URLSearchParams | null => {
     if (icon?.type !== 'img') return null;
