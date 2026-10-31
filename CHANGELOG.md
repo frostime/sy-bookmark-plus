@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-10-31
+
+### Fixed
+
+- 补齐清单 `readme.default`；2.3.1 因缺少该键被集市自动校验拒绝收录
+
 ## [2.3.1] - 2026-10-31
 
 ### Added
@@ -121,7 +127,8 @@
 
 - 修复重复设置 err item 的 title 属性的恶性 bug
 
-[Unreleased]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.1...HEAD
+[Unreleased]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.2...HEAD
+[2.3.2]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.0...v2.3.1
 [2.1.1]: https://github.com/frostime/sy-bookmark-plus/compare/v2.1.0...v2.1.1
 [1.4.1]: https://github.com/frostime/sy-bookmark-plus/compare/v1.4.0...v1.4.1
