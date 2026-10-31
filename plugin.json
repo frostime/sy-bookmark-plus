@@ -2,7 +2,7 @@
   "name": "sy-bookmark-plus",
   "author": "frostime",
   "url": "https://github.com/frostime/sy-bookmark-plus",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "minAppVersion": "3.4.0",
   "backends": [
     "all"
@@ -19,6 +19,7 @@
     "zh_CN": "一个更加强大的书签功能"
   },
   "readme": {
+    "default": "README.md",
     "en_US": "README.md",
     "zh_CN": "README_zh_CN.md"
   },
