@@ -125,11 +125,11 @@ selecticon:
   imageaddress: Image address
   imagehint: https://…, assets/…, or a SiYuan dynamic icon URL
   choosefile: Choose local image
-  filehint: Up to 1 MB, stored and synced with bookmark settings. Group settings change only after Apply.
+  filehint: Up to 128 KB, stored and synced with bookmark settings. Group settings change only after Apply.
   oraddress: Or use an image address
   savedfile: Using a saved local image. Choose a file or enter an address to replace it.
   invalidfile: Please choose an image file.
-  filetoolarge: Image exceeds 1 MB. Reduce the file size first.
+  filetoolarge: Image exceeds 128 KB. Reduce the file size first.
   filereaderror: Unable to read this file. Please choose it again.
   reading: Reading image…
   loading: Loading icon…

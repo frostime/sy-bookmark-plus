@@ -2,7 +2,7 @@ export type GroupIconValue = NonNullable<IBookmarkGroup['icon']>;
 
 export const DYNAMIC_ICON_API = 'api/icon/getDynamicIcon';
 export const DEFAULT_ICON_COLOR = '#3575f0';
-export const MAX_ICON_FILE_BYTES = 1024 * 1024;
+export const MAX_ICON_FILE_BYTES = 128 * 1024;
 
 export const defaultGroupSymbol = (type?: TBookmarkGroupType): string =>
     !type || type === 'normal' ? 'iconFolder' : 'iconSearch';

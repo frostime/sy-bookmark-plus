@@ -133,6 +133,13 @@ export const syncSubViewDocks = (plugin: PluginBookmarkPlus) => {
     }
 };
 
+/**
+ * 挂载时补一次元数据查询。
+ *
+ * SPEC: `_hasUpdate` 一旦置位就不再复位，所以整个插件生命周期只补查一次；刷新路径还
+ * 依赖它为 true 表示“本轮由调用方统一更新”。`rebuildBookmarkViews()` 在重建前先置位，
+ * 不要改成可复位，否则每次刷新会多查一轮。
+ */
 const lazyUpdateModel = {
     _hasUpdate: false,
     update: () => {

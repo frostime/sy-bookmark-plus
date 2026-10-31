@@ -2,6 +2,8 @@ This plugin implements a more user-friendly bookmark feature, supporting drag-an
 
 > 🔔 Attention! By default, this plugin will hide the built-in bookmark button in the sidebar of SiYuan. You can disable this default behavior in the settings.
 
+> ⚠️ Do not use this plugin on multiple devices at the same time. Concurrent edits are not merged and will be lost.
+
 Below are the core functionalities. Please explore other detailed features on your own.
 
 If you are satisfied with the plugin, welcome to visit our [Github page](https://github.com/frostime/sy-bookmark-plus) and star it!

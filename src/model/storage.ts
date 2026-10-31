@@ -53,7 +53,11 @@ class BookmarkStorage {
     }
 
     async write(file: string, value: unknown) {
-        if (this.paused) return;
+        if (this.paused) {
+            // 暂停期写入属于刷新要丢弃的本机编辑：调用方 await 会正常结束，但数据没有落盘。
+            console.debug(`[Bookmark+] dropped write while storage refresh is paused: ${file}`);
+            return;
+        }
         const write = thisPlugin().saveData(file, value);
         this.writes.add(write);
         try {

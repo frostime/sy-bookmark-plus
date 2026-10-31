@@ -98,6 +98,21 @@
 
 ---
 
+### [6. 已知实现陷阱 (known-issues.md)](./known-issues.md)
+
+**概述**：跨文件、跨模块的隐式依赖
+
+**涵盖内容**：
+- 刷新等待的模型查询名单是手写的，新增异步查询必须同时登记
+- `bookmarkStorage` 是模块单例，暂停期写入会被静默丢弃
+
+**适用场景**：
+- 新增会异步写 store 的模型查询
+- 新增或替换保存入口
+- 排查“编辑丢失”“列表混入旧条目”一类难复现问题
+
+---
+
 ## 阅读建议
 
 1. **architecture.md** - 理解整体架构
@@ -112,6 +127,7 @@
 | 修改 UI 组件 | solidjs-components.md |
 | 修改数据结构 | data-model.md |
 | 修改存档读写、刷新或异步生命周期 | [data-sync.md](./data-sync.md)；再按需查阅数据模型与 Dock 文档 |
+| 加异步查询、换保存入口、排查编辑丢失 | [known-issues.md](./known-issues.md) |
 | 添加新的书签组类型 | data-model.md + architecture.md |
 | 优化性能 | solidjs-components.md + architecture.md |
 | 添加新视图 | dock-views.md |

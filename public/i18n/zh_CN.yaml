@@ -120,11 +120,11 @@ selecticon:
   imageaddress: 图片地址
   imagehint: https://…、assets/… 或思源动态图标地址
   choosefile: 选择本地图片
-  filehint: 图片最大 1 MB，将随书签配置保存和同步。点击“应用”前不会修改组配置。
+  filehint: 图片最大 128 KB，将随书签配置保存和同步。点击“应用”前不会修改组配置。
   oraddress: 或使用图片地址
   savedfile: 当前使用已保存的本地图片，可选择文件或输入地址替换。
   invalidfile: 请选择图片文件。
-  filetoolarge: 图片超过 1 MB，请先缩小文件后再选择。
+  filetoolarge: 图片超过 128 KB，请先缩小文件后再选择。
   filereaderror: 无法读取此文件，请重新选择。
   reading: 正在读取图片…
   loading: 正在加载图标…
