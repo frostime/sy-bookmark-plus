@@ -219,7 +219,8 @@ const App = () => {
                                         await model.editGroup(group.id, {
                                             name,
                                             icon: result.icon,
-                                            rule: group.type === 'dynamic' ? result.rule : undefined
+                                            rule: group.type === 'dynamic' ? result.rule : undefined,
+                                            refreshOnDocSwitch: group.type === 'dynamic' ? result.refreshOnDocSwitch : undefined
                                         });
                                     });
                                 }}

@@ -278,7 +278,9 @@ test('settings reapply without duplicate commands/listeners and preserve user co
     for (let i = 0; i < 3; i++) await env.plugin.onDataChanged();
     assert.equal(env.plugin.commands.length, 1);
     assert.equal(env.plugin.commands[0].customHotkey, '⌥X');
+    // listeners 是 Set, 同一 handler 重复 on 不会变大; 用 on/off 计数对验证 off/on 配对
     assert.equal(env.listeners.size, 1);
+    assert.equal(env.events.on, env.events.off + 1);
     env.disk['bookmark-configs.json'] = { replaceDefault: false };
     await env.plugin.onDataChanged();
     assert.equal(env.plugin.commands[0].customHotkey, '');
