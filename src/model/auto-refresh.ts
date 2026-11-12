@@ -7,20 +7,33 @@
  * @Description  : 
  */
 
-// import { thisPlugin } from "@frostime/siyuan-plugin-kits"
 import { thisPlugin } from "@frostime/siyuan-plugin-kits";
-import { getModel, groups } from ".";
+import { configs, getModel, groups } from ".";
 
 /**
- * 带活动文档id变量的 sql 随文档页签切换刷新
+ * 动态组是否随文档页签切换刷新:
+ * - 'off': 总是不刷新, 优先级最高, 含模板变量的组也不刷
+ * - 'on': 总是刷新, 不看全局开关, 也不要求规则含文档变量
+ * - 'default': 遵循全局开关, 且要求规则文本含文档模板变量
  */
-export const refreshAllDynamicGroupWithDocTemplate = () => {
+export const isRefreshOnDocSwitch = (group: IBookmarkGroup): boolean => {
+    const mode = group.refreshOnDocSwitch ?? 'default';
+    if (mode === 'off') return false;
+    if (mode === 'on') return true;
+    if (!configs.autoRefreshTemplatingRuleOnSwitchProtyle) return false;
+    const content = group.rule?.input ?? '';
+    return content.includes('{{CurDocId}}') || content.includes('{{CurRootId}}');
+}
+
+/**
+ * 随文档页签切换, 刷新命中的动态组
+ */
+export const refreshAllDynamicGroupOnDocSwitch = () => {
 
     const groupTobeUpdate = groups.filter((g: IBookmarkGroup) => {
         if (g.hidden === true) return false;
         if (g.type !== 'dynamic' || !g.rule?.input) return false;
-        const content = g.rule.input as string;
-        return content.includes('{{CurDocId}}') || content.includes('{{CurRootId}}');
+        return isRefreshOnDocSwitch(g);
     });
     if (groupTobeUpdate.length === 0) return;
     const model = getModel();
@@ -37,11 +50,11 @@ export const enableAutoRefresh = () => {
     const plugin = thisPlugin();
     if (listeningPlugin === plugin) return;
     disableAutoRefresh();
-    plugin.eventBus.on('switch-protyle', refreshAllDynamicGroupWithDocTemplate);
+    plugin.eventBus.on('switch-protyle', refreshAllDynamicGroupOnDocSwitch);
     listeningPlugin = plugin;
 };
 
 export const disableAutoRefresh = () => {
-    listeningPlugin?.eventBus.off('switch-protyle', refreshAllDynamicGroupWithDocTemplate);
+    listeningPlugin?.eventBus.off('switch-protyle', refreshAllDynamicGroupOnDocSwitch);
     listeningPlugin = undefined;
 };

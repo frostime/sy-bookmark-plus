@@ -161,6 +161,35 @@ test('backlinks b2doc keeps the updated-desc order instead of the kernel id orde
     assert.deepEqual([...fetched.map((b) => b.id)], ['20250101000000-yyyyyyy', '20241231000000-zzzzzzz']);
 });
 
+test('per-group doc-switch refresh mode: off > on > default(follow global)', () => {
+    const state = { autoRefreshTemplatingRuleOnSwitchProtyle: false };
+    const mod = loadSource('src/model/auto-refresh.ts', {
+        '@frostime/siyuan-plugin-kits': { thisPlugin: () => undefined },
+        '.': { configs: state, getModel: () => undefined, groups: [] }
+    });
+    const isRefresh = mod.isRefreshOnDocSwitch;
+    const docVarGroup = (mode) => ({
+        type: 'dynamic',
+        rule: { type: 'sql', input: 'select * from blocks where root_id = "{{CurDocId}}"' },
+        refreshOnDocSwitch: mode
+    });
+
+    state.autoRefreshTemplatingRuleOnSwitchProtyle = false;
+    assert.equal(isRefresh(docVarGroup(undefined)), false); // default 遵循全局, 全局关
+    assert.equal(isRefresh(docVarGroup('default')), false);
+    assert.equal(isRefresh(docVarGroup('on')), true);      // on 不看全局开关
+    assert.equal(isRefresh(docVarGroup('off')), false);    // off 优先级最高
+
+    state.autoRefreshTemplatingRuleOnSwitchProtyle = true;
+    assert.equal(isRefresh(docVarGroup('default')), true); // 含文档模板变量
+    assert.equal(isRefresh(docVarGroup('on')), true);
+    assert.equal(isRefresh(docVarGroup('off')), false);
+
+    // default 档但规则不含文档变量 → 不随切换刷新
+    const noVar = { type: 'dynamic', rule: { type: 'js', input: 'return kit.sql("select 1");' } };
+    assert.equal(isRefresh(noVar), false);
+});
+
 test('restored Dock cannot initialize until saved bookmark data has loaded', async () => {
     const { environment, group, barrier } = require('./storage-refresh-environment.cjs');
     const env = environment({ mount: true });

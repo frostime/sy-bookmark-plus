@@ -14,6 +14,8 @@ export const EditGroup = (props: {
     groupName: Accessor<string>;
     setGroup: (arg: { name?: string }) => void;
     setRule: (arg: { type?: string, input?: string }) => void;
+    refreshOnDocSwitch: Accessor<TRefreshOnDocSwitch>;
+    setRefreshOnDocSwitch: (mode: TRefreshOnDocSwitch) => void;
     icon: Accessor<IBookmarkGroup['icon']>;
     setIcon: (args: IBookmarkGroup['icon']) => void;
 }) => {
@@ -88,6 +90,23 @@ export const EditGroup = (props: {
                 }}>
                     <RuleEditor lockRuleType={true} />
                 </NewGroupContext.Provider>
+                <Form.Wrap
+                    title={i18n.newgroup.refreshOnDocSwitch.title}
+                    description={i18n.newgroup.refreshOnDocSwitch.description}
+                >
+                    <Form.Input
+                        key="refreshOnDocSwitch"
+                        value={props.refreshOnDocSwitch()}
+                        type='select'
+                        options={{
+                            'default': i18n.newgroup.refreshOnDocSwitch.default,
+                            'on': i18n.newgroup.refreshOnDocSwitch.on,
+                            'off': i18n.newgroup.refreshOnDocSwitch.off
+                        }}
+                        changed={(v) => props.setRefreshOnDocSwitch(v as TRefreshOnDocSwitch)}
+                        style={{ 'width': '130px' }}
+                    />
+                </Form.Wrap>
             </Show>
         </div>
     );
@@ -96,6 +115,7 @@ export const EditGroup = (props: {
 export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
     group: { name: string };
     rule: { type: TRuleType; input: string };
+    refreshOnDocSwitch: TRefreshOnDocSwitch;
     icon: IBookmarkGroup['icon'];
 }) => void) => {
     const container = document.createElement("div") as HTMLDivElement;
@@ -108,6 +128,7 @@ export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
         type: group.rule?.type ?? 'sql',
         input: group.rule?.input ?? ''
     });
+    const [refreshOnDocSwitch, setRefreshOnDocSwitch] = createSignal<TRefreshOnDocSwitch>(group.refreshOnDocSwitch ?? 'default');
     const [icon, setIcon] = createSignal<IBookmarkGroup['icon']>(group.icon ?? null);
 
     const dispose = render(() => EditGroup({
@@ -127,6 +148,8 @@ export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
             };
             setRule(newval);
         },
+        refreshOnDocSwitch,
+        setRefreshOnDocSwitch,
         icon,
         setIcon
     }), container);
@@ -140,6 +163,7 @@ export const createEditGroup = (group: IBookmarkGroup, confirmCb: (data: {
             confirmCb({
                 group: groupInfo(),
                 rule: rule(),
+                refreshOnDocSwitch: refreshOnDocSwitch(),
                 icon: icon()
             });
         }

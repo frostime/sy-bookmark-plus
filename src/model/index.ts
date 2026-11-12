@@ -551,6 +551,7 @@ export class BookmarkDataModel {
             name?: string;
             icon?: IBookmarkGroup['icon'];
             rule?: IDynamicRule;
+            refreshOnDocSwitch?: TRefreshOnDocSwitch;
         }
     ) {
         const group = groupMap().get(id);
@@ -565,6 +566,9 @@ export class BookmarkDataModel {
             }
             if (group.type === 'dynamic' && data.rule !== undefined) {
                 setGroups((g) => g.id === id, 'rule', data.rule);
+            }
+            if (group.type === 'dynamic' && data.refreshOnDocSwitch !== undefined) {
+                setGroups((g) => g.id === id, 'refreshOnDocSwitch', data.refreshOnDocSwitch);
             }
         });
 

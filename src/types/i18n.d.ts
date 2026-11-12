@@ -91,6 +91,13 @@ interface I18n {
             name: string;
             omit: string;
         };
+        refreshOnDocSwitch: {
+            title: string;
+            description: string;
+            default: string;
+            on: string;
+            off: string;
+        };
         rinput: string;
         rtype: string[];
         type: string[];
@@ -215,6 +222,10 @@ interface I18n {
     template: {
         attr: {
             dailynote: string;
+        };
+        js: {
+            recentdocs: string;
+            childdocs: string;
         };
         sql: {
             random: string;

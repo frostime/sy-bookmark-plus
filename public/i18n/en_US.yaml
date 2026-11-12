@@ -89,6 +89,13 @@ newgroup:
     fb2p: First child of container
     name: Post-process
     omit: No Process
+  refreshOnDocSwitch:
+    title: Refresh on document switch
+    description: 'Follow global: decided by the global setting; Always / Never: override
+      the global setting'
+    default: Follow global
+    on: Always refresh
+    off: Never refresh
   rinput: Rule Value
   rtype:
   - Rule Type
@@ -179,7 +186,8 @@ src_components_setting_indextsx:
   all_bookmark_groups: 📋 Bookmark Groups
   basic_settings: 🐤 Basic Settings
   refresh_bookmarks: When switching documents, automatically refresh dynamic bookmark
-    groups that contain the {{CurDocId}} template variable
+    groups that contain the {{CurDocId}} template variable and whose per-group refresh
+    option is "Follow global"; each group can also be set to always or never refresh
   refresh_groups: Refresh when switching documents
   subview_management: 🗜️ View Management
 src_components_setting_subviewlisttsx:
@@ -207,6 +215,9 @@ src_model_rulests:
 template:
   attr:
     dailynote: Daily Note
+  js:
+    recentdocs: Recent documents
+    childdocs: Child docs of current document
   sql:
     random: Random Roam
     thisday: On this day

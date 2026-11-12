@@ -41,6 +41,14 @@ interface IDynamicRule {
     input: string;
 }
 
+/**
+ * 动态组“切换文档时刷新”的三态配置
+ * - 'default': 遵循全局设置, 且要求规则文本含文档模板变量
+ * - 'on': 总是随文档切换刷新, 不看全局开关
+ * - 'off': 总是不刷新, 优先级最高
+ */
+type TRefreshOnDocSwitch = 'default' | 'on' | 'off';
+
 interface IBookmarkGroup {
     id: TBookmarkGroupId;
     name: string;
@@ -49,6 +57,7 @@ interface IBookmarkGroup {
     items: IItemCore[];
     type?: TBookmarkGroupType;
     rule?: IDynamicRule;
+    refreshOnDocSwitch?: TRefreshOnDocSwitch;
     icon?: {
         type: 'symbol' | 'emoji' | 'img' | '';
         value: string;
