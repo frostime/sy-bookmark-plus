@@ -5,6 +5,17 @@
 
 ## [Unreleased]
 
+## [2.3.3] - 2026-11-12
+
+### Added
+
+- 动态组新增“切换文档时刷新”三态选项：遵循全局 / 总是开启 / 总是关闭，可在编辑组窗口单独设置
+- 新建 JavaScript 动态组时提供内置预设脚本：最近文档、当前文档的子文档
+
+### Fixed
+
+- 动态规则的书签顺序不再被改变：JavaScript 脚本返回的 id 列表和反链“显示为文档块”的顺序现在与规则原始顺序一致
+
 ## [2.3.2] - 2026-10-31
 
 ### Fixed
@@ -127,7 +138,8 @@
 
 - 修复重复设置 err item 的 title 属性的恶性 bug
 
-[Unreleased]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.2...HEAD
+[Unreleased]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.3...HEAD
+[2.3.3]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.2...v2.3.3
 [2.3.2]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/frostime/sy-bookmark-plus/compare/v2.3.0...v2.3.1
 [2.1.1]: https://github.com/frostime/sy-bookmark-plus/compare/v2.1.0...v2.1.1
