@@ -43,6 +43,7 @@ interface IBookmarkGroup {
     items: IItemCore[];            // 书签项列表
     type?: TBookmarkGroupType;     // 'normal' | 'dynamic' | 'composed'
     rule?: IDynamicRule;           // 动态规则配置
+    refreshOnDocSwitch?: TRefreshOnDocSwitch;  // 动态组“切换文档时刷新”三态配置
     icon?: {                       // 图标配置
         type: 'symbol' | 'emoji' | '';
         value: string;
@@ -50,6 +51,12 @@ interface IBookmarkGroup {
 }
 
 type TBookmarkGroupType = 'normal' | 'dynamic' | 'composed';
+
+// 动态组“切换文档时刷新”三态配置
+// - 'default': 遵循全局开关, 且要求规则文本含文档模板变量
+// - 'on': 总是随文档切换刷新, 不看全局开关
+// - 'off': 总是不刷新, 优先级最高
+type TRefreshOnDocSwitch = 'default' | 'on' | 'off';
 ```
 
 **设计要点**：
@@ -60,6 +67,9 @@ type TBookmarkGroupType = 'normal' | 'dynamic' | 'composed';
   - `composed` - 组合组（未来扩展）
 - **items**：只存储 `id` 和 `style`，详细信息在 `itemInfo` 中
 - **hidden**：保留为兼容字段，DEFAULT 成员关系已迁移到 `defaultView.groups`
+- **refreshOnDocSwitch**：仅动态组使用；缺省即 `'default'`，旧存档无需迁移。
+  判定逻辑集中在 `src/model/auto-refresh.ts` 的 `isRefreshOnDocSwitch`；
+  switch-protyle 监听器常驻注册，全局开关 `autoRefreshTemplatingRuleOnSwitchProtyle` 只在每次切换时实时影响 `'default'` 档的组
 
 #### 2. IItemCore - 书签项核心数据
 
