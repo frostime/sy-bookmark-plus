@@ -29,7 +29,14 @@ function loadSource(file, dependencies, globals = {}) {
 function ruleEnvironment() {
     let activeDoc;
     const queries = [];
-    const api = { sql: async (query) => { queries.push(query); return []; } };
+    const blockTable = {};
+    let sqlResult = [];
+    const api = { sql: async (query) => { queries.push(query); return sqlResult; } };
+    // `id2block` 查询 `where id in (...)`, 内核按主键索引顺序返回, 排开了传入的 id 顺序
+    const kits = {
+        id2block: async (ids) => ids.map((id) => blockTable[id]).filter(Boolean)
+            .sort((a, b) => a.id.localeCompare(b.id))
+    };
     const document = {
         querySelector(selector) {
             if (!activeDoc) return null;
@@ -47,13 +54,19 @@ function ruleEnvironment() {
     const rules = loadSource('src/model/rules.ts', {
         '@/api': api,
         '@/libs/query': {},
-        '@frostime/siyuan-plugin-kits': {},
+        '@frostime/siyuan-plugin-kits': kits,
         '@/utils/const': { Caret: '‸' },
         './templating': templating,
         siyuan: {},
         '@/utils/i18n': {}
     });
-    return { queries, getRule: rules.getRule, setActiveDoc: (id) => { activeDoc = id; } };
+    return {
+        queries,
+        getRule: rules.getRule,
+        setActiveDoc: (id) => { activeDoc = id; },
+        setSqlResult: (rows) => { sqlResult = rows; },
+        setBlocks: (list) => { for (const block of list) blockTable[block.id] = block; }
+    };
 }
 
 const iconValues = loadSource('src/components/elements/group-icon-value.ts', {}, { URLSearchParams });
@@ -123,6 +136,29 @@ test('attribute rule without a value still queries by name when no document is o
     assert.equal(env.queries.length, 1);
     assert.ok(env.queries[0].includes("A.name like 'custom-target'"));
     assert.ok(!env.queries[0].includes('AND A.value'));
+});
+
+test('js rule keeps the script order of the returned block ids', async () => {
+    const env = ruleEnvironment();
+    // 故意不是 id 升序
+    const ids = ['20260101000000-aaaaaaa', '20251231000000-bbbbbbb', '20251101000000-ccccccc'];
+    env.setBlocks(ids.map((id) => ({ id })));
+    const rule = env.getRule({ type: 'js', input: `return ${JSON.stringify(ids)};` });
+    const fetched = await rule.fetch();
+    // 展开到测试本域的数组, 避免与 vm 里构造的数组做跨 realm 比较
+    assert.deepEqual([...fetched.map((b) => b.id)], ids);
+});
+
+test('backlinks b2doc keeps the updated-desc order instead of the kernel id order', async () => {
+    const env = ruleEnvironment();
+    env.setSqlResult([
+        { id: '20260101000000-aaaaaaa', root_id: '20250101000000-yyyyyyy' },
+        { id: '20251231000000-bbbbbbb', root_id: '20241231000000-zzzzzzz' }
+    ]);
+    env.setBlocks([{ id: '20241231000000-zzzzzzz' }, { id: '20250101000000-yyyyyyy' }]);
+    const rule = env.getRule({ type: 'backlinks', input: '20250101000000-xxxxxxx\u2038b2doc' });
+    const fetched = await rule.fetch();
+    assert.deepEqual([...fetched.map((b) => b.id)], ['20250101000000-yyyyyyy', '20241231000000-zzzzzzz']);
 });
 
 test('restored Dock cannot initialize until saved bookmark data has loaded', async () => {

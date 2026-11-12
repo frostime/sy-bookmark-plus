@@ -70,6 +70,19 @@ const matchIDFormat = (id: string) => {
     }
 }
 
+/**
+ * `id2block` 实际执行的是 `where id in (...)`, 内核按主键索引顺序返回结果,
+ * 与传入的 id 顺序无关。需要让书签顺序等于规则原本的顺序时, 必须按 ids 重排一次;
+ * 查不到的块直接丢弃。
+ */
+const orderBlocksByIds = (blocks: Block[], ids: BlockId[]): Block[] => {
+    let blocksById = new Map<BlockId, Block>();
+    for (const block of blocks) {
+        blocksById.set(block.id, block);
+    }
+    return ids.map(id => blocksById.get(id)).filter(Boolean) as Block[];
+}
+
 
 type TBacklinkProcess = '' | 'fb2p' | 'b2doc';
 export interface IBacklinksRuleInput {
@@ -150,7 +163,8 @@ export class Backlinks extends MatchRule {
             let docIds = blocks.map(b => b.root_id);
             docIds = Array.from(new Set(docIds));
             let docs = await id2block(docIds) as Block[];
-            return docs;
+            //保留反链 `order by blocks.updated desc` 的顺序
+            return orderBlocksByIds(docs, docIds);
         }
         else if (this.process === 'fb2p') {
             blocks = await fb2p(blocks);
@@ -312,7 +326,8 @@ class JSQuery extends MatchRule {
             if (Array.isArray(data) && data?.length > 0) {
                 if (typeof data[0] === 'string') {
                     if (matchIDFormat(data[0])) {
-                        result = await id2block(data) as Block[];
+                        //保留脚本 return 的 id 数组顺序
+                        result = orderBlocksByIds(await id2block(data) as Block[], data);
                     } else {
                         showMessage(i18n.src_model_rulests.js_query_result, 3000, 'error');
                     }
