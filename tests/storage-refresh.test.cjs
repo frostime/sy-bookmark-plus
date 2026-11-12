@@ -283,7 +283,9 @@ test('settings reapply without duplicate commands/listeners and preserve user co
     await env.plugin.onDataChanged();
     assert.equal(env.plugin.commands[0].customHotkey, '');
     assert.equal(env.window.siyuan.config.keymap.general.bookmark.custom, '⌥B');
-    assert.equal(env.listeners.size, 0);
+    // switch-protyle 监听器常驻注册; 全局开关只在每次切换时实时判定 'default' 档,
+    // 这里只验证重复 applySettings 不累积监听器
+    assert.equal(env.listeners.size, 1);
     env.disk['bookmark-configs.json'] = { replaceDefault: true, autoRefreshTemplatingRuleOnSwitchProtyle: true };
     await env.plugin.onDataChanged();
     assert.equal(env.plugin.commands[0].customHotkey, '⌥X');
