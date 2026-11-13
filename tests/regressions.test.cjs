@@ -149,6 +149,16 @@ test('js rule keeps the script order of the returned block ids', async () => {
     assert.deepEqual([...fetched.map((b) => b.id)], ids);
 });
 
+test('js rule returns each block once in first-occurrence order', async () => {
+    const env = ruleEnvironment();
+    const first = '20260101000000-aaaaaaa';
+    const second = '20251231000000-bbbbbbb';
+    env.setBlocks([{ id: first }, { id: second }]);
+    const rule = env.getRule({ type: 'js', input: `return ${JSON.stringify([first, second, first])};` });
+    const fetched = await rule.fetch();
+    assert.deepEqual([...fetched.map((block) => block.id)], [first, second]);
+});
+
 test('backlinks b2doc keeps the updated-desc order instead of the kernel id order', async () => {
     const env = ruleEnvironment();
     env.setSqlResult([

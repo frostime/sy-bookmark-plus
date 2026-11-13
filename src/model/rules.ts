@@ -73,14 +73,14 @@ const matchIDFormat = (id: string) => {
 /**
  * `id2block` 实际执行的是 `where id in (...)`, 内核按主键索引顺序返回结果,
  * 与传入的 id 顺序无关。需要让书签顺序等于规则原本的顺序时, 必须按 ids 重排一次;
- * 查不到的块直接丢弃。
+ * 重复的 id 只保留首次出现的位置，查不到的块直接丢弃。
  */
 const orderBlocksByIds = (blocks: Block[], ids: BlockId[]): Block[] => {
     let blocksById = new Map<BlockId, Block>();
     for (const block of blocks) {
         blocksById.set(block.id, block);
     }
-    return ids.map(id => blocksById.get(id)).filter(Boolean) as Block[];
+    return [...new Set(ids)].map(id => blocksById.get(id)).filter(Boolean) as Block[];
 }
 
 
