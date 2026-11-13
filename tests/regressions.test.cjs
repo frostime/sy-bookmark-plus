@@ -165,7 +165,7 @@ test('per-group doc-switch refresh mode: off > on > default(follow global)', () 
     const state = { autoRefreshTemplatingRuleOnSwitchProtyle: false };
     const mod = loadSource('src/model/auto-refresh.ts', {
         '@frostime/siyuan-plugin-kits': { thisPlugin: () => undefined },
-        '.': { configs: state, getModel: () => undefined, groups: [] }
+        '.': { configs: state, getModel: () => undefined }
     });
     const isRefresh = mod.isRefreshOnDocSwitch;
     const docVarGroup = (mode) => ({
@@ -190,10 +190,74 @@ test('per-group doc-switch refresh mode: off > on > default(follow global)', () 
     assert.equal(isRefresh(noVar), false);
 });
 
+test('document switches refresh each referenced dynamic group once, including migrated subview-only groups', async () => {
+    const { environment, view } = require('./storage-refresh-environment.cjs');
+    const env = environment();
+    const dynamic = (id, extra = {}) => ({
+        id, name: id, type: 'dynamic', items: [], hidden: true,
+        refreshOnDocSwitch: 'on', rule: { type: 'sql', input: `select * from blocks /* ${id} */` }, ...extra
+    });
+    const groups = ['shared', 'subview-only', 'hidden-view-only', 'unreferenced', 'off'].map(id => dynamic(id));
+    groups.find(group => group.id === 'off').refreshOnDocSwitch = 'off';
+    env.disk['bookmarks.json'] = {
+        schema: '2.0', groups: Object.fromEntries(groups.map(group => [group.id, group])),
+        defaultView: { groups: ['shared', 'off'] }
+    };
+    env.disk['bookmark-sub-views.json'] = {
+        visible: view('Visible', ['shared', 'subview-only', 'off']),
+        another: view('Another', ['subview-only']),
+        hidden: view('Hidden', ['hidden-view-only'], { hidden: true })
+    };
+    await env.plugin.onload();
+    assert.equal(env.stores.configs.autoRefreshTemplatingRuleOnSwitchProtyle, false);
+    for (const handler of env.listeners) handler();
+    await env.settle();
+    assert.deepEqual(env.ruleQueries, [
+        'select * from blocks /* shared */',
+        'select * from blocks /* subview-only */'
+    ]);
+    assert.equal(env.stores.subViews().hidden.hidden, true);
+    env.plugin.onunload();
+});
+
+test('creating groups leaves view membership to the caller and never saves group.hidden', async () => {
+    const { environment } = require('./storage-refresh-environment.cjs');
+    const env = environment();
+    await env.plugin.onload();
+    let nextId = 0;
+    env.window.Lute = { NewNodeID: () => `created-${++nextId}` };
+    const first = env.model().newGroup('Default group', 'normal');
+    const second = env.model().newGroup('Subview group', 'normal');
+    assert.deepEqual(env.stores.defaultView().groups, []);
+    env.model().addGroupToDefaultView(first.id);
+    env.stores.subViews.update({ custom: { id: 'custom', name: 'Custom', groups: [second.id], expand: {} } });
+    await env.flushSaves();
+    assert.equal(env.disk['bookmarks.json'].schema, '3.0');
+    assert.deepEqual(env.disk['bookmarks.json'].defaultView.groups, [first.id]);
+    assert.deepEqual(env.disk['bookmark-sub-views.json'].custom.groups, [second.id]);
+    for (const group of Object.values(env.disk['bookmarks.json'].groups)) {
+        assert.equal(Object.hasOwn(group, 'hidden'), false);
+    }
+    env.plugin.onunload();
+});
+
+test('SDK group queries do not expose a hidden property', () => {
+    const sdkModule = loadSource('src/sdk.ts', {
+        './model/stores': { groups: [{ id: 'a', name: 'A', type: 'normal', items: [] }], itemInfo: {} }
+    }, { globalThis });
+    sdkModule.loadSdk();
+    try {
+        assert.equal(Object.hasOwn(globalThis.BookmarkPlusSDK.listGroups()[0], 'hidden'), false);
+        assert.equal(Object.hasOwn(globalThis.BookmarkPlusSDK.findGroup('A'), 'hidden'), false);
+    } finally {
+        sdkModule.unloadSdk();
+    }
+});
+
 test('restored Dock cannot initialize until saved bookmark data has loaded', async () => {
     const { environment, group, barrier } = require('./storage-refresh-environment.cjs');
     const env = environment({ mount: true });
-    env.disk['bookmarks.json'] = { schema: '2.0', groups: { g: group('g') }, defaultView: { groups: ['g'] } };
+    env.disk['bookmarks.json'] = { schema: '3.0', groups: { g: group('g') }, defaultView: { groups: ['g'] } };
     const read = barrier();
     env.beforeRead(() => read.promise);
     const pendingLoad = env.plugin.onload();

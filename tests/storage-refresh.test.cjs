@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const { environment, group, view, barrier } = require('./storage-refresh-environment.cjs');
 
 function archive(env, groups, views = {}, config = { replaceDefault: false }) {
-    env.disk['bookmarks.json'] = { schema: '2.0', groups: Object.fromEntries(groups.map(group => [group.id, group])), defaultView: { groups: groups.map(group => group.id) } };
+    env.disk['bookmarks.json'] = { schema: '3.0', groups: Object.fromEntries(groups.map(group => [group.id, group])), defaultView: { groups: groups.map(group => group.id) } };
     env.disk['bookmark-sub-views.json'] = views;
     env.disk['bookmark-configs.json'] = config;
 }
@@ -157,8 +157,51 @@ test('known missing files use defaults, while old schemas still migrate and save
     await env.plugin.onload();
     assert.deepEqual(env.stores.defaultView().groups, ['old']);
     await env.flushSaves();
-    assert.equal(env.disk['bookmarks.json'].schema, '2.0');
+    assert.equal(env.disk['bookmarks.json'].schema, '3.0');
     assert.deepEqual(env.disk['bookmarks.json'].defaultView.groups, ['old']);
+});
+
+test('2.0 migration saves 3.0 once without changing view membership or subview hiding', async () => {
+    const env = environment();
+    archive(env, [{ ...group('a'), hidden: true }, { ...group('b'), hidden: false }], {
+        custom: view('Hidden subview', ['b', 'a'], { hidden: true })
+    });
+    env.disk['bookmarks.json'].schema = '2.0';
+    env.disk['bookmarks.json'].defaultView.groups = ['a'];
+    await env.plugin.onload();
+    assert.deepEqual(env.stores.defaultView().groups, ['a']);
+    for (const group of env.stores.groups) assert.equal(Object.hasOwn(group, 'hidden'), false);
+    await env.flushSaves();
+    assert.equal(env.disk['bookmarks.json'].schema, '3.0');
+    assert.deepEqual(env.disk['bookmarks.json'].defaultView.groups, ['a']);
+    assert.deepEqual(env.disk['bookmark-sub-views.json'].custom.groups, ['b', 'a']);
+    assert.equal(env.disk['bookmark-sub-views.json'].custom.hidden, true);
+    const writes = env.writes.length;
+    await env.plugin.onDataChanged();
+    await env.flushSaves();
+    assert.equal(env.writes.length, writes, 'reloading a migrated archive must not schedule another migration save');
+});
+
+test('unsupported or invalid schemas keep displayed data and never overwrite the rejected archive', async () => {
+    const env = environment();
+    archive(env, [group('retained')]);
+    await env.plugin.onload();
+    const displayed = env.stores.groups[0];
+    for (const rejected of [
+        { schema: '4.0', groups: {}, defaultView: { groups: [] } },
+        { schema: '3.0', groups: { bad: { ...group('bad'), hidden: false } }, defaultView: { groups: ['bad'] } }
+    ]) {
+        env.disk['bookmarks.json'] = rejected;
+        await env.plugin.onDataChanged();
+        assert.equal(env.stores.groups[0], displayed);
+        env.model().save();
+        await env.flushSaves();
+        assert.equal(env.writes.length, 0);
+        assert.equal(env.disk['bookmarks.json'], rejected);
+    }
+    archive(env, [group('recovered')]);
+    await env.plugin.onDataChanged();
+    assert.equal(env.stores.groups[0].id, 'recovered');
 });
 
 test('a model-owned query finishes before replacement, without per-method revision checks', async () => {

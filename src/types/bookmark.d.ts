@@ -53,7 +53,6 @@ interface IBookmarkGroup {
     id: TBookmarkGroupId;
     name: string;
     expand?: boolean;
-    hidden?: boolean;
     items: IItemCore[];
     type?: TBookmarkGroupType;
     rule?: IDynamicRule;
@@ -84,8 +83,8 @@ interface IBookmarkDefaultView {
     groups: TBookmarkGroupId[];
 }
 
-interface IBookmarkStorageV2 {
-    schema: string;
+interface IBookmarkStorage {
+    schema: '3.0';
     groups: Record<TBookmarkGroupId, IBookmarkGroup>;
     defaultView: IBookmarkDefaultView;
 }

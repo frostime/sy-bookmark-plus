@@ -1,7 +1,7 @@
 ---
 name: Dock 视图系统
 description: sy-bookmark-plus 的 Dock 视图注册、多视图管理、Disposer 模式和生命周期管理
-updated: 2026-10-29
+updated: 2026-11-13
 scope:
   - /src/dock-views.ts
   - /src/index.ts
@@ -293,7 +293,7 @@ graph TD
 ```
 
 **规则**：
-- **DEFAULT 视图**：显示所有 `group.hidden !== true` 的书签组
+- **DEFAULT 视图**：按 `defaultView.groups` 的成员及顺序显示书签组
 - **Sub Views**：显示 `view.groups` 数组中指定的书签组
 - **同一书签组**可以在多个视图中显示
 - **展开状态**：Sub View 有独立的 `view.expand` 配置，优先于 `group.expand`
@@ -305,8 +305,8 @@ graph TD
 ```tsx
 const shownGroups = createMemo(() => {
     if (props.sourceView === "DEFAULT") {
-        // DEFAULT 视图：显示所有未隐藏的组
-        return groups.filter(group => !group.hidden);
+        // DEFAULT 视图：按显式成员列表显示
+        return defaultView().groups.map(id => groups.find(group => group.id === id)).filter(Boolean);
     } else {
         // Sub View：显示配置中指定的组
         const view = subViews()[props.sourceView];

@@ -11,6 +11,12 @@
 
 📝 更新日志见: [CHANGELOG.md](./CHANGELOG.md)
 
+## BREAKING CHANGE：书签存档 schema 3.0
+
+书签存档会自动迁移到 schema `3.0`。组级 `hidden` 字段从存档及 `BookmarkPlusSDK.listGroups()`、`findGroup()` 的返回结果中删除。组是否显示由视图成员关系决定；隐藏整个子视图的功能保留。
+
+升级前请备份 `data/storage/petal/sy-bookmark-plus/`，并在同步迁移后的数据前更新所有设备上的插件。不支持降级到旧版插件。
+
 ## 书签组
 
 在顶栏中点击「添加」，可以新建一个书签组，书签组分类两种类型：
@@ -226,7 +232,6 @@ custom-dailynote-% like {{yyyy}}{{MM}}%
   * ​`id`​
   * ​`name`​
   * ​`expand`​：书签组的折叠状态
-  * ​`hidden`​：书签组是否隐藏
   * ​`type`​：normal 或者 dynamic
 * ​`BookmarkPlus.SDK.listItems(id: string)`​：传入书签组的 ID，返回书签组中所有块的 ID
 
