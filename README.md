@@ -10,6 +10,12 @@ If you are satisfied with the plugin, welcome to visit our [Github page](https:/
 
 📝 Changlog (in Chinese, however): [CHANGELOG.md](./CHANGELOG.md)
 
+## BREAKING CHANGE: bookmark schema 2.1
+
+Bookmark storage is automatically migrated to schema `2.1`. Group-level `hidden` is removed from storage and from the results of `BookmarkPlusSDK.listGroups()` and `findGroup()`. Group visibility is determined by view membership; hiding an entire subview remains supported.
+
+Back up `data/storage/petal/sy-bookmark-plus/` before upgrading, and update the plugin on every device before syncing migrated data. Downgrading to an older plugin version is not supported.
+
 ## Bookmark Groups
 
 Click "Add" on the top bar to create a new bookmark group. Bookmark groups are classified into two types:
@@ -127,7 +133,7 @@ Example 3, Backlink rule: View backlinks that refer to the current active docume
 {{CurDocId}}
 ```
 
-You can enable the "**Refresh when switching documents**" feature in the bookmark settings. So it will automatically refresh related bookmark groups when you open new documents.
+You can enable the "**Refresh when switching documents**" feature in the bookmark settings. So it will automatically refresh dynamic bookmark groups that contain the current-document variable when you open new documents; each dynamic group can also be set to "Always refresh" or "Never refresh" in its edit dialog.
 
 ​![动态书签加载](asset/动态书签加载-20250215230033-w127wfx.gif)​
 
@@ -223,7 +229,6 @@ After version 1.4.1 of the plugin, the plugin will globally mount a variable `Bo
   * ​`id`​
   * ​`name`​
   * ​`expand`​: The collapsed state of the bookmark group
-  * ​`hidden`​: Whether the bookmark group is hidden
   * ​`type`​: normal or dynamic
 * ​`BookmarkPlus.SDK.listItems(id: string)`​: Pass in the ID of the bookmark group and return the IDs of all the blocks in the bookmark group
 

@@ -11,6 +11,12 @@
 
 📝 更新日志见: [CHANGELOG.md](./CHANGELOG.md)
 
+## BREAKING CHANGE：书签存档 schema 2.1
+
+书签存档会自动迁移到 schema `2.1`。组级 `hidden` 字段从存档及 `BookmarkPlusSDK.listGroups()`、`findGroup()` 的返回结果中删除。组是否显示由视图成员关系决定；隐藏整个子视图的功能保留。
+
+升级前请备份 `data/storage/petal/sy-bookmark-plus/`，并在同步迁移后的数据前更新所有设备上的插件。不支持降级到旧版插件。
+
 ## 书签组
 
 在顶栏中点击「添加」，可以新建一个书签组，书签组分类两种类型：
@@ -130,7 +136,7 @@ custom-dailynote-% like {{yyyy}}{{MM}}%
 {{CurDocId}}
 ```
 
-你可以在书签设置当中开启「**切换文档时刷新相关组**」功能，这样当打开新的文档的时候，相关的书签组会自动刷新。
+你可以在书签设置当中开启「**切换文档时刷新相关组**」功能，这样当打开新的文档的时候，含有当前文档变量的动态书签组会自动刷新；每个动态组也可以在编辑窗口单独设为「总是开启」或「总是关闭」。
 
 ​![动态书签加载](asset/动态书签加载-20250215230033-w127wfx.gif)​
 
@@ -226,7 +232,6 @@ custom-dailynote-% like {{yyyy}}{{MM}}%
   * ​`id`​
   * ​`name`​
   * ​`expand`​：书签组的折叠状态
-  * ​`hidden`​：书签组是否隐藏
   * ​`type`​：normal 或者 dynamic
 * ​`BookmarkPlus.SDK.listItems(id: string)`​：传入书签组的 ID，返回书签组中所有块的 ID
 

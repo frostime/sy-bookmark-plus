@@ -126,7 +126,9 @@ const App = () => {
                     //@ts-ignore
                     setConfigs(key, value);
                     saveConfig();
-                    if (key === 'replaceDefault' || key === 'autoRefreshTemplatingRuleOnSwitchProtyle') {
+                    // autoRefreshTemplatingRuleOnSwitchProtyle 不再需要重新应用: 监听器常驻,
+                    // 全局开关只影响 'default' 档, 在每次切换时实时读取
+                    if (key === 'replaceDefault') {
                         thisPlugin<PluginBookmarkPlus>().applySettings();
                     }
                 }}

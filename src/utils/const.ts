@@ -144,6 +144,20 @@ order by updated desc;`
     },
     attr: {
         'dailynote': `custom-dailynote-%`
+    },
+    js: {
+        //预设脚本返回的 id 数组顺序会保留为书签顺序, 详见 rules.ts 的 orderBlocksByIds
+        'recentdocs': `// 最近使用的文档 (最多 16 个)
+// 注意: 脚本不含文档变量, 若要随切换文档刷新, 需在编辑组中把
+// "切换文档时刷新" 设为「总是开启」
+const recents = await kit.request('/api/storage/getRecentDocs', '');
+return (recents ?? []).slice(0, 16).map((doc) => doc.rootID);`,
+        'childdocs': `// 当前文档的子文档; 未打开文档时为空
+const current = await kit.sql("select * from blocks where id = '{{CurDocId}}'");
+const info = await kit.request('/api/filetree/listDocsByPath', {
+    notebook: current[0]?.box, path: current[0]?.path
+});
+return (info?.files ?? []).map((doc) => doc.id);`
     }
 }
 

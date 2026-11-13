@@ -84,6 +84,12 @@ newgroup:
     fb2p: 容器首个子块
     name: 后处理方案
     omit: 无处理
+  refreshOnDocSwitch:
+    title: 切换文档时刷新
+    description: '遵循全局: 由设置中的「切换文档时刷新相关组」决定; 总是开启/总是关闭: 覆盖全局设置'
+    default: 遵循全局
+    on: 总是开启
+    off: 总是关闭
   rinput: 规则取值
   rtype:
   - 规则类型
@@ -168,7 +174,7 @@ src_components_newgrouptsx:
 src_components_setting_indextsx:
   all_bookmark_groups: 📋 所有书签组
   basic_settings: 🐤 基本设置
-  refresh_bookmarks: 当切换文档的时候，自动刷新那些含有{{CurDocId}}模板变量的动态书签组
+  refresh_bookmarks: 当切换文档时，自动刷新含有{{CurDocId}}模板变量、且组内刷新选项为「遵循全局」的动态书签组；每个动态组也可单独设为总是刷新或从不刷新
   refresh_groups: 切换文档时刷新相关组
   subview_management: 🗜️ 视图管理
 src_components_setting_subviewlisttsx:
@@ -196,6 +202,9 @@ src_model_rulests:
 template:
   attr:
     dailynote: Daily Note
+  js:
+    recentdocs: 最近文档
+    childdocs: 当前文档的子文档
   sql:
     random: 随机漫游
     thisday: 历史上的今天

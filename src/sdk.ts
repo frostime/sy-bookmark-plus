@@ -19,7 +19,6 @@ export const loadSdk = () => {
                 id: group.id,
                 name: group.name,
                 expand: group.expand,
-                hidden: group.hidden,
                 type: group.type,
             }));
         },

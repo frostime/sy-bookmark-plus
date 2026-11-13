@@ -217,7 +217,7 @@ export const RuleEditor = (props?: { lockRuleType?: boolean }) => {
                 direction={aboutRule().direction}
                 action={
                     // 选择模板的 action 下拉框
-                    <Show when={['sql', 'attr'].includes(ruleType())}>
+                    <Show when={['sql', 'attr', 'js'].includes(ruleType())}>
                         <div style={{
                             display: "flex",
                             gap: '10px',

@@ -272,7 +272,8 @@ const Group: Component<{
                     await model.editGroup(props.group.id, {
                         name,
                         icon: result.icon,
-                        rule: isDynamicGroup() ? result.rule : undefined
+                        rule: isDynamicGroup() ? result.rule : undefined,
+                        refreshOnDocSwitch: isDynamicGroup() ? result.refreshOnDocSwitch : undefined
                     });
                 });
             },

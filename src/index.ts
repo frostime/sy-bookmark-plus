@@ -28,7 +28,7 @@ import { isMobile } from "./utils";
 import { loadSdk, unloadSdk } from "./sdk";
 
 import { registerPlugin } from "@frostime/siyuan-plugin-kits";
-import { disableAutoRefresh, enableAutoRefresh } from "./model/auto-refresh";
+import { enableAutoRefresh } from "./model/auto-refresh";
 
 import { destroyAllBookmark, disposeBookmarkContent, dockViewIconElement, registerDockViewTypeName, getDockViewTypeName, initBookmark, syncSubViewDocks } from "./dock-views";
 import { StorageRefresh } from "./storage-refresh";
@@ -167,8 +167,9 @@ export default class PluginBookmarkPlus extends Plugin {
                 this.bookmarkCommand.customHotkey = DISABLED_HOTKEY;
             }
         }
-        if (configs.autoRefreshTemplatingRuleOnSwitchProtyle) enableAutoRefresh();
-        else disableAutoRefresh();
+        // 监听器常驻注册; 每次切换时由 isRefreshOnDocSwitch 按组判定
+        // (全局开关只影响 'default' 档的组, 组级 'on'/'off' 不受它控制)
+        enableAutoRefresh();
     }
 
     onunload(): void {

@@ -1,7 +1,7 @@
 ---
 name: 数据模型与存储
 description: sy-bookmark-plus 的数据结构设计、Store 管理、持久化策略、思源 API 集成和数据映射关系
-updated: 2026-10-29
+updated: 2026-11-13
 scope:
   - /src/model/**
   - /src/types/bookmark.d.ts
@@ -20,7 +20,7 @@ replacement: ""
 - 数据结构设计（`IBookmarkGroup`、`IBookmarkItem`、`IBookmarkSubView`、`IBookmarkDefaultView`）
 - SolidJS Store 管理（`itemInfo`、`groups`、`defaultView`、`subViews`、`configs`）
 - BookmarkDataModel 类的职责
-- 数据持久化策略（`bookmarks.json` v2 schema、debounce 保存）
+- 数据持久化策略（`bookmarks.json` schema 2.1、debounce 保存）
 - 思源 API 调用封装
 - Block 数据 → 书签数据的映射流程
 
@@ -39,10 +39,10 @@ interface IBookmarkGroup {
     id: TBookmarkGroupId;          // 唯一标识
     name: string;                  // 显示名称
     expand?: boolean;              // 展开/折叠状态（默认 true）
-    hidden?: boolean;              // 兼容字段，不再作为 DEFAULT 成员来源
     items: IItemCore[];            // 书签项列表
     type?: TBookmarkGroupType;     // 'normal' | 'dynamic' | 'composed'
     rule?: IDynamicRule;           // 动态规则配置
+    refreshOnDocSwitch?: TRefreshOnDocSwitch;  // 动态组“切换文档时刷新”三态配置
     icon?: {                       // 图标配置
         type: 'symbol' | 'emoji' | '';
         value: string;
@@ -50,6 +50,12 @@ interface IBookmarkGroup {
 }
 
 type TBookmarkGroupType = 'normal' | 'dynamic' | 'composed';
+
+// 动态组“切换文档时刷新”三态配置
+// - 'default': 遵循全局开关, 且要求规则文本含文档模板变量
+// - 'on': 总是随文档切换刷新, 不看全局开关
+// - 'off': 总是不刷新, 优先级最高
+type TRefreshOnDocSwitch = 'default' | 'on' | 'off';
 ```
 
 **设计要点**：
@@ -59,7 +65,10 @@ type TBookmarkGroupType = 'normal' | 'dynamic' | 'composed';
   - `dynamic` - 动态组，通过规则自动更新
   - `composed` - 组合组（未来扩展）
 - **items**：只存储 `id` 和 `style`，详细信息在 `itemInfo` 中
-- **hidden**：保留为兼容字段，DEFAULT 成员关系已迁移到 `defaultView.groups`
+- **视图成员关系**：默认视图使用 `defaultView.groups`，子视图使用各自的 `groups`；组本身不保存隐藏状态。`src/model/index.ts` 的 `getGroupsInViews()` 为手动刷新和文档切换刷新统一解析成员，跨视图的共享组只返回一次。
+- **refreshOnDocSwitch**：仅动态组使用；缺省即 `'default'`，旧存档无需迁移。
+  判定逻辑集中在 `src/model/auto-refresh.ts` 的 `isRefreshOnDocSwitch`；
+  switch-protyle 监听器常驻注册，全局开关 `autoRefreshTemplatingRuleOnSwitchProtyle` 只在每次切换时实时影响 `'default'` 档的组
 
 #### 2. IItemCore - 书签项核心数据
 
@@ -131,24 +140,19 @@ interface IDynamicRule {
 }
 ```
 
-#### 6. IBookmarkDefaultView / IBookmarkStorageV2
+#### 6. 书签存档与版本迁移
 
-```typescript
-interface IBookmarkDefaultView {
-    groups: TBookmarkGroupId[];
-}
+`src/types/bookmark.d.ts` 的 `IBookmarkStorage` 定义 schema `2.1`：`groups` 保存组，`defaultView.groups` 显式保存默认视图成员及顺序。组不允许携带 `hidden`；子视图自身的 `hidden` 仍控制 Dock 是否注册。
 
-interface IBookmarkStorageV2 {
-    schema: string; // 当前为 '2.0'
-    groups: Record<TBookmarkGroupId, IBookmarkGroup>;
-    defaultView: IBookmarkDefaultView;
-}
-```
+`src/model/migration.ts` 统一拥有书签存档校验和迁移：
 
-**设计要点**：
-- `defaultView.groups` 显式定义 DEFAULT 视图包含的 group 及顺序
-- `bookmarks.json` 从旧 `Record<gid, group>` 升级为 v2 容器结构
-- 迁移逻辑位于 `src/model/migration.ts`，通过 schema 比较实现幂等升级
+- 支持未标版本的组映射，以及显式标记 `2.0`、`2.1` 的存档。声明的 schema 必须精确匹配；未知版本直接报错，不按字段形状或版本大小猜测格式。
+- 未标版本的组映射先按原顺序收集 `hidden !== true` 的默认成员，导入为 `2.0`。`2.0 → 2.1` 只删除组级 `hidden`，保留显式成员列表、顺序和其他组数据；迁移前后均校验。
+- 存档文件缺失时使用空的 `2.1` 数据，不安排迁移写回。已存在但无效的存档不自动修复或替换为空档，异常由专用刷新路径处理。
+- 默认成员 ID 必须唯一且引用已有组；组 ID 必须与映射键一致。完整字段检查以 `validateStorage()`、`validateGroups()` 为准，未知的非保留字段保留。静态组可以携带历史创建入口留下的空规则类型；缺省组类型视为静态组，缺省刷新设置为 `default`。
+- 读取成功后的迁移保存仍经过 `bookmarkStorage`，不绕过保存暂停和在途写入等待。
+
+创建入口调用 `newGroup()` 后显式加入默认视图或子视图。自动刷新使用默认视图及未隐藏子视图的成员，再应用组级刷新设置；是否已打开 Dock、组是否折叠不影响这项成员筛选。
 
 ---
 
@@ -260,7 +264,7 @@ export class BookmarkDataModel {
     save(fpath?: string);                  // 保存数据（debounced）
 
     // 书签组操作
-    newGroup(...);                         // 创建新书签组
+    newGroup(...);                         // 创建组；调用方显式加入目标视图
     delGroup(id);                          // 删除书签组
     moveGroup(from, to);                   // 移动书签组
     setGroups(gid, key, value);            // 更新书签组属性
@@ -360,7 +364,7 @@ async updateDynamicGroup(group: IBookmarkGroup) {
 
 | 文件 | 内容 | 保存时机 | Debounce |
 |------|------|----------|----------|
-| `bookmarks.json` | schema 2.0 存档（分组和默认视图成员） | 修改书签组/项时 | 2000ms |
+| `bookmarks.json` | schema 2.1 存档（分组和默认视图成员） | 修改书签组/项时 | 2000ms |
 | `bookmark-configs.json` | 插件配置 | 修改配置时 | 750ms |
 | `bookmark-sub-views.json` | 子视图定义 | 修改视图时直接保存，或随书签保存 | 无独立 debounce |
 | `bookmark-items-snapshot.json` | 书签项快照 | 保存书签组时 | 2000ms |

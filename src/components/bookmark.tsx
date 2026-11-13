@@ -64,10 +64,10 @@ const BookmarkComponent: Component<{
                 showMessage(i18n.msg.groupNameEmpty, 3000, 'error');
                 return;
             }
+            const newGroup = model.newGroup(group.name, group.type, rule, icon);
             if (props.sourceView === "DEFAULT") {
-                model.newGroup(group.name, group.type, rule, icon);
+                model.addGroupToDefaultView(newGroup.id);
             } else {
-                const newGroup = model.newGroup(group.name, group.type, rule, icon, true);
                 subViews.update(props.sourceView, 'groups', (gs: IBookmarkGroup['id'][]) => {
                     return [...gs, newGroup.id];
                 });

@@ -33,7 +33,7 @@ function environment({ mount = false, legacy = false, mobile = false, noDocks = 
     let beforeWrite = async () => {};
     let ruleQuery = async () => [];
     const disk = {
-        'bookmarks.json': { schema: '2.0', groups: {}, defaultView: { groups: [] } },
+        'bookmarks.json': { schema: '2.1', groups: {}, defaultView: { groups: [] } },
         'bookmark-sub-views.json': {},
         'bookmark-configs.json': { replaceDefault: false },
         'bookmark-items-snapshot.json': {}
@@ -266,7 +266,7 @@ function environment({ mount = false, legacy = false, mobile = false, noDocks = 
     };
 }
 
-const group = (id, items = []) => ({ id, name: id, type: 'static', items: items.map(id => ({ id })) });
+const group = (id, items = []) => ({ id, name: id, type: 'normal', items: items.map(id => ({ id })) });
 const view = (name, groups = [], extra = {}) => ({ name, groups, dockPosition: 'RightBottom', ...extra });
 const barrier = () => {
     let release;
