@@ -58,7 +58,7 @@ export class BookmarkDataModel {
         return result;
     }
 
-    private makeBookmarkStorage(): IBookmarkStorageV2 {
+    private makeBookmarkStorage(): IBookmarkStorage {
         const groupsRecord = this.makeGroupsRecord();
         const groupIds = new Set(Object.keys(groupsRecord));
         const defaultViewGroups = (defaultView().groups ?? []).filter((gid) => groupIds.has(gid));
@@ -80,12 +80,6 @@ export class BookmarkDataModel {
             readSubViews(),
             bookmarkStorage.read(StorageFileItemSnapshot)
         ]);
-        if (bookmarksRaw?.groups !== undefined && (!bookmarksRaw.groups || typeof bookmarksRaw.groups !== 'object' || Array.isArray(bookmarksRaw.groups))) {
-            throw new Error('Invalid bookmark groups');
-        }
-        if (bookmarksRaw?.defaultView?.groups !== undefined && !Array.isArray(bookmarksRaw.defaultView.groups)) {
-            throw new Error('Invalid default bookmark view');
-        }
         const { storage, migrated } = migrateBookmarkStorage(bookmarksRaw);
         const allGroups: IBookmarkGroup[] = [];
         const loadedItems: Record<BlockId, IBookmarkItemInfo> = {};
@@ -158,60 +152,30 @@ export class BookmarkDataModel {
         }
     }
 
-    async updateViews(viewId?: 'DEFAULT' | TBookmarkSubViewId) {
-        const gidForUpdate = new Set<TBookmarkGroupId>();
-
-        // 如果 viewId 为 undefined，那么更新所有的视图
+    /** Without a view ID, resolve DEFAULT and non-hidden subviews, deduplicated. */
+    getGroupsInViews(viewId?: 'DEFAULT' | TBookmarkSubViewId): IBookmarkGroup[] {
+        const groupIds = new Set<TBookmarkGroupId>();
         if (viewId === 'DEFAULT' || viewId === undefined) {
-            const defaultGroups = defaultView().groups ?? [];
-            defaultGroups.forEach((gid) => {
-                gidForUpdate.add(gid);
-            });
+            for (const id of defaultView().groups) groupIds.add(id);
         }
-
         if (viewId === undefined) {
-            // 更新所有子视图
-            for (const views of Object.values(subViews())) {
-                if (views.hidden === true) continue;
-                views.groups.forEach(group => {
-                    if (gidForUpdate.has(group)) return;
-                    gidForUpdate.add(group);
-                });
+            for (const view of Object.values(subViews())) {
+                if (view.hidden === true) continue;
+                for (const id of view.groups) groupIds.add(id);
             }
-        } else {
-            // 更新指定的子视图
-            const view = subViews()[viewId];
-            if (view) {
-                view.groups.forEach(group => {
-                    if (gidForUpdate.has(group)) return;
-                    gidForUpdate.add(group);
-                });
-            }
+        } else if (viewId !== 'DEFAULT') {
+            for (const id of subViews()[viewId]?.groups ?? []) groupIds.add(id);
         }
+        return Array.from(groupIds).map(id => groupMap().get(id)).filter(group => group !== undefined);
+    }
 
-
-        // Pools
-        let toUpdated: Promise<any>[] = [];
-        gidForUpdate.forEach(g => {
-            const group = groupMap().get(g);
-            if (!group) return;
-            toUpdated.push(this.updateDynamicGroup(group));
-        })
-        // groups.forEach(group => {
-        //     if (group.hidden) return;
-        //     if (group.type === 'dynamic') {
-        //         toUpdated.push(this.updateDynamicGroup(group));
-        //     }
-        // });
-
-        // 由于是 async 的，所以很遗憾没法使用 batch 更新
-        await Promise.all(toUpdated);
-        // await this.updateStaticItems();
-        // let groupsToUpdate = groups.filter(g => g.hidden !== true);
-        let allIdsSet = new Set<BlockId>();
-        gidForUpdate.forEach(id => {
-            groupMap().get(id)?.items.forEach(item => allIdsSet.add(item.id));
-        });
+    async updateViews(viewId?: 'DEFAULT' | TBookmarkSubViewId) {
+        const groupsToUpdate = this.getGroupsInViews(viewId);
+        await Promise.all(groupsToUpdate.map(group => this.updateDynamicGroup(group)));
+        const allIdsSet = new Set<BlockId>();
+        for (const group of groupsToUpdate) {
+            groupMap().get(group.id)?.items.forEach(item => allIdsSet.add(item.id));
+        }
         await this.updateStaticItems(allIdsSet);
     }
 
@@ -429,7 +393,7 @@ export class BookmarkDataModel {
         }
     }
 
-    newGroup(name: string, type?: TBookmarkGroupType, rule?: IDynamicRule, icon?: IBookmarkGroup['icon'], hidden?: boolean) {
+    newGroup(name: string, type?: TBookmarkGroupType, rule?: IDynamicRule, icon?: IBookmarkGroup['icon']) {
         //6位 36进制
         let id: TBookmarkGroupId;
         while (id === undefined || groupMap().has(id)) {
@@ -443,17 +407,10 @@ export class BookmarkDataModel {
             items: [],
             type,
             rule,
-            icon: icon ?? null,
-            hidden: hidden ?? false
+            icon: icon ?? null
         };
 
         setGroups((gs) => [...gs, group]);
-        if (hidden !== true) {
-            defaultView.update('groups', (groupIds) => {
-                if (groupIds.includes(group.id)) return groupIds;
-                return [...groupIds, group.id];
-            });
-        }
         this.updateDynamicGroup(group);
         this.save();
         return group;

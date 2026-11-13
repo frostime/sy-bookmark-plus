@@ -8,7 +8,7 @@
  */
 
 import { thisPlugin } from "@frostime/siyuan-plugin-kits";
-import { configs, getModel, groups } from ".";
+import { configs, getModel } from ".";
 
 /**
  * 动态组是否随文档页签切换刷新:
@@ -30,13 +30,12 @@ export const isRefreshOnDocSwitch = (group: IBookmarkGroup): boolean => {
  */
 export const refreshAllDynamicGroupOnDocSwitch = () => {
 
-    const groupTobeUpdate = groups.filter((g: IBookmarkGroup) => {
-        if (g.hidden === true) return false;
-        if (g.type !== 'dynamic' || !g.rule?.input) return false;
-        return isRefreshOnDocSwitch(g);
+    const model = getModel();
+    const groupTobeUpdate = model.getGroupsInViews().filter(group => {
+        if (group.type !== 'dynamic' || !group.rule?.input) return false;
+        return isRefreshOnDocSwitch(group);
     });
     if (groupTobeUpdate.length === 0) return;
-    const model = getModel();
     groupTobeUpdate.forEach((g: IBookmarkGroup) => {
         model.updateDynamicGroup(g).then(() => {
             model.updateGroupStaticItemsDebounced(g);

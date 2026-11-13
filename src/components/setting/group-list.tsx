@@ -57,7 +57,8 @@ const App = () => {
                 showMessage(i18n.msg.groupNameEmpty, 3000, 'error');
                 return;
             }
-            model.newGroup(group.name, group.type, rule, icon);
+            const newGroup = model.newGroup(group.name, group.type, rule, icon);
+            model.addGroupToDefaultView(newGroup.id);
         });
     };
 

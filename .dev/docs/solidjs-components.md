@@ -1,7 +1,7 @@
 ---
 name: SolidJS 组件系统
 description: sy-bookmark-plus 的 SolidJS 组件架构、Context 系统、Signal/Store 数据流和 solidjs-signal-ref 集成
-updated: 2026-02-10
+updated: 2026-11-13
 scope:
   - /src/components/**
   - /src/model/stores.ts
@@ -177,7 +177,7 @@ const [Icon, setIcon] = createSignal<string>("");
 // bookmark.tsx - 根据 sourceView 过滤显示的书签组
 const shownGroups = createMemo(() => {
     if (props.sourceView === "DEFAULT") {
-        return groups.filter(group => !group.hidden);
+        return defaultView().groups.map(id => groups.find(group => group.id === id)).filter(Boolean);
     } else {
         const view = subViews()[props.sourceView];
         let ans = [];
