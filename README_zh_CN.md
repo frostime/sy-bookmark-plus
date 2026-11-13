@@ -11,9 +11,9 @@
 
 📝 更新日志见: [CHANGELOG.md](./CHANGELOG.md)
 
-## BREAKING CHANGE：书签存档 schema 3.0
+## BREAKING CHANGE：书签存档 schema 2.1
 
-书签存档会自动迁移到 schema `3.0`。组级 `hidden` 字段从存档及 `BookmarkPlusSDK.listGroups()`、`findGroup()` 的返回结果中删除。组是否显示由视图成员关系决定；隐藏整个子视图的功能保留。
+书签存档会自动迁移到 schema `2.1`。组级 `hidden` 字段从存档及 `BookmarkPlusSDK.listGroups()`、`findGroup()` 的返回结果中删除。组是否显示由视图成员关系决定；隐藏整个子视图的功能保留。
 
 升级前请备份 `data/storage/petal/sy-bookmark-plus/`，并在同步迁移后的数据前更新所有设备上的插件。不支持降级到旧版插件。
 

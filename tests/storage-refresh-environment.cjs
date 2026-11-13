@@ -33,7 +33,7 @@ function environment({ mount = false, legacy = false, mobile = false, noDocks = 
     let beforeWrite = async () => {};
     let ruleQuery = async () => [];
     const disk = {
-        'bookmarks.json': { schema: '3.0', groups: {}, defaultView: { groups: [] } },
+        'bookmarks.json': { schema: '2.1', groups: {}, defaultView: { groups: [] } },
         'bookmark-sub-views.json': {},
         'bookmark-configs.json': { replaceDefault: false },
         'bookmark-items-snapshot.json': {}

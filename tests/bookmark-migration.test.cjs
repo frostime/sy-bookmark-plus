@@ -14,7 +14,7 @@ test('unversioned bookmarks preserve the old default membership before removing 
     };
     const original = structuredClone(raw);
     const { storage, migrated } = migrateBookmarkStorage(raw);
-    assert.equal(storage.schema, '3.0');
+    assert.equal(storage.schema, '2.1');
     assert.equal(migrated, true);
     assert.deepEqual(storage.defaultView.groups, ['second', 'first']);
     assert.deepEqual(Object.keys(storage.groups), ['second', 'private', 'first']);
@@ -24,7 +24,7 @@ test('unversioned bookmarks preserve the old default membership before removing 
     assert.deepEqual(raw, original, 'migration must not mutate its input');
 });
 
-test('2.0 to 3.0 preserves explicit membership and order even when hidden disagrees', () => {
+test('2.0 to 2.1 preserves explicit membership and order even when hidden disagrees', () => {
     const groups = {
         a: group('a', { hidden: true, icon: null }),
         b: group('b', { hidden: false, rule: { type: '', input: '' } }),
@@ -34,7 +34,7 @@ test('2.0 to 3.0 preserves explicit membership and order even when hidden disagr
         const raw = archive('2.0', groups, members);
         const original = structuredClone(raw);
         const { storage, migrated } = migrateBookmarkStorage(raw);
-        assert.equal(storage.schema, '3.0');
+        assert.equal(storage.schema, '2.1');
         assert.equal(migrated, true);
         assert.deepEqual(storage.defaultView.groups, members);
         assert.deepEqual(storage.groups.b.rule, { type: '', input: '' });
@@ -47,18 +47,18 @@ test('2.0 to 3.0 preserves explicit membership and order even when hidden disagr
 });
 
 test('current schema is validated without scheduling another migration or changing membership', () => {
-    const raw = archive('3.0', { a: group('a') }, []);
+    const raw = archive('2.1', { a: group('a') }, []);
     const result = migrateBookmarkStorage(raw);
-    assert.equal(CURRENT_BOOKMARK_SCHEMA, '3.0');
+    assert.equal(CURRENT_BOOKMARK_SCHEMA, '2.1');
     assert.equal(result.migrated, false);
     assert.deepEqual(result.storage, raw);
     const missing = migrateBookmarkStorage(undefined);
     assert.equal(missing.migrated, false);
-    assert.deepEqual(missing.storage, archive('3.0', {}, []));
+    assert.deepEqual(missing.storage, archive('2.1', {}, []));
 });
 
 test('declared schemas are exact dispatch keys, not hints inferred from fields or version ordering', () => {
-    for (const schema of ['1.0', '2.1', '4.0', '2.0.0', '', null, 2]) {
+    for (const schema of ['1.0', '2.2', '3.0', '2.0.0', '2.1.0', '', null, 2]) {
         assert.throws(() => migrateBookmarkStorage(archive(schema, {}, [])), /schema/i);
     }
     assert.throws(() => migrateBookmarkStorage({ groups: {}, defaultView: { groups: [] } }), /invalid/i);
@@ -66,7 +66,7 @@ test('declared schemas are exact dispatch keys, not hints inferred from fields o
 });
 
 test('invalid source data is rejected instead of repaired or migrated into an empty archive', () => {
-    for (const schema of ['2.0', '3.0']) {
+    for (const schema of ['2.0', '2.1']) {
         for (const invalid of [
             archive(schema, [], []),
             { schema, groups: { a: group('a') } },
@@ -78,5 +78,5 @@ test('invalid source data is rejected instead of repaired or migrated into an em
         ]) assert.throws(() => migrateBookmarkStorage(invalid), /invalid/i);
     }
     assert.throws(() => migrateBookmarkStorage(archive('2.0', { a: group('a', { hidden: 'yes' }) }, [])), /hidden/i);
-    assert.throws(() => migrateBookmarkStorage(archive('3.0', { a: group('a', { hidden: false }) }, [])), /hidden/i);
+    assert.throws(() => migrateBookmarkStorage(archive('2.1', { a: group('a', { hidden: false }) }, [])), /hidden/i);
 });

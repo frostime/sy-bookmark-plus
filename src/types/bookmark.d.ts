@@ -84,7 +84,7 @@ interface IBookmarkDefaultView {
 }
 
 interface IBookmarkStorage {
-    schema: '3.0';
+    schema: '2.1';
     groups: Record<TBookmarkGroupId, IBookmarkGroup>;
     defaultView: IBookmarkDefaultView;
 }

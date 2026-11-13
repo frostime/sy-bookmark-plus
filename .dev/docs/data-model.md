@@ -20,7 +20,7 @@ replacement: ""
 - 数据结构设计（`IBookmarkGroup`、`IBookmarkItem`、`IBookmarkSubView`、`IBookmarkDefaultView`）
 - SolidJS Store 管理（`itemInfo`、`groups`、`defaultView`、`subViews`、`configs`）
 - BookmarkDataModel 类的职责
-- 数据持久化策略（`bookmarks.json` schema 3.0、debounce 保存）
+- 数据持久化策略（`bookmarks.json` schema 2.1、debounce 保存）
 - 思源 API 调用封装
 - Block 数据 → 书签数据的映射流程
 
@@ -142,13 +142,13 @@ interface IDynamicRule {
 
 #### 6. 书签存档与版本迁移
 
-`src/types/bookmark.d.ts` 的 `IBookmarkStorage` 定义 schema `3.0`：`groups` 保存组，`defaultView.groups` 显式保存默认视图成员及顺序。组不允许携带 `hidden`；子视图自身的 `hidden` 仍控制 Dock 是否注册。
+`src/types/bookmark.d.ts` 的 `IBookmarkStorage` 定义 schema `2.1`：`groups` 保存组，`defaultView.groups` 显式保存默认视图成员及顺序。组不允许携带 `hidden`；子视图自身的 `hidden` 仍控制 Dock 是否注册。
 
 `src/model/migration.ts` 统一拥有书签存档校验和迁移：
 
-- 支持未标版本的组映射，以及显式标记 `2.0`、`3.0` 的存档。声明的 schema 必须精确匹配；未知版本直接报错，不按字段形状或版本大小猜测格式。
-- 未标版本的组映射先按原顺序收集 `hidden !== true` 的默认成员，导入为 `2.0`。`2.0 → 3.0` 只删除组级 `hidden`，保留显式成员列表、顺序和其他组数据；迁移前后均校验。
-- 存档文件缺失时使用空的 `3.0` 数据，不安排迁移写回。已存在但无效的存档不自动修复或替换为空档，异常由专用刷新路径处理。
+- 支持未标版本的组映射，以及显式标记 `2.0`、`2.1` 的存档。声明的 schema 必须精确匹配；未知版本直接报错，不按字段形状或版本大小猜测格式。
+- 未标版本的组映射先按原顺序收集 `hidden !== true` 的默认成员，导入为 `2.0`。`2.0 → 2.1` 只删除组级 `hidden`，保留显式成员列表、顺序和其他组数据；迁移前后均校验。
+- 存档文件缺失时使用空的 `2.1` 数据，不安排迁移写回。已存在但无效的存档不自动修复或替换为空档，异常由专用刷新路径处理。
 - 默认成员 ID 必须唯一且引用已有组；组 ID 必须与映射键一致。完整字段检查以 `validateStorage()`、`validateGroups()` 为准，未知的非保留字段保留。静态组可以携带历史创建入口留下的空规则类型；缺省组类型视为静态组，缺省刷新设置为 `default`。
 - 读取成功后的迁移保存仍经过 `bookmarkStorage`，不绕过保存暂停和在途写入等待。
 
@@ -364,7 +364,7 @@ async updateDynamicGroup(group: IBookmarkGroup) {
 
 | 文件 | 内容 | 保存时机 | Debounce |
 |------|------|----------|----------|
-| `bookmarks.json` | schema 3.0 存档（分组和默认视图成员） | 修改书签组/项时 | 2000ms |
+| `bookmarks.json` | schema 2.1 存档（分组和默认视图成员） | 修改书签组/项时 | 2000ms |
 | `bookmark-configs.json` | 插件配置 | 修改配置时 | 750ms |
 | `bookmark-sub-views.json` | 子视图定义 | 修改视图时直接保存，或随书签保存 | 无独立 debounce |
 | `bookmark-items-snapshot.json` | 书签项快照 | 保存书签组时 | 2000ms |

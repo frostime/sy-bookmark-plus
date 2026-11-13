@@ -232,7 +232,7 @@ test('creating groups leaves view membership to the caller and never saves group
     env.model().addGroupToDefaultView(first.id);
     env.stores.subViews.update({ custom: { id: 'custom', name: 'Custom', groups: [second.id], expand: {} } });
     await env.flushSaves();
-    assert.equal(env.disk['bookmarks.json'].schema, '3.0');
+    assert.equal(env.disk['bookmarks.json'].schema, '2.1');
     assert.deepEqual(env.disk['bookmarks.json'].defaultView.groups, [first.id]);
     assert.deepEqual(env.disk['bookmark-sub-views.json'].custom.groups, [second.id]);
     for (const group of Object.values(env.disk['bookmarks.json'].groups)) {
@@ -257,7 +257,7 @@ test('SDK group queries do not expose a hidden property', () => {
 test('restored Dock cannot initialize until saved bookmark data has loaded', async () => {
     const { environment, group, barrier } = require('./storage-refresh-environment.cjs');
     const env = environment({ mount: true });
-    env.disk['bookmarks.json'] = { schema: '3.0', groups: { g: group('g') }, defaultView: { groups: ['g'] } };
+    env.disk['bookmarks.json'] = { schema: '2.1', groups: { g: group('g') }, defaultView: { groups: ['g'] } };
     const read = barrier();
     env.beforeRead(() => read.promise);
     const pendingLoad = env.plugin.onload();

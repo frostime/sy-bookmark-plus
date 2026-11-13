@@ -6,7 +6,7 @@
  * @FilePath     : /src/model/migration.ts
  * @LastEditTime : 2026-02-21 14:33:40
  */
-export const CURRENT_BOOKMARK_SCHEMA = '3.0';
+export const CURRENT_BOOKMARK_SCHEMA = '2.1';
 
 type LegacyBookmarkGroup = IBookmarkGroup & { hidden?: boolean };
 type BookmarkStorageV2 = {
@@ -16,7 +16,7 @@ type BookmarkStorageV2 = {
 };
 
 /**
- * Only unversioned group maps, schema 2.0 and schema 3.0 are supported.
+ * Only unversioned group maps, schema 2.0 and schema 2.1 are supported.
  * Invalid archives are rejected without repair; callers retain the displayed data.
  */
 export const migrateBookmarkStorage = (raw: unknown): { storage: IBookmarkStorage; migrated: boolean } => {
@@ -28,7 +28,7 @@ export const migrateBookmarkStorage = (raw: unknown): { storage: IBookmarkStorag
     const storage: unknown = unversioned ? importLegacyGroups(raw) : raw;
     validateStorage(storage);
     if (storage.schema === '2.0') {
-        const migrated = migrateV2ToV3(storage);
+        const migrated = migrateV2ToV21(storage);
         validateStorage(migrated);
         return { storage: migrated, migrated: true };
     }
@@ -46,7 +46,7 @@ function importLegacyGroups(groups: Record<string, unknown>): BookmarkStorageV2 
     };
 }
 
-function migrateV2ToV3(storage: BookmarkStorageV2): IBookmarkStorage {
+function migrateV2ToV21(storage: BookmarkStorageV2): IBookmarkStorage {
     const groups = Object.fromEntries(Object.entries(storage.groups).map(([id, group]) => {
         const { hidden, ...retained } = group;
         return [id, retained];
@@ -68,7 +68,7 @@ function validateStorage(raw: unknown): asserts raw is BookmarkStorageV2 | IBook
     assertValid(new Set(members).size === members.length, 'defaultView.groups must not contain duplicate IDs');
 }
 
-function validateGroups(raw: unknown, schema: '2.0' | '3.0'): asserts raw is Record<string, LegacyBookmarkGroup> {
+function validateGroups(raw: unknown, schema: '2.0' | '2.1'): asserts raw is Record<string, LegacyBookmarkGroup> {
     assertRecord(raw, 'groups');
     for (const [id, group] of Object.entries(raw)) {
         const path = `groups.${id}`;
@@ -77,8 +77,8 @@ function validateGroups(raw: unknown, schema: '2.0' | '3.0'): asserts raw is Rec
         assertValid(typeof group.name === 'string', `${path}.name must be a string`);
         assertValid(group.type === undefined || ['normal', 'dynamic', 'composed'].includes(group.type as string), `${path}.type is invalid`);
         assertValid(group.expand === undefined || typeof group.expand === 'boolean', `${path}.expand must be a boolean`);
-        if (schema === '3.0') {
-            assertValid(!Object.hasOwn(group, 'hidden'), `${path}.hidden is not allowed in schema 3.0`);
+        if (schema === '2.1') {
+            assertValid(!Object.hasOwn(group, 'hidden'), `${path}.hidden is not allowed in schema 2.1`);
         } else {
             assertValid(group.hidden === undefined || typeof group.hidden === 'boolean', `${path}.hidden must be a boolean`);
         }

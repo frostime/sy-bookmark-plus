@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const { environment, group, view, barrier } = require('./storage-refresh-environment.cjs');
 
 function archive(env, groups, views = {}, config = { replaceDefault: false }) {
-    env.disk['bookmarks.json'] = { schema: '3.0', groups: Object.fromEntries(groups.map(group => [group.id, group])), defaultView: { groups: groups.map(group => group.id) } };
+    env.disk['bookmarks.json'] = { schema: '2.1', groups: Object.fromEntries(groups.map(group => [group.id, group])), defaultView: { groups: groups.map(group => group.id) } };
     env.disk['bookmark-sub-views.json'] = views;
     env.disk['bookmark-configs.json'] = config;
 }
@@ -157,11 +157,11 @@ test('known missing files use defaults, while old schemas still migrate and save
     await env.plugin.onload();
     assert.deepEqual(env.stores.defaultView().groups, ['old']);
     await env.flushSaves();
-    assert.equal(env.disk['bookmarks.json'].schema, '3.0');
+    assert.equal(env.disk['bookmarks.json'].schema, '2.1');
     assert.deepEqual(env.disk['bookmarks.json'].defaultView.groups, ['old']);
 });
 
-test('2.0 migration saves 3.0 once without changing view membership or subview hiding', async () => {
+test('2.0 migration saves 2.1 once without changing view membership or subview hiding', async () => {
     const env = environment();
     archive(env, [{ ...group('a'), hidden: true }, { ...group('b'), hidden: false }], {
         custom: view('Hidden subview', ['b', 'a'], { hidden: true })
@@ -172,7 +172,7 @@ test('2.0 migration saves 3.0 once without changing view membership or subview h
     assert.deepEqual(env.stores.defaultView().groups, ['a']);
     for (const group of env.stores.groups) assert.equal(Object.hasOwn(group, 'hidden'), false);
     await env.flushSaves();
-    assert.equal(env.disk['bookmarks.json'].schema, '3.0');
+    assert.equal(env.disk['bookmarks.json'].schema, '2.1');
     assert.deepEqual(env.disk['bookmarks.json'].defaultView.groups, ['a']);
     assert.deepEqual(env.disk['bookmark-sub-views.json'].custom.groups, ['b', 'a']);
     assert.equal(env.disk['bookmark-sub-views.json'].custom.hidden, true);
@@ -189,7 +189,7 @@ test('unsupported or invalid schemas keep displayed data and never overwrite the
     const displayed = env.stores.groups[0];
     for (const rejected of [
         { schema: '4.0', groups: {}, defaultView: { groups: [] } },
-        { schema: '3.0', groups: { bad: { ...group('bad'), hidden: false } }, defaultView: { groups: ['bad'] } }
+        { schema: '2.1', groups: { bad: { ...group('bad'), hidden: false } }, defaultView: { groups: ['bad'] } }
     ]) {
         env.disk['bookmarks.json'] = rejected;
         await env.plugin.onDataChanged();

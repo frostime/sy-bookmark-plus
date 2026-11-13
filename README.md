@@ -10,9 +10,9 @@ If you are satisfied with the plugin, welcome to visit our [Github page](https:/
 
 📝 Changlog (in Chinese, however): [CHANGELOG.md](./CHANGELOG.md)
 
-## BREAKING CHANGE: bookmark schema 3.0
+## BREAKING CHANGE: bookmark schema 2.1
 
-Bookmark storage is automatically migrated to schema `3.0`. Group-level `hidden` is removed from storage and from the results of `BookmarkPlusSDK.listGroups()` and `findGroup()`. Group visibility is determined by view membership; hiding an entire subview remains supported.
+Bookmark storage is automatically migrated to schema `2.1`. Group-level `hidden` is removed from storage and from the results of `BookmarkPlusSDK.listGroups()` and `findGroup()`. Group visibility is determined by view membership; hiding an entire subview remains supported.
 
 Back up `data/storage/petal/sy-bookmark-plus/` before upgrading, and update the plugin on every device before syncing migrated data. Downgrading to an older plugin version is not supported.
 
